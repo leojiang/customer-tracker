@@ -25,12 +25,19 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
+        cache-dependency-path: 'package-lock.json'
 
-    - name: Install dependencies
+    - name: Install workspace dependencies
+      run: npm ci
+
+    - name: List frontend dependencies (debug)
       run: |
-        cd frontend
-        npm ci
+        echo "Root package.json:"
+        ls -la package*.json
+        echo "Frontend directory:"
+        ls -la frontend/
+        echo "Frontend node_modules:"
+        ls -la frontend/node_modules/ | head -10 || echo "No node_modules in frontend/"
 
     - name: Run ESLint
       run: |
@@ -76,12 +83,10 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
+        cache-dependency-path: 'package-lock.json'
 
     - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
+      run: npm ci
 
     - name: Build for production
       run: |
@@ -137,11 +142,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
 
     - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
+      run: npm ci
 
     - name: Build application
       run: |

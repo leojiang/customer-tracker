@@ -6,7 +6,7 @@ import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerReques
 import { customerApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
-import { format } from 'date-fns';
+// import { format } from 'date-fns'; // Unused import removed
 
 interface CustomerDetailProps {
   customerId: string;
@@ -43,8 +43,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       const transitions = await customerApi.getValidTransitions(customerId);
       setValidTransitions(transitions);
     } catch (err) {
-      console.warn('Failed to load valid transitions:', err);
-      // Fallback to empty array, status transition UI will be disabled
+      // Failed to load valid transitions, fallback to empty array
+      // Status transition UI will be disabled
       setValidTransitions([]);
     }
   }, [customerId]);
@@ -125,7 +125,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     try {
       setUpdating(true);
       const updatedCustomer = await customerApi.transitionStatus(customer.id, statusTransition);
-      console.log('Status updated from', customer.currentStatus, 'to', updatedCustomer.currentStatus);
+      // Status updated successfully
       
       // Update customer state immediately
       setCustomer(updatedCustomer);
