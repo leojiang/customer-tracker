@@ -28,8 +28,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for customer management operations.
+ *
+ * <p>Provides endpoints for CRUD operations, status transitions, and search functionality.
+ */
 @Tag(
     name = "Customer Management",
     description = "APIs for managing customers, status transitions, and history tracking")
@@ -40,6 +55,11 @@ public class CustomerController {
 
   private final CustomerService customerService;
 
+  /**
+   * Constructor for CustomerController.
+   *
+   * @param customerService service for customer operations
+   */
   @Autowired
   public CustomerController(CustomerService customerService) {
     this.customerService = customerService;
@@ -48,7 +68,8 @@ public class CustomerController {
   @Operation(
       summary = "List customers with search and pagination",
       description =
-          "Retrieve a paginated list of customers with optional search filters by name, phone, company, or status")
+          "Retrieve a paginated list of customers with optional search filters "
+              + "by name, phone, company, or status")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -79,9 +100,15 @@ public class CustomerController {
           int limit) {
 
     // Validate pagination parameters
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 20;
-    if (limit > 100) limit = 100; // Max limit as per plan
+    if (page < 1) {
+      page = 1;
+    }
+    if (limit < 1) {
+      limit = 20;
+    }
+    if (limit > 100) {
+      limit = 100; // Max limit as per plan
+    }
 
     // Convert to 0-based page for Spring Data
     Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("updatedAt").descending());
@@ -108,7 +135,7 @@ public class CustomerController {
   @Operation(
       summary = "Create a new customer",
       description =
-          "Create a new customer with the provided information. Phone number must be unique.")
+          "Create a new customer with the provided information. " + "Phone number must be unique.")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -149,7 +176,7 @@ public class CustomerController {
     }
   }
 
-  /** GET /api/customers/:id Get customer by ID */
+  /** GET /api/customers/:id Get customer by ID. */
   @GetMapping("/{id}")
   public ResponseEntity<Customer> getCustomer(@PathVariable UUID id) {
     Optional<Customer> customer = customerService.getCustomerById(id);
@@ -166,7 +193,7 @@ public class CustomerController {
     return ResponseEntity.ok(customer.get());
   }
 
-  /** PATCH /api/customers/:id Update customer */
+  /** PATCH /api/customers/:id Update customer. */
   @PatchMapping("/{id}")
   public ResponseEntity<Customer> updateCustomer(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
@@ -198,7 +225,7 @@ public class CustomerController {
     }
   }
 
-  /** DELETE /api/customers/:id Soft delete customer */
+  /** DELETE /api/customers/:id Soft delete customer. */
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
     try {
@@ -215,7 +242,7 @@ public class CustomerController {
     }
   }
 
-  /** POST /api/customers/:id/restore Restore soft-deleted customer */
+  /** POST /api/customers/:id/restore Restore soft-deleted customer. */
   @PostMapping("/{id}/restore")
   public ResponseEntity<Customer> restoreCustomer(@PathVariable UUID id) {
     try {
@@ -237,7 +264,8 @@ public class CustomerController {
   @Operation(
       summary = "Transition customer status",
       description =
-          "Change the status of a customer and record the transition in history with an optional reason")
+          "Change the status of a customer and record the transition in history "
+              + "with an optional reason")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -269,7 +297,7 @@ public class CustomerController {
     }
   }
 
-  /** GET /api/customers/:id/status-history Get status history for customer */
+  /** GET /api/customers/:id/status-history Get status history for customer. */
   @GetMapping("/{id}/status-history")
   public ResponseEntity<List<StatusHistory>> getStatusHistory(
       @PathVariable UUID id,
@@ -297,7 +325,7 @@ public class CustomerController {
     }
   }
 
-  /** GET /api/customers/statistics Get customer statistics */
+  /** GET /api/customers/statistics Get customer statistics. */
   @GetMapping("/statistics")
   public ResponseEntity<CustomerService.CustomerStatistics> getStatistics(
       @RequestParam(defaultValue = "false") boolean includeDeleted) {
@@ -306,16 +334,22 @@ public class CustomerController {
     return ResponseEntity.ok(stats);
   }
 
-  /** GET /api/customers/recent Get recently updated customers */
+  /** GET /api/customers/recent Get recently updated customers. */
   @GetMapping("/recent")
   public ResponseEntity<CustomerPageResponse> getRecentCustomers(
       @RequestParam(defaultValue = "7") int days,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "20") int limit) {
 
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 20;
-    if (limit > 100) limit = 100;
+    if (page < 1) {
+      page = 1;
+    }
+    if (limit < 1) {
+      limit = 20;
+    }
+    if (limit > 100) {
+      limit = 100;
+    }
 
     Pageable pageable = PageRequest.of(page - 1, limit);
     Page<Customer> customers = customerService.getRecentlyUpdatedCustomers(days, pageable);
@@ -334,7 +368,8 @@ public class CustomerController {
   @Operation(
       summary = "Get valid status transitions",
       description =
-          "Get all valid status transitions for a specific customer based on current status and business rules")
+          "Get all valid status transitions for a specific customer based on "
+              + "current status and business rules")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -398,6 +433,7 @@ public class CustomerController {
   }
 
   // Request/Response DTOs
+  /** Request DTO for creating a new customer. */
   public static class CreateCustomerRequest {
     private String name;
     private String phone;
@@ -492,6 +528,7 @@ public class CustomerController {
     }
   }
 
+  /** Request DTO for updating customer information. */
   public static class UpdateCustomerRequest {
     private String name;
     private String phone;
@@ -577,6 +614,7 @@ public class CustomerController {
     }
   }
 
+  /** Request DTO for customer status transitions. */
   public static class StatusTransitionRequest {
     private CustomerStatus toStatus;
     private String reason;
@@ -598,6 +636,7 @@ public class CustomerController {
     }
   }
 
+  /** Response DTO for paginated customer lists. */
   public static class CustomerPageResponse {
     private List<Customer> items;
     private long total;
@@ -605,6 +644,15 @@ public class CustomerController {
     private int limit;
     private int totalPages;
 
+    /**
+     * Constructor for CustomerPageResponse.
+     *
+     * @param items list of customers
+     * @param total total number of customers
+     * @param page current page number
+     * @param limit items per page
+     * @param totalPages total number of pages
+     */
     public CustomerPageResponse(
         List<Customer> items, long total, int page, int limit, int totalPages) {
       this.items = items;
@@ -635,6 +683,7 @@ public class CustomerController {
     }
   }
 
+  /** Response DTO for error messages. */
   public static class ErrorResponse {
     private String message;
 
@@ -647,6 +696,7 @@ public class CustomerController {
     }
   }
 
+  /** Response DTO for validation results. */
   public static class ValidationResponse {
     private boolean valid;
 

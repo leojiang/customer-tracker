@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller for system health monitoring.
+ *
+ * <p>Provides health check endpoints for monitoring system status and connectivity.
+ */
 @Tag(name = "Health Check", description = "System health and monitoring endpoints")
 @RestController
 @RequestMapping("/api/health")
@@ -24,6 +29,11 @@ public class HealthController {
 
   @Autowired private CustomerService customerService;
 
+  /**
+   * Comprehensive health check endpoint.
+   *
+   * @return ResponseEntity containing system health status and metrics
+   */
   @Operation(
       summary = "Comprehensive health check",
       description =

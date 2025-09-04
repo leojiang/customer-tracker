@@ -131,13 +131,13 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>3.3.0</version>
         <configuration>
-          <configLocation>sun_checks.xml</configLocation>
+          <configLocation>google_checks.xml</configLocation>
           <consoleOutput>true</consoleOutput>
-          <failsOnError>false</failsOnError>
+          <failsOnError>true</failsOnError>
         </configuration>
         <executions>
           <execution>
-            <phase>none</phase>
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>

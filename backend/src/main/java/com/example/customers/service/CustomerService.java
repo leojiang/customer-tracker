@@ -340,6 +340,7 @@ public class CustomerService {
   }
 
   // Inner class for statistics
+  /** DTO class for customer statistics. */
   public static class CustomerStatistics {
     private long totalCustomers;
     private long recentlyUpdatedCount;

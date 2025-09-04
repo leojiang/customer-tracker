@@ -62,8 +62,9 @@ public interface StatusHistoryRepository extends JpaRepository<StatusHistory, UU
       @Param("fromStatus") CustomerStatus fromStatus, @Param("toStatus") CustomerStatus toStatus);
 
   /**
-   * Delete all status history for a customer (cascade should handle this, but explicit method for
-   * testing)
+   * Delete all status history for a customer.
+   *
+   * <p>Cascade should handle this, but explicit method for testing.
    */
   void deleteByCustomer(Customer customer);
 }
