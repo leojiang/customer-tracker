@@ -1,8 +1,8 @@
 # Customer Call-Through and Status Tracking System
 
-[![Backend CI/CD](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/backend-ci.yml)
-[![Frontend CI/CD](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/frontend-ci.yml)
-[![Project Overview CI](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/project-overview.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/project-overview.yml)
+[![Backend CI/CD](https://github.com/leojiang/customer-tracker/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/leojiang/customer-tracker/actions/workflows/backend-ci.yml)
+[![Frontend CI/CD](https://github.com/leojiang/customer-tracker/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/leojiang/customer-tracker/actions/workflows/frontend-ci.yml)
+[![Project Overview CI](https://github.com/leojiang/customer-tracker/actions/workflows/project-overview.yml/badge.svg)](https://github.com/leojiang/customer-tracker/actions/workflows/project-overview.yml)
 
 A comprehensive **Customer Relationship Management (CRM) system** designed specifically for sales teams to manage customer interactions, track status transitions, and maintain complete audit trails. This production-ready MVP features intelligent status management, role-based access control, and a professional Material Design interface.
 
