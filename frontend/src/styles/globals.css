@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-surface-50 text-surface-800;
+  }
+  
+  * {
+    @apply scroll-smooth;
+  }
+}
+
+@layer components {
+  /* Material Design Buttons */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg shadow-md-1 hover:shadow-md-2 transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-100 hover:bg-surface-200 active:bg-surface-300 text-surface-700 font-medium py-3 px-6 rounded-lg shadow-md-1 hover:shadow-md-2 transition-all duration-200 transform hover:-translate-y-0.5 border border-surface-300 focus:outline-none focus:ring-2 focus:ring-surface-400 focus:ring-offset-2;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-50 active:bg-primary-100 font-medium py-2.5 px-5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+  }
+  
+  .btn-floating {
+    @apply bg-primary-500 hover:bg-primary-600 text-white p-4 rounded-full shadow-md-3 hover:shadow-md-4 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2;
+  }
+
+  /* Material Design Input Fields */
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-surface-300 rounded-lg bg-surface-50 text-surface-800 placeholder-surface-500 focus:outline-none focus:border-primary-500 focus:bg-white focus:ring-0 transition-all duration-200 hover:border-surface-400;
+  }
+  
+  .input-field:focus {
+    @apply shadow-md-1;
+  }
+  
+  .input-label {
+    @apply block text-sm font-medium text-surface-700 mb-2;
+  }
+
+  /* Material Design Cards */
+  .card {
+    @apply bg-white rounded-xl shadow-md-1 hover:shadow-md-2 transition-all duration-300 border-0 overflow-hidden;
+  }
+  
+  .card-elevated {
+    @apply bg-white rounded-xl shadow-md-2 hover:shadow-md-3 transition-all duration-300 border-0 overflow-hidden;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-b border-surface-200 bg-surface-50;
+  }
+  
+  .card-content {
+    @apply p-6;
+  }
+
+  /* Material Design Typography */
+  .text-headline-1 {
+    @apply text-4xl font-light tracking-tight text-surface-900;
+  }
+  
+  .text-headline-2 {
+    @apply text-3xl font-normal tracking-tight text-surface-900;
+  }
+  
+  .text-headline-3 {
+    @apply text-2xl font-normal text-surface-900;
+  }
+  
+  .text-headline-4 {
+    @apply text-xl font-medium text-surface-900;
+  }
+  
+  .text-headline-5 {
+    @apply text-lg font-medium text-surface-900;
+  }
+  
+  .text-headline-6 {
+    @apply text-base font-medium text-surface-900;
+  }
+  
+  .text-body-1 {
+    @apply text-base text-surface-700 leading-relaxed;
+  }
+  
+  .text-body-2 {
+    @apply text-sm text-surface-600 leading-relaxed;
+  }
+  
+  .text-caption {
+    @apply text-xs text-surface-500 tracking-wide uppercase;
+  }
+
+  /* Status Badges with Material Design Colors */
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-md-1 transition-all duration-200;
+  }
+
+  .status-customer-called {
+    @apply bg-info-100 text-info-700 border border-info-200;
+  }
+
+  .status-replied-to-customer {
+    @apply bg-warning-100 text-warning-700 border border-warning-200;
+  }
+
+  .status-order-placed {
+    @apply bg-secondary-100 text-secondary-800 border border-secondary-200;
+  }
+
+  .status-order-cancelled {
+    @apply bg-error-100 text-error-700 border border-error-200;
+  }
+
+  .status-product-delivered {
+    @apply bg-primary-100 text-primary-700 border border-primary-200;
+  }
+
+  .status-business-done {
+    @apply bg-success-100 text-success-700 border border-success-200;
+  }
+
+  .status-lost {
+    @apply bg-error-100 text-error-700 border border-error-200;
+  }
+  
+  /* Material Design Dividers */
+  .divider {
+    @apply border-t border-surface-200 my-4;
+  }
+  
+  .divider-vertical {
+    @apply border-l border-surface-200 mx-4;
+  }
+  
+  /* Material Design Lists */
+  .list-item {
+    @apply flex items-center p-4 hover:bg-surface-50 transition-colors duration-200 border-b border-surface-100 last:border-b-0;
+  }
+  
+  .list-item-interactive {
+    @apply flex items-center p-4 hover:bg-surface-100 active:bg-surface-200 transition-all duration-200 cursor-pointer border-b border-surface-100 last:border-b-0 transform hover:scale-[1.01];
+  }
+  
+  /* Material Design Chips */
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors duration-200;
+  }
+  
+  .chip-selected {
+    @apply bg-primary-100 text-primary-700 hover:bg-primary-200;
+  }
+  
+  /* Loading States */
+  .loading-skeleton {
+    @apply bg-surface-200 rounded animate-pulse;
+  }
+  
+  /* Focus States */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+  }
+}
