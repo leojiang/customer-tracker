@@ -14,6 +14,11 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service for JWT token operations.
+ *
+ * <p>Handles JWT token generation, validation, and claims extraction for authentication.
+ */
 @Service
 public class JwtService {
 
@@ -32,6 +37,12 @@ public class JwtService {
     return claimsResolver.apply(claims);
   }
 
+  /**
+   * Generates JWT token for a sales user.
+   *
+   * @param sales the sales user to generate token for
+   * @return JWT token string
+   */
   public String generateToken(Sales sales) {
     Map<String, Object> extraClaims = new HashMap<>();
     extraClaims.put("role", sales.getRole().name());
@@ -39,6 +50,13 @@ public class JwtService {
     return generateToken(extraClaims, sales.getPhone());
   }
 
+  /**
+   * Generates JWT token with custom claims.
+   *
+   * @param extraClaims additional claims to include
+   * @param phone user phone number as subject
+   * @return JWT token string
+   */
   public String generateToken(Map<String, Object> extraClaims, String phone) {
     return Jwts.builder()
         .setClaims(extraClaims)

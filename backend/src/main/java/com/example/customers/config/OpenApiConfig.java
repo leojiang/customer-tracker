@@ -9,18 +9,29 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OpenAPI configuration for Swagger documentation.
+ *
+ * <p>Configures the API documentation with proper metadata and server information.
+ */
 @Configuration
 public class OpenApiConfig {
 
+  /**
+   * Creates a custom OpenAPI configuration.
+   *
+   * @return OpenAPI configuration object
+   */
   @Bean
-  public OpenAPI customOpenAPI() {
+  public OpenAPI customOpenApi() {
     return new OpenAPI()
         .info(
             new Info()
                 .title("Customer Tracker API")
                 .description(
-                    "A comprehensive Customer Call-Through and Status Tracking system for sales teams. "
-                        + "Manage customer information, track status transitions, and maintain complete audit trails.")
+                    "A comprehensive Customer Call-Through and Status Tracking system "
+                        + "for sales teams. Manage customer information, track status "
+                        + "transitions, and maintain complete audit trails.")
                 .version("1.0.0")
                 .contact(
                     new Contact()

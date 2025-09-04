@@ -1,6 +1,14 @@
 package com.example.customers.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
@@ -10,6 +18,11 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
+/**
+ * Sales user entity representing a sales person in the system.
+ *
+ * <p>Includes authentication credentials and role information for sales users.
+ */
 @Entity
 @Table(
     name = "sales",
@@ -48,6 +61,13 @@ public class Sales {
 
   public Sales() {}
 
+  /**
+   * Constructor with phone, password and role.
+   *
+   * @param phone sales user phone
+   * @param password hashed password
+   * @param role user role
+   */
   public Sales(String phone, String password, SalesRole role) {
     this.phone = phone;
     this.password = password;

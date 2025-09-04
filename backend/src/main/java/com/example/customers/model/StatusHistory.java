@@ -1,11 +1,26 @@
 package com.example.customers.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
+/**
+ * Status history entity tracking customer status changes.
+ *
+ * <p>Records all status transitions for audit trail and business intelligence purposes.
+ */
 @Entity
 @Table(name = "status_history")
 public class StatusHistory {
@@ -36,6 +51,14 @@ public class StatusHistory {
 
   public StatusHistory() {}
 
+  /**
+   * Constructor for status history record.
+   *
+   * @param customer the customer whose status changed
+   * @param fromStatus previous status (null for initial status)
+   * @param toStatus new status
+   * @param reason optional reason for the change
+   */
   public StatusHistory(
       Customer customer, CustomerStatus fromStatus, CustomerStatus toStatus, String reason) {
     this.customer = customer;

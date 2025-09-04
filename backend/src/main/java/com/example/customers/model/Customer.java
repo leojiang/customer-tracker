@@ -1,7 +1,19 @@
 package com.example.customers.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
@@ -13,6 +25,12 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
+/**
+ * Customer entity representing a customer in the system.
+ *
+ * <p>Includes customer information, business details, current status, and audit timestamps.
+ * Supports soft delete functionality.
+ */
 @Entity
 @Table(
     name = "customers",
@@ -80,6 +98,13 @@ public class Customer {
     this.phone = phone;
   }
 
+  /**
+   * Constructor with name, phone, and sales phone.
+   *
+   * @param name customer name
+   * @param phone customer phone
+   * @param salesPhone sales person phone
+   */
   public Customer(String name, String phone, String salesPhone) {
     this.name = name;
     this.phone = phone;

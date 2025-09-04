@@ -1,5 +1,10 @@
 package com.example.customers.model;
 
+/**
+ * Enumeration representing sales user roles in the system.
+ *
+ * <p>Defines access levels for sales users (ADMIN has full access, SALES has limited access).
+ */
 public enum SalesRole {
   ADMIN("Admin"),
   SALES("Sales");

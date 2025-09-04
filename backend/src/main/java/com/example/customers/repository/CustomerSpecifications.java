@@ -7,9 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
+/**
+ * JPA Specifications for dynamic Customer query building.
+ *
+ * <p>Provides reusable query specifications for customer search and filtering operations.
+ */
 public class CustomerSpecifications {
 
-  /** Search by name (case-insensitive contains) */
+  /** Search by name (case-insensitive contains). */
   public static Specification<Customer> hasNameContaining(String name) {
     return (root, query, criteriaBuilder) -> {
       if (name == null || name.trim().isEmpty()) {
@@ -20,7 +25,7 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Search by phone (partial match) */
+  /** Search by phone (partial match). */
   public static Specification<Customer> hasPhoneContaining(String phone) {
     return (root, query, criteriaBuilder) -> {
       if (phone == null || phone.trim().isEmpty()) {
@@ -30,7 +35,7 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Filter by current status */
+  /** Filter by current status. */
   public static Specification<Customer> hasStatus(CustomerStatus status) {
     return (root, query, criteriaBuilder) -> {
       if (status == null) {
@@ -41,8 +46,9 @@ public class CustomerSpecifications {
   }
 
   /**
-   * Include or exclude soft-deleted customers By default, @Where annotation excludes them, but this
-   * allows including them
+   * Include or exclude soft-deleted customers.
+   *
+   * <p>By default, @Where annotation excludes them, but this allows including them.
    */
   public static Specification<Customer> includeDeleted(boolean includeDeleted) {
     return (root, query, criteriaBuilder) -> {
@@ -56,17 +62,17 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Only soft-deleted customers */
+  /** Only soft-deleted customers. */
   public static Specification<Customer> isDeleted() {
     return (root, query, criteriaBuilder) -> criteriaBuilder.isNotNull(root.get("deletedAt"));
   }
 
-  /** Only active (non-deleted) customers */
+  /** Only active (non-deleted) customers. */
   public static Specification<Customer> isActive() {
     return (root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get("deletedAt"));
   }
 
-  /** Search by company name (case-insensitive contains) */
+  /** Search by company name (case-insensitive contains). */
   public static Specification<Customer> hasCompanyContaining(String company) {
     return (root, query, criteriaBuilder) -> {
       if (company == null || company.trim().isEmpty()) {
@@ -77,7 +83,7 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Filter by sales person phone */
+  /** Filter by sales person phone. */
   public static Specification<Customer> hasSalesPhone(String salesPhone) {
     return (root, query, criteriaBuilder) -> {
       if (salesPhone == null || salesPhone.trim().isEmpty()) {
@@ -87,7 +93,7 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Combined search specification Handles all common search parameters at once */
+  /** Combined search specification. Handles all common search parameters at once. */
   public static Specification<Customer> searchCustomers(
       String nameQuery,
       String phoneQuery,
@@ -139,7 +145,7 @@ public class CustomerSpecifications {
     };
   }
 
-  /** Unified search specification Searches across multiple fields with a single query term */
+  /** Unified search specification. Searches across multiple fields with a single query term. */
   public static Specification<Customer> unifiedSearch(
       String searchQuery, CustomerStatus status, String salesPhone, boolean includeDeleted) {
 

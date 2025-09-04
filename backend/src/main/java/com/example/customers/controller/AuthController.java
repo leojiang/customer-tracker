@@ -11,8 +11,17 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller for authentication and authorization operations.
+ *
+ * <p>Handles user login, registration, and token validation for the application.
+ */
 @Tag(name = "Authentication", description = "Authentication and authorization endpoints")
 @RestController
 @RequestMapping("/api/auth")
@@ -26,6 +35,12 @@ public class AuthController {
     this.authService = authService;
   }
 
+  /**
+   * Authenticates user with phone and password.
+   *
+   * @param request login request containing phone and password
+   * @return ResponseEntity containing auth response with token or error
+   */
   @Operation(summary = "Login with phone and password")
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -48,6 +63,12 @@ public class AuthController {
         .body(new AuthResponse(null, null, null, "Login successful but user data not found"));
   }
 
+  /**
+   * Registers a new sales user.
+   *
+   * @param request registration request containing phone and password
+   * @return ResponseEntity containing auth response with token or error
+   */
   @Operation(summary = "Register new sales user")
   @PostMapping("/register")
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -73,6 +94,12 @@ public class AuthController {
     }
   }
 
+  /**
+   * Validates JWT token and returns user information.
+   *
+   * @param request token validation request
+   * @return ResponseEntity containing user info or error
+   */
   @Operation(summary = "Validate JWT token")
   @PostMapping("/validate")
   public ResponseEntity<AuthResponse> validateToken(
@@ -90,6 +117,7 @@ public class AuthController {
   }
 
   // Request DTOs
+  /** Login request DTO. */
   public static class LoginRequest {
     @NotBlank(message = "Phone number is required")
     private String phone;
@@ -114,6 +142,7 @@ public class AuthController {
     }
   }
 
+  /** Registration request DTO. */
   public static class RegisterRequest {
     @NotBlank(message = "Phone number is required")
     private String phone;
@@ -149,6 +178,7 @@ public class AuthController {
     }
   }
 
+  /** Token validation request DTO. */
   public static class ValidateTokenRequest {
     @NotBlank(message = "Token is required")
     private String token;
@@ -163,12 +193,21 @@ public class AuthController {
   }
 
   // Response DTO
+  /** Authentication response DTO. */
   public static class AuthResponse {
     private String token;
     private String phone;
     private SalesRole role;
     private String error;
 
+    /**
+     * Constructor for AuthResponse.
+     *
+     * @param token JWT token
+     * @param phone user phone number
+     * @param role user role
+     * @param error error message if any
+     */
     public AuthResponse(String token, String phone, SalesRole role, String error) {
       this.token = token;
       this.phone = phone;

@@ -12,6 +12,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Security configuration for the application.
+ *
+ * <p>Configures JWT-based authentication, CORS settings, and endpoint security rules.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -20,6 +25,13 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
+  /**
+   * Constructor for SecurityConfig.
+   *
+   * @param jwtAuthenticationEntryPoint JWT authentication entry point
+   * @param jwtAuthenticationFilter JWT authentication filter
+   * @param corsConfigurationSource CORS configuration source
+   */
   @Autowired
   public SecurityConfig(
       JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
@@ -30,6 +42,13 @@ public class SecurityConfig {
     this.corsConfigurationSource = corsConfigurationSource;
   }
 
+  /**
+   * Configures the security filter chain.
+   *
+   * @param http HttpSecurity object to configure
+   * @return SecurityFilterChain configured filter chain
+   * @throws Exception if configuration fails
+   */
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)

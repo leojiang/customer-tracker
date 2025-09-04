@@ -12,43 +12,52 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository interface for StatusHistory entity operations.
+ *
+ * <p>Provides CRUD operations and status tracking queries for customer status history.
+ */
 @Repository
 public interface StatusHistoryRepository extends JpaRepository<StatusHistory, UUID> {
 
-  /** Find status history for a specific customer, ordered by most recent first */
+  /** Find status history for a specific customer, ordered by most recent first. */
   List<StatusHistory> findByCustomerOrderByChangedAtDesc(Customer customer);
 
-  /** Find status history for a specific customer with pagination */
+  /** Find status history for a specific customer with pagination. */
   Page<StatusHistory> findByCustomerOrderByChangedAtDesc(Customer customer, Pageable pageable);
 
-  /** Find status history by customer ID */
+  /** Find status history by customer ID. */
   @Query(
-      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId ORDER BY sh.changedAt DESC")
+      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId "
+          + "ORDER BY sh.changedAt DESC")
   List<StatusHistory> findByCustomerIdOrderByChangedAtDesc(@Param("customerId") UUID customerId);
 
-  /** Find status history by customer ID with pagination */
+  /** Find status history by customer ID with pagination. */
   @Query(
-      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId ORDER BY sh.changedAt DESC")
+      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId "
+          + "ORDER BY sh.changedAt DESC")
   Page<StatusHistory> findByCustomerIdOrderByChangedAtDesc(
       @Param("customerId") UUID customerId, Pageable pageable);
 
-  /** Find latest status change for a customer */
+  /** Find latest status change for a customer. */
   @Query(
-      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId ORDER BY sh.changedAt DESC LIMIT 1")
+      "SELECT sh FROM StatusHistory sh WHERE sh.customer.id = :customerId "
+          + "ORDER BY sh.changedAt DESC LIMIT 1")
   StatusHistory findLatestByCustomerId(@Param("customerId") UUID customerId);
 
-  /** Count total status transitions for a customer */
+  /** Count total status transitions for a customer. */
   long countByCustomer(Customer customer);
 
-  /** Find all transitions to a specific status */
+  /** Find all transitions to a specific status. */
   List<StatusHistory> findByToStatusOrderByChangedAtDesc(CustomerStatus toStatus);
 
-  /** Find all transitions from a specific status */
+  /** Find all transitions from a specific status. */
   List<StatusHistory> findByFromStatusOrderByChangedAtDesc(CustomerStatus fromStatus);
 
-  /** Find transitions between specific statuses */
+  /** Find transitions between specific statuses. */
   @Query(
-      "SELECT sh FROM StatusHistory sh WHERE sh.fromStatus = :fromStatus AND sh.toStatus = :toStatus ORDER BY sh.changedAt DESC")
+      "SELECT sh FROM StatusHistory sh WHERE sh.fromStatus = :fromStatus "
+          + "AND sh.toStatus = :toStatus ORDER BY sh.changedAt DESC")
   List<StatusHistory> findByFromStatusAndToStatusOrderByChangedAtDesc(
       @Param("fromStatus") CustomerStatus fromStatus, @Param("toStatus") CustomerStatus toStatus);
 

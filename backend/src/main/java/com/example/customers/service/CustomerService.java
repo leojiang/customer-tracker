@@ -18,6 +18,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service class for customer operations.
+ *
+ * <p>Provides business logic for customer management, status transitions, and search operations.
+ */
 @Service
 @Transactional
 public class CustomerService {
@@ -26,6 +31,13 @@ public class CustomerService {
   private final StatusHistoryRepository statusHistoryRepository;
   private final StatusTransitionValidator transitionValidator;
 
+  /**
+   * Constructor for CustomerService.
+   *
+   * @param customerRepository customer data repository
+   * @param statusHistoryRepository status history repository
+   * @param transitionValidator status transition validator
+   */
   @Autowired
   public CustomerService(
       CustomerRepository customerRepository,
@@ -36,7 +48,7 @@ public class CustomerService {
     this.transitionValidator = transitionValidator;
   }
 
-  /** Create a new customer */
+  /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
     // Validate phone uniqueness (including soft-deleted records)
     if (customerRepository.findByPhoneIncludingDeleted(customer.getPhone()).isPresent()) {
@@ -58,31 +70,31 @@ public class CustomerService {
     return savedCustomer;
   }
 
-  /** Create a new customer with sales person assignment */
+  /** Create a new customer with sales person assignment. */
   public Customer createCustomer(Customer customer, String salesPhone) {
     customer.setSalesPhone(salesPhone);
     return createCustomer(customer);
   }
 
-  /** Get customer by ID (active only) */
+  /** Get customer by ID (active only). */
   @Transactional(readOnly = true)
   public Optional<Customer> getCustomerById(UUID id) {
     return customerRepository.findById(id);
   }
 
-  /** Get customer by ID including soft-deleted */
+  /** Get customer by ID including soft-deleted. */
   @Transactional(readOnly = true)
   public Optional<Customer> getCustomerByIdIncludingDeleted(UUID id) {
     return customerRepository.findByIdIncludingDeleted(id);
   }
 
-  /** Get customer by phone (active only) */
+  /** Get customer by phone (active only). */
   @Transactional(readOnly = true)
   public Optional<Customer> getCustomerByPhone(String phone) {
     return customerRepository.findByPhone(phone);
   }
 
-  /** Update customer information */
+  /** Update customer information. */
   public Customer updateCustomer(UUID id, Customer updatedCustomer) {
     Customer existingCustomer =
         customerRepository
@@ -113,7 +125,7 @@ public class CustomerService {
     return customerRepository.save(existingCustomer);
   }
 
-  /** Transition customer status with history tracking and validation */
+  /** Transition customer status with history tracking and validation. */
   public Customer transitionStatus(UUID customerId, CustomerStatus toStatus, String reason) {
     Customer customer =
         customerRepository
@@ -139,7 +151,7 @@ public class CustomerService {
     return savedCustomer;
   }
 
-  /** Get status history for a customer */
+  /** Get status history for a customer. */
   @Transactional(readOnly = true)
   public List<StatusHistory> getCustomerStatusHistory(UUID customerId) {
     Customer customer =
@@ -151,7 +163,7 @@ public class CustomerService {
     return statusHistoryRepository.findByCustomerOrderByChangedAtDesc(customer);
   }
 
-  /** Get paginated status history for a customer */
+  /** Get paginated status history for a customer. */
   @Transactional(readOnly = true)
   public Page<StatusHistory> getCustomerStatusHistory(UUID customerId, Pageable pageable) {
     Customer customer =
@@ -164,8 +176,9 @@ public class CustomerService {
   }
 
   /**
-   * Search customers with pagination If only nameQuery is provided, use unified search across
-   * multiple fields
+   * Search customers with pagination.
+   *
+   * <p>If only nameQuery is provided, use unified search across multiple fields.
    */
   @Transactional(readOnly = true)
   public Page<Customer> searchCustomers(
@@ -192,20 +205,20 @@ public class CustomerService {
     return customerRepository.findAll(spec, pageable);
   }
 
-  /** Get all customers for a specific sales person with pagination */
+  /** Get all customers for a specific sales person with pagination. */
   @Transactional(readOnly = true)
   public Page<Customer> getCustomersBySales(String salesPhone, Pageable pageable) {
     Specification<Customer> spec = CustomerSpecifications.hasSalesPhone(salesPhone);
     return customerRepository.findAll(spec, pageable);
   }
 
-  /** Get all customers with pagination (active only) */
+  /** Get all customers with pagination (active only). */
   @Transactional(readOnly = true)
   public Page<Customer> getAllCustomers(Pageable pageable) {
     return customerRepository.findAll(pageable);
   }
 
-  /** Soft delete customer */
+  /** Soft delete customer. */
   public void deleteCustomer(UUID id) {
     Customer customer =
         customerRepository
@@ -223,7 +236,7 @@ public class CustomerService {
         "Customer soft deleted");
   }
 
-  /** Restore soft-deleted customer */
+  /** Restore soft-deleted customer. */
   public Customer restoreCustomer(UUID id) {
     Customer customer =
         customerRepository
@@ -247,14 +260,14 @@ public class CustomerService {
     return restoredCustomer;
   }
 
-  /** Get recently updated customers (within last N days) */
+  /** Get recently updated customers (within last N days). */
   @Transactional(readOnly = true)
   public Page<Customer> getRecentlyUpdatedCustomers(int days, Pageable pageable) {
     ZonedDateTime since = ZonedDateTime.now().minusDays(days);
     return customerRepository.findRecentlyUpdated(since, pageable);
   }
 
-  /** Get customer statistics */
+  /** Get customer statistics. */
   @Transactional(readOnly = true)
   public CustomerStatistics getCustomerStatistics(boolean includeDeleted) {
     CustomerStatistics stats = new CustomerStatistics();
@@ -281,20 +294,20 @@ public class CustomerService {
     return stats;
   }
 
-  /** Check if phone number is available (not taken by any customer, including deleted) */
+  /** Check if phone number is available (not taken by any customer, including deleted). */
   @Transactional(readOnly = true)
   public boolean isPhoneAvailable(String phone) {
     return customerRepository.findByPhoneIncludingDeleted(phone).isEmpty();
   }
 
-  /** Check if phone number is available for customer (excluding the customer's own record) */
+  /** Check if phone number is available for customer (excluding the customer's own record). */
   @Transactional(readOnly = true)
   public boolean isPhoneAvailableForCustomer(String phone, UUID customerId) {
     Optional<Customer> existing = customerRepository.findByPhoneIncludingDeleted(phone);
     return existing.isEmpty() || existing.get().getId().equals(customerId);
   }
 
-  /** Get valid status transitions for a customer */
+  /** Get valid status transitions for a customer. */
   @Transactional(readOnly = true)
   public java.util.Set<CustomerStatus> getValidTransitions(UUID customerId) {
     Customer customer =
@@ -306,7 +319,7 @@ public class CustomerService {
     return transitionValidator.getValidTransitions(customer.getCurrentStatus());
   }
 
-  /** Check if a status transition is valid for a customer */
+  /** Check if a status transition is valid for a customer. */
   @Transactional(readOnly = true)
   public boolean isValidTransition(UUID customerId, CustomerStatus toStatus) {
     Customer customer =

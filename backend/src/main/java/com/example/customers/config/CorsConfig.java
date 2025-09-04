@@ -9,6 +9,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * CORS configuration for cross-origin requests.
+ *
+ * <p>Configures Cross-Origin Resource Sharing settings for the API and Swagger UI.
+ */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
@@ -40,6 +45,11 @@ public class CorsConfig implements WebMvcConfigurer {
         .maxAge(3600);
   }
 
+  /**
+   * Creates CORS configuration source for Spring Security.
+   *
+   * @return CorsConfigurationSource configured CORS source
+   */
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
