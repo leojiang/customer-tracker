@@ -79,6 +79,7 @@ class CustomerControllerTest {
         testCustomer.setGender("Male");
         testCustomer.setLocation("New York");
         testCustomer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
+        testCustomer.setSalesPhone("+9999999999"); // Match the mock authenticated user's phone
         testCustomer.setCreatedAt(ZonedDateTime.now());
         testCustomer.setUpdatedAt(ZonedDateTime.now());
     }
@@ -178,7 +179,7 @@ class CustomerControllerTest {
         request.setBusinessRequirements("Need inventory system");
         request.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
 
-        when(customerService.createCustomer(any(Customer.class))).thenReturn(testCustomer);
+        when(customerService.createCustomer(any(Customer.class), anyString())).thenReturn(testCustomer);
 
         // When & Then
         mockMvc.perform(post("/api/customers")
@@ -188,7 +189,7 @@ class CustomerControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.name").value("John Doe")); // Returns the mock testCustomer
 
-        verify(customerService).createCustomer(any(Customer.class));
+        verify(customerService).createCustomer(any(Customer.class), anyString());
     }
 
     @Test
@@ -199,7 +200,7 @@ class CustomerControllerTest {
         request.setName("Jane Smith");
         request.setPhone("+1234567890");
 
-        when(customerService.createCustomer(any(Customer.class)))
+        when(customerService.createCustomer(any(Customer.class), anyString()))
             .thenThrow(new IllegalArgumentException("Customer with phone +1234567890 already exists"));
 
         // When & Then
@@ -208,7 +209,7 @@ class CustomerControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
 
-        verify(customerService).createCustomer(any(Customer.class));
+        verify(customerService).createCustomer(any(Customer.class), anyString());
     }
 
     @Test
@@ -225,6 +226,8 @@ class CustomerControllerTest {
         updatedCustomer.setName("Updated Name");
         updatedCustomer.setPhone("+1111111111");
 
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.updateCustomer(eq(testCustomerId), any(Customer.class)))
             .thenReturn(updatedCustomer);
 
@@ -247,6 +250,8 @@ class CustomerControllerTest {
         CustomerController.UpdateCustomerRequest request = new CustomerController.UpdateCustomerRequest();
         request.setName("Updated Name");
 
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.empty()); // This will trigger the 404
         when(customerService.updateCustomer(eq(testCustomerId), any(Customer.class)))
             .thenThrow(new EntityNotFoundException("Customer not found"));
 
@@ -256,13 +261,16 @@ class CustomerControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isNotFound());
 
-        verify(customerService).updateCustomer(eq(testCustomerId), any(Customer.class));
+        verify(customerService).getCustomerById(testCustomerId);
+        verify(customerService, never()).updateCustomer(any(), any());
     }
 
     @Test
     @DisplayName("Should delete customer successfully")
     void shouldDeleteCustomerSuccessfully() throws Exception {
         // Given
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         doNothing().when(customerService).deleteCustomer(testCustomerId);
 
         // When & Then
@@ -276,6 +284,8 @@ class CustomerControllerTest {
     @DisplayName("Should return 404 when deleting non-existent customer")
     void shouldReturn404WhenDeletingNonExistentCustomer() throws Exception {
         // Given
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.empty()); // This will trigger the 404
         doThrow(new EntityNotFoundException("Customer not found"))
             .when(customerService).deleteCustomer(testCustomerId);
 
@@ -283,13 +293,16 @@ class CustomerControllerTest {
         mockMvc.perform(delete("/api/customers/{id}", testCustomerId))
             .andExpect(status().isNotFound());
 
-        verify(customerService).deleteCustomer(testCustomerId);
+        verify(customerService).getCustomerById(testCustomerId);
+        verify(customerService, never()).deleteCustomer(any());
     }
 
     @Test
     @DisplayName("Should restore customer successfully")
     void shouldRestoreCustomerSuccessfully() throws Exception {
         // Given
+        when(customerService.getCustomerByIdIncludingDeleted(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.restoreCustomer(testCustomerId)).thenReturn(testCustomer);
 
         // When & Then
@@ -313,6 +326,8 @@ class CustomerControllerTest {
         updatedCustomer.setId(testCustomerId);
         updatedCustomer.setCurrentStatus(CustomerStatus.REPLIED_TO_CUSTOMER);
 
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.transitionStatus(testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER, 
                 "Customer responded positively"))
             .thenReturn(updatedCustomer);
@@ -337,6 +352,8 @@ class CustomerControllerTest {
         request.setToStatus(CustomerStatus.BUSINESS_DONE);
         request.setReason("Invalid transition");
 
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.transitionStatus(testCustomerId, CustomerStatus.BUSINESS_DONE, "Invalid transition"))
             .thenThrow(new IllegalArgumentException("Invalid transition from Customer called to Business done"));
 
@@ -359,6 +376,8 @@ class CustomerControllerTest {
         );
 
         Page<StatusHistory> statusHistoryPage = new PageImpl<>(statusHistory);
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.getCustomerStatusHistory(eq(testCustomerId), any(Pageable.class)))
             .thenReturn(statusHistoryPage);
 
@@ -381,6 +400,8 @@ class CustomerControllerTest {
         // Given
         Set<CustomerStatus> validTransitions = Set.of(CustomerStatus.REPLIED_TO_CUSTOMER, CustomerStatus.LOST);
 
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.getValidTransitions(testCustomerId)).thenReturn(validTransitions);
 
         // When & Then
@@ -397,6 +418,8 @@ class CustomerControllerTest {
     @DisplayName("Should return 404 when getting valid transitions for non-existent customer")
     void shouldReturn404WhenGettingValidTransitionsForNonExistentCustomer() throws Exception {
         // Given
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.empty()); // This will trigger the 404
         when(customerService.getValidTransitions(testCustomerId))
             .thenThrow(new EntityNotFoundException("Customer not found"));
 
@@ -404,13 +427,16 @@ class CustomerControllerTest {
         mockMvc.perform(get("/api/customers/{id}/valid-transitions", testCustomerId))
             .andExpect(status().isNotFound());
 
-        verify(customerService).getValidTransitions(testCustomerId);
+        verify(customerService).getCustomerById(testCustomerId);
+        verify(customerService, never()).getValidTransitions(any());
     }
 
     @Test
     @DisplayName("Should validate transition successfully")
     void shouldValidateTransitionSuccessfully() throws Exception {
         // Given
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.isValidTransition(testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER))
             .thenReturn(true);
 
@@ -428,6 +454,8 @@ class CustomerControllerTest {
     @DisplayName("Should return invalid transition validation")
     void shouldReturnInvalidTransitionValidation() throws Exception {
         // Given
+        when(customerService.getCustomerById(testCustomerId))
+            .thenReturn(Optional.of(testCustomer));
         when(customerService.isValidTransition(testCustomerId, CustomerStatus.BUSINESS_DONE))
             .thenReturn(false);
 
