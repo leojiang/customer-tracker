@@ -3,18 +3,17 @@ package com.example.customers.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
-import java.time.ZonedDateTime;
-import java.util.UUID;
-
 @Entity
-@Table(name = "sales", uniqueConstraints = {
-    @UniqueConstraint(name = "unique_sales_phone", columnNames = "phone")
-})
+@Table(
+    name = "sales",
+    uniqueConstraints = {@UniqueConstraint(name = "unique_sales_phone", columnNames = "phone")})
 @SQLDelete(sql = "UPDATE sales SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class Sales {

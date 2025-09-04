@@ -3,11 +3,10 @@ package com.example.customers.service;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.repository.SalesRepository;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -17,7 +16,8 @@ public class AuthService {
   private final JwtService jwtService;
 
   @Autowired
-  public AuthService(SalesRepository salesRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+  public AuthService(
+      SalesRepository salesRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
     this.salesRepository = salesRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
@@ -25,18 +25,18 @@ public class AuthService {
 
   public Optional<String> login(String phone, String password) {
     Optional<Sales> salesOptional = salesRepository.findByPhone(phone);
-    
+
     if (salesOptional.isEmpty()) {
       return Optional.empty();
     }
-    
+
     Sales sales = salesOptional.get();
-    
+
     if (passwordEncoder.matches(password, sales.getPassword())) {
       String token = jwtService.generateToken(sales);
       return Optional.of(token);
     }
-    
+
     return Optional.empty();
   }
 
@@ -44,11 +44,11 @@ public class AuthService {
     if (salesRepository.existsByPhone(phone)) {
       throw new IllegalArgumentException("Phone number already exists");
     }
-    
+
     String hashedPassword = passwordEncoder.encode(password);
     Sales sales = new Sales(phone, hashedPassword, SalesRole.SALES);
     Sales savedSales = salesRepository.save(sales);
-    
+
     String token = jwtService.generateToken(savedSales);
     return Optional.of(token);
   }

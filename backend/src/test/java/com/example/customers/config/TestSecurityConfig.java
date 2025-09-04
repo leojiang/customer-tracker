@@ -10,13 +10,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @TestConfiguration
 public class TestSecurityConfig {
 
-    @Bean
-    @Primary
-    public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
-        return http
-            .csrf(AbstractHttpConfigurer::disable)
-            .securityMatcher("/**")
-            .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
-            .build();
-    }
+  @Bean
+  @Primary
+  public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
+    return http.csrf(AbstractHttpConfigurer::disable)
+        .securityMatcher("/**")
+        .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
+        .build();
+  }
 }

@@ -7,12 +7,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @Tag(name = "Authentication", description = "Authentication and authorization endpoints")
 @RestController
@@ -31,24 +30,20 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
     Optional<String> tokenOptional = authService.login(request.getPhone(), request.getPassword());
-    
+
     if (tokenOptional.isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(new AuthResponse(null, null, null, "Invalid phone or password"));
     }
-    
+
     String token = tokenOptional.get();
     Optional<Sales> sales = authService.getSalesByPhone(request.getPhone());
-    
+
     if (sales.isPresent()) {
-      return ResponseEntity.ok(new AuthResponse(
-          token,
-          sales.get().getPhone(),
-          sales.get().getRole(),
-          null
-      ));
+      return ResponseEntity.ok(
+          new AuthResponse(token, sales.get().getPhone(), sales.get().getRole(), null));
     }
-    
+
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new AuthResponse(null, null, null, "Login successful but user data not found"));
   }
@@ -60,43 +55,36 @@ public class AuthController {
       return ResponseEntity.badRequest()
           .body(new AuthResponse(null, null, null, "Passwords do not match"));
     }
-    
+
     try {
-      Optional<String> tokenOptional = authService.register(request.getPhone(), request.getPassword());
-      
+      Optional<String> tokenOptional =
+          authService.register(request.getPhone(), request.getPassword());
+
       if (tokenOptional.isPresent()) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new AuthResponse(
-                tokenOptional.get(),
-                request.getPhone(),
-                SalesRole.SALES,
-                null
-            ));
+            .body(new AuthResponse(tokenOptional.get(), request.getPhone(), SalesRole.SALES, null));
       }
-      
+
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(new AuthResponse(null, null, null, "Registration failed"));
-      
+
     } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, e.getMessage()));
+      return ResponseEntity.badRequest().body(new AuthResponse(null, null, null, e.getMessage()));
     }
   }
 
   @Operation(summary = "Validate JWT token")
   @PostMapping("/validate")
-  public ResponseEntity<AuthResponse> validateToken(@Valid @RequestBody ValidateTokenRequest request) {
+  public ResponseEntity<AuthResponse> validateToken(
+      @Valid @RequestBody ValidateTokenRequest request) {
     Optional<Sales> sales = authService.validateToken(request.getToken());
-    
+
     if (sales.isPresent()) {
-      return ResponseEntity.ok(new AuthResponse(
-          request.getToken(),
-          sales.get().getPhone(),
-          sales.get().getRole(),
-          null
-      ));
+      return ResponseEntity.ok(
+          new AuthResponse(
+              request.getToken(), sales.get().getPhone(), sales.get().getRole(), null));
     }
-    
+
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         .body(new AuthResponse(null, null, null, "Invalid or expired token"));
   }
@@ -105,7 +93,7 @@ public class AuthController {
   public static class LoginRequest {
     @NotBlank(message = "Phone number is required")
     private String phone;
-    
+
     @NotBlank(message = "Password is required")
     private String password;
 
@@ -129,10 +117,10 @@ public class AuthController {
   public static class RegisterRequest {
     @NotBlank(message = "Phone number is required")
     private String phone;
-    
+
     @NotBlank(message = "Password is required")
     private String password;
-    
+
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
 

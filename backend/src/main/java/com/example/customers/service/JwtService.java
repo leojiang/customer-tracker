@@ -4,16 +4,15 @@ import com.example.customers.model.Sales;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
@@ -41,8 +40,7 @@ public class JwtService {
   }
 
   public String generateToken(Map<String, Object> extraClaims, String phone) {
-    return Jwts
-        .builder()
+    return Jwts.builder()
         .setClaims(extraClaims)
         .setSubject(phone)
         .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -65,11 +63,7 @@ public class JwtService {
   }
 
   private Claims extractAllClaims(String token) {
-    return Jwts
-        .parser()
-        .setSigningKey(getSignInKey())
-        .parseClaimsJws(token)
-        .getBody();
+    return Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
   }
 
   private Key getSignInKey() {
