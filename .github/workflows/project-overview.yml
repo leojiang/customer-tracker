@@ -1,0 +1,93 @@
+name: Project Overview CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'backend/**'
+      - 'frontend/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'backend/**'
+      - 'frontend/**'
+
+jobs:
+  project-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate project structure
+      run: |
+        echo "🔍 Validating project structure..."
+        
+        # Check required directories
+        if [ ! -d "backend" ]; then
+          echo "❌ Backend directory missing"
+          exit 1
+        fi
+        
+        if [ ! -d "frontend" ]; then
+          echo "❌ Frontend directory missing"
+          exit 1
+        fi
+        
+        if [ ! -d "docs" ]; then
+          echo "❌ Documentation directory missing"
+          exit 1
+        fi
+        
+        # Check required files
+        required_files=(
+          "README.md"
+          ".gitignore"
+          "start-all.sh"
+          "backend/pom.xml"
+          "frontend/package.json"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Required file missing: $file"
+            exit 1
+          fi
+        done
+        
+        echo "✅ Project structure validation passed"
+
+    - name: Check shell scripts syntax
+      run: |
+        echo "🔍 Checking shell scripts..."
+        shellcheck start-*.sh stop-*.sh || true
+        echo "✅ Shell scripts check completed"
+
+    - name: Validate documentation
+      run: |
+        echo "🔍 Validating documentation..."
+        
+        if [ ! -s "README.md" ]; then
+          echo "❌ README.md is empty"
+          exit 1
+        fi
+        
+        # Check if README contains key sections
+        if ! grep -q "## 🌟 Key Features" README.md; then
+          echo "⚠️ README.md missing Key Features section"
+        fi
+        
+        if ! grep -q "## 🚀 Quick Start" README.md; then
+          echo "⚠️ README.md missing Quick Start section"
+        fi
+        
+        echo "✅ Documentation validation completed"
+
+    - name: Generate project summary
+      run: |
+        echo "📊 Project Summary:"
+        echo "- Backend files: $(find backend -name '*.java' | wc -l) Java files"
+        echo "- Frontend files: $(find frontend -name '*.tsx' -o -name '*.ts' | wc -l) TypeScript files"
+        echo "- Documentation files: $(find docs -name '*.md' | wc -l) Markdown files"
+        echo "- Total lines of code: $(find . -name '*.java' -o -name '*.ts' -o -name '*.tsx' | xargs wc -l | tail -n 1)"

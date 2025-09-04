@@ -1,5 +1,9 @@
 # Customer Call-Through and Status Tracking System
 
+[![Backend CI/CD](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/backend-ci.yml)
+[![Frontend CI/CD](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/frontend-ci.yml)
+[![Project Overview CI](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/project-overview.yml/badge.svg)](https://github.com/YOUR_USERNAME/customer-tracker/actions/workflows/project-overview.yml)
+
 A comprehensive **Customer Relationship Management (CRM) system** designed specifically for sales teams to manage customer interactions, track status transitions, and maintain complete audit trails. This production-ready MVP features intelligent status management, role-based access control, and a professional Material Design interface.
 
 ![Technology Stack](https://img.shields.io/badge/Java-17-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.2-green) ![Next.js](https://img.shields.io/badge/Next.js-14-black) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)
@@ -194,6 +198,44 @@ JWT_EXPIRATION=86400000
 SERVER_PORT=8080
 FRONTEND_PORT=3000
 ```
+
+## 🔄 CI/CD Pipelines
+
+This project uses **GitHub Actions** for continuous integration and deployment with separate workflows for backend and frontend:
+
+### **Backend CI/CD Pipeline** (`backend-ci.yml`)
+- **Triggers**: Changes to `backend/` directory
+- **Services**: PostgreSQL 15 test database
+- **Steps**:
+  - ✅ Java 17 setup with Maven caching
+  - ✅ Database connectivity testing
+  - ✅ Unit & integration tests (72+ tests)
+  - ✅ Code style validation (Spotless)
+  - ✅ Checkstyle compliance
+  - ✅ Build JAR artifacts
+  - 📊 Test reporting with JUnit results
+
+### **Frontend CI/CD Pipeline** (`frontend-ci.yml`)
+- **Triggers**: Changes to `frontend/` directory  
+- **Steps**:
+  - ✅ Node.js 18 setup with npm caching
+  - ✅ ESLint code quality checks
+  - ✅ TypeScript compilation validation
+  - ✅ Next.js production build
+  - ✅ Build artifact upload
+  - 🚀 Lighthouse performance testing (PRs only)
+
+### **Project Overview CI** (`project-overview.yml`)
+- **Triggers**: Changes to root files, documentation
+- **Validation**: Project structure, shell scripts, documentation completeness
+
+**CI/CD Features:**
+- 🔀 **Path-based triggering** - Only runs when relevant files change
+- 🏗️ **Parallel execution** - Backend and frontend pipelines run independently  
+- 📦 **Artifact management** - Build outputs saved for deployment
+- 🧪 **Comprehensive testing** - Unit tests, code quality, type checking
+- 📊 **Detailed reporting** - Test results and coverage reports
+- 🚀 **Ready for deployment** - Prepared for Docker, Vercel, AWS, etc.
 
 ## 🛣️ Roadmap
 
