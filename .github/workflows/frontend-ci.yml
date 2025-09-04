@@ -40,25 +40,18 @@ jobs:
         ls -la frontend/node_modules/ | head -10 || echo "No node_modules in frontend/"
 
     - name: Run ESLint
-      run: |
-        cd frontend
-        npm run lint
+      run: npm run --workspace=frontend lint
 
     - name: Run TypeScript check
-      run: |
-        cd frontend
-        npm run type-check
+      run: npm run --workspace=frontend type-check
 
     - name: Run tests (when available)
       run: |
-        cd frontend
-        # npm run test -- --coverage --watchAll=false
+        # npm run --workspace=frontend test -- --coverage --watchAll=false
         echo "Frontend tests will run here when test suite is added"
 
     - name: Build application
-      run: |
-        cd frontend
-        npm run build
+      run: npm run --workspace=frontend build
       env:
         NEXT_PUBLIC_API_URL: http://localhost:8080/api
 
@@ -89,9 +82,7 @@ jobs:
       run: npm ci
 
     - name: Build for production
-      run: |
-        cd frontend
-        npm run build
+      run: npm run --workspace=frontend build
       env:
         NEXT_PUBLIC_API_URL: ${{ secrets.API_URL || 'http://localhost:8080/api' }}
 
@@ -149,14 +140,12 @@ jobs:
       run: npm ci
 
     - name: Build application
-      run: |
-        cd frontend
-        npm run build
+      run: npm run --workspace=frontend build
 
     - name: Run Lighthouse CI
       run: |
-        cd frontend
         npm install -g @lhci/cli@0.12.x
+        cd frontend
         lhci autorun
       env:
         LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
