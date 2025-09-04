@@ -1,7 +1,10 @@
 package com.example.customers.controller;
 
+import com.example.customers.config.TestSecurityConfig;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
+import com.example.customers.model.Sales;
+import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +15,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithSecurityContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +36,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CustomerController.class)
+@WebMvcTest(controllers = CustomerController.class, excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+    com.example.customers.security.JwtAuthenticationFilter.class
+}))
+@Import(TestSecurityConfig.class)
 @DisplayName("Customer Controller Tests")
 class CustomerControllerTest {
 
@@ -44,6 +57,15 @@ class CustomerControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Set up mock authenticated user
+        Sales mockSales = new Sales();
+        mockSales.setId(UUID.randomUUID());
+        mockSales.setPhone("+9999999999");
+        mockSales.setRole(SalesRole.ADMIN);
+        
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken(mockSales, null, "ADMIN");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        
         testCustomerId = UUID.randomUUID();
         testCustomer = new Customer();
         testCustomer.setId(testCustomerId);
