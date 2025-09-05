@@ -82,15 +82,16 @@ export default function StatusDistributionChart({
   // Chart options
   const options: ChartOptions<'doughnut'> = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
     plugins: {
       legend: {
-        position: 'right' as const,
+        position: 'bottom' as const,
         labels: {
           usePointStyle: true,
-          padding: 20,
+          padding: 15,
           font: {
-            size: 12,
+            size: 11,
             family: 'Inter, sans-serif',
           },
         },
@@ -134,7 +135,7 @@ export default function StatusDistributionChart({
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <div className="animate-pulse">
           <div className="h-5 bg-gray-200 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded mb-4"></div>
+          <div className="h-80 bg-gray-200 rounded mb-4"></div>
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="text-center">
@@ -152,7 +153,7 @@ export default function StatusDistributionChart({
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-64 text-red-500">
+        <div className="flex items-center justify-center h-80 text-red-500">
           <div className="text-center">
             <p className="mb-2">Error loading chart</p>
             <p className="text-sm text-gray-500">{error}</p>
@@ -166,7 +167,7 @@ export default function StatusDistributionChart({
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-64 text-gray-500">
+        <div className="flex items-center justify-center h-80 text-gray-500">
           <p>No data available</p>
         </div>
       </div>
@@ -182,20 +183,20 @@ export default function StatusDistributionChart({
         </span>
       </div>
       
-      <div className="relative h-64">
+      <div className="relative h-80">
         <Doughnut 
           ref={chartRef}
           data={chartData} 
           options={options} 
         />
         
-        {/* Center label showing total */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Center label showing total - positioned over the chart area only */}
+        <div className="absolute top-6 left-0 right-0 h-64 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 leading-tight">
               {totalCustomers.toLocaleString()}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs text-gray-500 leading-tight mt-1">
               Total Customers
             </div>
           </div>
