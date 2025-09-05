@@ -6,6 +6,27 @@
 
 **⚠️ CRITICAL**: Always run these checks locally before pushing code to prevent CI/CD failures and maintain enterprise-grade code quality.
 
+### **🔧 Two Options Available:**
+
+#### **📝 Option 1: Manual Execution (Current Default)**
+```bash
+# Run quality checks manually before each push
+./scripts/quality-check.sh     # Quick verification
+./scripts/pre-push.sh          # Comprehensive verification
+git push origin branch-name    # Normal git push
+```
+
+#### **🤖 Option 2: Automatic Execution (Recommended for Teams)**
+```bash
+# Install git hooks for automatic quality checking
+./scripts/install-git-hooks.sh
+
+# After installation, quality checks run automatically:
+git push origin branch-name    # Automatically runs quality checks
+```
+
+**🎯 Recommended**: Use automatic execution for team development to ensure no one accidentally pushes code without quality checks.
+
 ### **📱 Frontend Pre-Push Checklist**
 
 #### **🔧 Required Commands**
