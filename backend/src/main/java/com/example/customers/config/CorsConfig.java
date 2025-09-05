@@ -21,7 +21,11 @@ public class CorsConfig implements WebMvcConfigurer {
   public void addCorsMappings(CorsRegistry registry) {
     registry
         .addMapping("/api/**")
-        .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*", "https://localhost:*", "https://127.0.0.1:*")
+        .allowedOriginPatterns(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*")
         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .allowedHeaders("*")
         .allowCredentials(false)
@@ -54,8 +58,13 @@ public class CorsConfig implements WebMvcConfigurer {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOriginPatterns(
-        Arrays.asList("http://localhost:*", "http://127.0.0.1:*", "https://localhost:*", "https://127.0.0.1:*"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        Arrays.asList(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*"));
+    configuration.setAllowedMethods(
+        Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
     configuration.setAllowCredentials(false);
     configuration.setMaxAge(3600L);
