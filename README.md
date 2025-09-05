@@ -115,16 +115,16 @@ Sales User:
 ### **Run Individual Services**
 ```bash
 # Database only
-./start-database.sh
+./scripts/start-database.sh
 
 # Backend API (port 8080)  
-./start-backend.sh
+./scripts/start-backend.sh
 
 # Frontend UI (port 3000)
-./start-frontend.sh
+./scripts/start-frontend.sh
 
 # Stop all services
-./stop-all.sh
+./scripts/stop-all.sh
 ```
 
 ### **Development Commands**

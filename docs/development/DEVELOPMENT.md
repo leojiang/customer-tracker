@@ -126,7 +126,7 @@ git clone git@github.com:leojiang/customer-tracker.git
 cd customer-tracker
 
 # Make scripts executable
-chmod +x *.sh
+chmod +x scripts/*.sh
 
 # Install frontend dependencies
 cd frontend && npm install && cd ..
@@ -147,15 +147,15 @@ The backend is pre-configured for local development with PostgreSQL.
 ### **4. Start Application**
 ```bash
 # Start all services (database + backend + frontend)
-./start-all.sh
+./scripts/start-all.sh
 
 # Or start individually
-./start-database.sh   # PostgreSQL container
-./start-backend.sh    # Spring Boot API  
-./start-frontend.sh   # Next.js UI
+./scripts/start-database.sh   # PostgreSQL container
+./scripts/start-backend.sh    # Spring Boot API  
+./scripts/start-frontend.sh   # Next.js UI
 
 # Stop all services
-./stop-all.sh
+./scripts/stop-all.sh
 ```
 
 ### **5. Verify Installation**
