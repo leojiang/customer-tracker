@@ -99,7 +99,7 @@ export const customerApi = {
 
   async updateCustomer(id: string, customer: UpdateCustomerRequest): Promise<Customer> {
     return fetchApi<Customer>(`/customers/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(customer),
     });
   },
