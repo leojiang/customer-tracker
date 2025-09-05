@@ -44,7 +44,7 @@ jobs:
         required_files=(
           "README.md"
           ".gitignore"
-          "start-all.sh"
+          "scripts/start-all.sh"
           "backend/pom.xml"
           "frontend/package.json"
         )
@@ -61,7 +61,7 @@ jobs:
     - name: Check shell scripts syntax
       run: |
         echo "🔍 Checking shell scripts..."
-        shellcheck start-*.sh stop-*.sh || true
+        shellcheck scripts/start-*.sh scripts/stop-*.sh || true
         echo "✅ Shell scripts check completed"
 
     - name: Validate documentation
