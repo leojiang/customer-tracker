@@ -96,28 +96,23 @@ public interface CustomerRepository
   List<Object[]> countCustomersByStatusForSales(@Param("salesPhone") String salesPhone);
 
   /** Count conversions (BUSINESS_DONE status). */
-  @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = 'BUSINESS_DONE'")
-  long countTotalConversions();
+  long countByCurrentStatusAndDeletedAtIsNull(CustomerStatus currentStatus);
 
   /** Count conversions for specific sales person. */
-  @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = 'BUSINESS_DONE' AND c.salesPhone = :salesPhone")
-  long countConversionsBySales(@Param("salesPhone") String salesPhone);
+  long countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(CustomerStatus currentStatus, String salesPhone);
 
   /** Count conversions in date range. */
   @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = 'BUSINESS_DONE' AND c.createdAt BETWEEN :startDate AND :endDate")
+      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = :status AND c.createdAt BETWEEN :startDate AND :endDate")
   long countConversionsInPeriod(
-      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+      @Param("status") CustomerStatus status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
   /** Count conversions in date range for specific sales person. */
   @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = 'BUSINESS_DONE' AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate")
+      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = :status AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate")
   long countConversionsInPeriodBySales(
-      @Param("salesPhone") String salesPhone,
-      @Param("startDate") LocalDateTime startDate,
-      @Param("endDate") LocalDateTime endDate);
+      @Param("status") CustomerStatus status, @Param("salesPhone") String salesPhone,
+      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
   /** Get customer acquisition trends by date. */
   @Query(
