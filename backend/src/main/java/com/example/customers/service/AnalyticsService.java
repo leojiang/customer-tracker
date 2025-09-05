@@ -10,7 +10,6 @@ import com.example.customers.controller.AnalyticsController.StatusDistributionRe
 import com.example.customers.controller.AnalyticsController.TrendAnalysisResponse;
 import com.example.customers.controller.AnalyticsController.TrendDataPoint;
 import com.example.customers.model.CustomerStatus;
-import com.example.customers.model.SalesRole;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
@@ -31,8 +30,8 @@ import org.springframework.stereotype.Service;
 /**
  * Service for analytics and dashboard operations.
  *
- * <p>Provides business logic for dashboard metrics, performance tracking, and data aggregation
- * with role-based data filtering.
+ * <p>Provides business logic for dashboard metrics, performance tracking, and data aggregation with
+ * role-based data filtering.
  */
 @Service
 public class AnalyticsService {
@@ -64,39 +63,40 @@ public class AnalyticsService {
     LocalDateTime previousStartDate = startDate.minusDays(days);
 
     // Current period metrics
-    long totalCustomers = (salesPhone != null) 
-        ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-        : customerRepository.countTotalActiveCustomers();
-        
-    long newCustomersThisPeriod = (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDate, endDate)
-        : customerRepository.countNewCustomersInPeriod(startDate, endDate);
-        
+    long totalCustomers =
+        (salesPhone != null)
+            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
+            : customerRepository.countTotalActiveCustomers();
+
+    long newCustomersThisPeriod =
+        (salesPhone != null)
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDate, endDate)
+            : customerRepository.countNewCustomersInPeriod(startDate, endDate);
+
     long activeCustomers = getActiveCustomers(salesPhone);
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
     // Previous period metrics for comparison
-    long newCustomersPreviousPeriod = (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, previousStartDate, startDate)
-        : customerRepository.countNewCustomersInPeriod(previousStartDate, startDate);
-        
+    long newCustomersPreviousPeriod =
+        (salesPhone != null)
+            ? customerRepository.countNewCustomersInPeriodBySales(
+                salesPhone, previousStartDate, startDate)
+            : customerRepository.countNewCustomersInPeriod(previousStartDate, startDate);
+
     long previousTotalCustomers = totalCustomers - newCustomersThisPeriod;
     BigDecimal previousConversionRate = calculateConversionRate(salesPhone, previousTotalCustomers);
 
     // Calculate period changes
-    PeriodChange periodChange = calculatePeriodChange(
-        totalCustomers, 
-        newCustomersThisPeriod, 
-        newCustomersPreviousPeriod,
-        conversionRate, 
-        previousConversionRate);
+    PeriodChange periodChange =
+        calculatePeriodChange(
+            totalCustomers,
+            newCustomersThisPeriod,
+            newCustomersPreviousPeriod,
+            conversionRate,
+            previousConversionRate);
 
     return new DashboardOverviewResponse(
-        totalCustomers,
-        newCustomersThisPeriod,
-        activeCustomers,
-        conversionRate,
-        periodChange);
+        totalCustomers, newCustomersThisPeriod, activeCustomers, conversionRate, periodChange);
   }
 
   /**
@@ -106,13 +106,14 @@ public class AnalyticsService {
    * @return Status distribution data
    */
   public StatusDistributionResponse getStatusDistribution(String salesPhone) {
-    List<Object[]> results = (salesPhone != null)
-        ? customerRepository.countCustomersByStatusForSales(salesPhone)
-        : customerRepository.countCustomersByStatus();
-    
+    List<Object[]> results =
+        (salesPhone != null)
+            ? customerRepository.countCustomersByStatusForSales(salesPhone)
+            : customerRepository.countCustomersByStatus();
+
     Map<String, Long> statusCounts = new HashMap<>();
     long totalCustomers = 0;
-    
+
     for (Object[] row : results) {
       CustomerStatus status = (CustomerStatus) row[0];
       Long count = ((Number) row[1]).longValue();
@@ -135,23 +136,25 @@ public class AnalyticsService {
     LocalDateTime endDate = LocalDateTime.now();
     LocalDateTime startDate = endDate.minusDays(days);
 
-    List<Object[]> results = (salesPhone != null)
-        ? customerRepository.getCustomerTrendsByDateForSales(salesPhone, startDate, endDate)
-        : customerRepository.getCustomerTrendsByDate(startDate, endDate);
-    
+    List<Object[]> results =
+        (salesPhone != null)
+            ? customerRepository.getCustomerTrendsByDateForSales(salesPhone, startDate, endDate)
+            : customerRepository.getCustomerTrendsByDate(startDate, endDate);
+
     List<TrendDataPoint> dataPoints = new ArrayList<>();
-    long runningTotal = (salesPhone != null)
-        ? customerRepository.countCustomersCreatedBeforeForSales(salesPhone, startDate)
-        : customerRepository.countCustomersCreatedBefore(startDate);
-    
+    long runningTotal =
+        (salesPhone != null)
+            ? customerRepository.countCustomersCreatedBeforeForSales(salesPhone, startDate)
+            : customerRepository.countCustomersCreatedBefore(startDate);
+
     for (Object[] row : results) {
       LocalDate date = ((Date) row[0]).toLocalDate();
       Long newCustomers = ((Number) row[1]).longValue();
       runningTotal += newCustomers;
-      
+
       // For simplicity, use overall conversion rate - could be enhanced to calculate per-date
       BigDecimal conversionRateAtDate = calculateConversionRate(salesPhone, runningTotal);
-      
+
       dataPoints.add(new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate));
     }
 
@@ -168,18 +171,23 @@ public class AnalyticsService {
   public SalesPerformanceResponse getSalesPerformance(String salesPhone, int days) {
     LocalDateTime startDate = LocalDateTime.now().minusDays(days);
 
-    long totalCustomers = (salesPhone != null)
-        ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-        : customerRepository.countTotalActiveCustomers();
-        
-    long newCustomers = (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDate, LocalDateTime.now())
-        : customerRepository.countNewCustomersInPeriod(startDate, LocalDateTime.now());
-        
-    long conversions = (salesPhone != null)
-        ? customerRepository.countConversionsInPeriodBySales(salesPhone, startDate, LocalDateTime.now())
-        : customerRepository.countConversionsInPeriod(startDate, LocalDateTime.now());
-        
+    long totalCustomers =
+        (salesPhone != null)
+            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
+            : customerRepository.countTotalActiveCustomers();
+
+    long newCustomers =
+        (salesPhone != null)
+            ? customerRepository.countNewCustomersInPeriodBySales(
+                salesPhone, startDate, LocalDateTime.now())
+            : customerRepository.countNewCustomersInPeriod(startDate, LocalDateTime.now());
+
+    long conversions =
+        (salesPhone != null)
+            ? customerRepository.countConversionsInPeriodBySales(
+                salesPhone, startDate, LocalDateTime.now())
+            : customerRepository.countConversionsInPeriod(startDate, LocalDateTime.now());
+
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
     // Get status breakdown
@@ -203,20 +211,20 @@ public class AnalyticsService {
    */
   public LeaderboardResponse getSalesLeaderboard(int days, String metric) {
     LocalDateTime startDate = LocalDateTime.now().minusDays(days);
-    
+
     List<Object[]> results = salesRepository.getSalesLeaderboardData(startDate, metric);
-    
+
     List<SalesPerformanceEntry> rankings = new ArrayList<>();
     int rank = 1;
-    
+
     for (Object[] row : results) {
       String phone = (String) row[0];
       Long totalCustomers = ((Number) row[1]).longValue();
       Long conversions = ((Number) row[2]).longValue();
       BigDecimal conversionRate = (BigDecimal) row[3];
-      
-      rankings.add(new SalesPerformanceEntry(
-          phone, totalCustomers, conversions, conversionRate, rank++));
+
+      rankings.add(
+          new SalesPerformanceEntry(phone, totalCustomers, conversions, conversionRate, rank++));
     }
 
     return new LeaderboardResponse(rankings, days, metric);
@@ -232,17 +240,20 @@ public class AnalyticsService {
     LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
     LocalDateTime now = LocalDateTime.now();
 
-    long activeCustomersToday = (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
-        : customerRepository.countNewCustomersInPeriod(startOfDay, now);
-        
-    long newCustomersToday = (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
-        : customerRepository.countNewCustomersInPeriod(startOfDay, now);
-        
-    long conversionsToday = (salesPhone != null)
-        ? customerRepository.countConversionsInPeriodBySales(salesPhone, startOfDay, now)
-        : customerRepository.countConversionsInPeriod(startOfDay, now);
+    long activeCustomersToday =
+        (salesPhone != null)
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
+            : customerRepository.countNewCustomersInPeriod(startOfDay, now);
+
+    long newCustomersToday =
+        (salesPhone != null)
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
+            : customerRepository.countNewCustomersInPeriod(startOfDay, now);
+
+    long conversionsToday =
+        (salesPhone != null)
+            ? customerRepository.countConversionsInPeriodBySales(salesPhone, startOfDay, now)
+            : customerRepository.countConversionsInPeriod(startOfDay, now);
 
     String lastUpdated = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
@@ -263,11 +274,12 @@ public class AnalyticsService {
     if (totalCustomers == 0) {
       return BigDecimal.ZERO;
     }
-    
-    long conversions = (salesPhone != null)
-        ? customerRepository.countConversionsBySales(salesPhone)
-        : customerRepository.countTotalConversions();
-    
+
+    long conversions =
+        (salesPhone != null)
+            ? customerRepository.countConversionsBySales(salesPhone)
+            : customerRepository.countTotalConversions();
+
     return BigDecimal.valueOf(conversions)
         .multiply(BigDecimal.valueOf(100))
         .divide(BigDecimal.valueOf(totalCustomers), 2, RoundingMode.HALF_UP);
@@ -276,44 +288,47 @@ public class AnalyticsService {
   private long getActiveCustomers(String salesPhone) {
     // Define active customers as those with recent status changes (last 30 days)
     LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-    
+
     // For now, use simplified logic - active customers are those created recently
     // This could be enhanced with a proper StatusHistory repository method
     return (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, thirtyDaysAgo, LocalDateTime.now())
+        ? customerRepository.countNewCustomersInPeriodBySales(
+            salesPhone, thirtyDaysAgo, LocalDateTime.now())
         : customerRepository.countNewCustomersInPeriod(thirtyDaysAgo, LocalDateTime.now());
   }
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {
-    List<Object[]> results = (salesPhone != null)
-        ? customerRepository.countCustomersByStatusForSales(salesPhone)
-        : customerRepository.countCustomersByStatus();
-        
+    List<Object[]> results =
+        (salesPhone != null)
+            ? customerRepository.countCustomersByStatusForSales(salesPhone)
+            : customerRepository.countCustomersByStatus();
+
     Map<String, Long> breakdown = new HashMap<>();
-    
+
     for (Object[] row : results) {
       CustomerStatus status = (CustomerStatus) row[0];
       Long count = ((Number) row[1]).longValue();
       breakdown.put(status.name(), count);
     }
-    
+
     return breakdown;
   }
 
   private PeriodChange calculatePeriodChange(
       long totalCustomers,
       long newCustomersThisPeriod,
-      long newCustomersPreviousPeriod, 
+      long newCustomersPreviousPeriod,
       BigDecimal conversionRate,
       BigDecimal previousConversionRate) {
 
-    BigDecimal totalCustomersChange = calculatePercentageChange(
-        totalCustomers - newCustomersThisPeriod, totalCustomers);
-    BigDecimal newCustomersChange = calculatePercentageChange(
-        newCustomersPreviousPeriod, newCustomersThisPeriod);
-    BigDecimal conversionRateChange = previousConversionRate.compareTo(BigDecimal.ZERO) == 0 
-        ? BigDecimal.ZERO 
-        : conversionRate.subtract(previousConversionRate);
+    BigDecimal totalCustomersChange =
+        calculatePercentageChange(totalCustomers - newCustomersThisPeriod, totalCustomers);
+    BigDecimal newCustomersChange =
+        calculatePercentageChange(newCustomersPreviousPeriod, newCustomersThisPeriod);
+    BigDecimal conversionRateChange =
+        previousConversionRate.compareTo(BigDecimal.ZERO) == 0
+            ? BigDecimal.ZERO
+            : conversionRate.subtract(previousConversionRate);
 
     return new PeriodChange(totalCustomersChange, newCustomersChange, conversionRateChange);
   }

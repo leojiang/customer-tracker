@@ -29,33 +29,35 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
   // ========== Analytics Query Methods ==========
 
   /** Get sales leaderboard data with customer and conversion metrics. */
-  @Query("""
+  @Query(
+      """
     SELECT s.phone,
            COUNT(DISTINCT c.id) as totalCustomers,
            COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) as conversions,
-           CASE 
-             WHEN COUNT(DISTINCT c.id) > 0 
+           CASE
+             WHEN COUNT(DISTINCT c.id) > 0
              THEN ROUND(COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id), 2)
-             ELSE 0 
+             ELSE 0
            END as conversionRate
     FROM Sales s
-    LEFT JOIN Customer c ON s.phone = c.salesPhone 
-        AND c.createdAt >= :startDate 
+    LEFT JOIN Customer c ON s.phone = c.salesPhone
+        AND c.createdAt >= :startDate
         AND c.deletedAt IS NULL
     WHERE s.role = 'SALES'
     GROUP BY s.phone
-    ORDER BY 
-      CASE 
+    ORDER BY
+      CASE
         WHEN :metric = 'customers' THEN COUNT(DISTINCT c.id)
-        WHEN :metric = 'rate' THEN 
-          CASE 
-            WHEN COUNT(DISTINCT c.id) > 0 
+        WHEN :metric = 'rate' THEN
+          CASE
+            WHEN COUNT(DISTINCT c.id) > 0
             THEN COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id)
-            ELSE 0 
+            ELSE 0
           END
         ELSE COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END)
       END DESC,
       COUNT(DISTINCT c.id) DESC
     """)
-  List<Object[]> getSalesLeaderboardData(@Param("startDate") LocalDateTime startDate, @Param("metric") String metric);
+  List<Object[]> getSalesLeaderboardData(
+      @Param("startDate") LocalDateTime startDate, @Param("metric") String metric);
 }

@@ -88,8 +88,7 @@ public class AnalyticsController {
   public ResponseEntity<StatusDistributionResponse> getStatusDistribution() {
 
     String salesPhone = getCurrentUserSalesPhone();
-    StatusDistributionResponse distribution =
-        analyticsService.getStatusDistribution(salesPhone);
+    StatusDistributionResponse distribution = analyticsService.getStatusDistribution(salesPhone);
     return ResponseEntity.ok(distribution);
   }
 
@@ -98,9 +97,7 @@ public class AnalyticsController {
       description = "Retrieve customer acquisition trends over time with configurable granularity")
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Customer trends retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Customer trends retrieved successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/customers/trends")
@@ -139,8 +136,7 @@ public class AnalyticsController {
           int days) {
 
     String salesPhone = getCurrentUserSalesPhone();
-    SalesPerformanceResponse performance =
-        analyticsService.getSalesPerformance(salesPhone, days);
+    SalesPerformanceResponse performance = analyticsService.getSalesPerformance(salesPhone, days);
     return ResponseEntity.ok(performance);
   }
 
@@ -149,9 +145,7 @@ public class AnalyticsController {
       description = "Retrieve sales team performance rankings and comparisons")
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Leaderboard retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Leaderboard retrieved successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Admin access required")
       })
@@ -161,7 +155,9 @@ public class AnalyticsController {
       @Parameter(description = "Number of days for analysis", example = "30")
           @RequestParam(defaultValue = "30")
           int days,
-      @Parameter(description = "Ranking metric: customers, conversions, rate", example = "conversions")
+      @Parameter(
+              description = "Ranking metric: customers, conversions, rate",
+              example = "conversions")
           @RequestParam(defaultValue = "conversions")
           String metric) {
 
@@ -410,8 +406,7 @@ public class AnalyticsController {
     private int totalDays;
     private String metric;
 
-    public LeaderboardResponse(
-        List<SalesPerformanceEntry> rankings, int totalDays, String metric) {
+    public LeaderboardResponse(List<SalesPerformanceEntry> rankings, int totalDays, String metric) {
       this.rankings = rankings;
       this.totalDays = totalDays;
       this.metric = metric;
