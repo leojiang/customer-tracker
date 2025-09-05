@@ -122,8 +122,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   />
                 </div>
               </div>
-              <button type="submit" className="btn-primary md:w-auto">
-                <Search size={18} className="mr-2" />
+              <button type="submit" className="btn-primary md:w-auto flex items-center justify-center gap-2">
+                <Search size={18} />
                 Search
               </button>
             </div>
