@@ -6,6 +6,7 @@ import { authApi } from '@/lib/api';
 
 interface AuthContextType {
   user: Sales | null;
+  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (credentials: LoginRequest) => Promise<{ success: boolean; error?: string }>;
@@ -21,23 +22,25 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<Sales | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && !!token;
 
   // Check for existing token on app start
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          const response = await authApi.validateToken({ token });
+        const storedToken = localStorage.getItem('auth_token');
+        if (storedToken) {
+          const response = await authApi.validateToken({ token: storedToken });
           if (response.token && response.phone && response.role) {
             const userData: Sales = {
               phone: response.phone,
               role: response.role,
             };
             setUser(userData);
+            setToken(storedToken);
             localStorage.setItem('user_data', JSON.stringify(userData));
           } else {
             // Invalid token, clear it
@@ -71,6 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
         
         setUser(userData);
+        setToken(response.token);
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('user_data', JSON.stringify(userData));
         
@@ -104,6 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
         
         setUser(userData);
+        setToken(response.token);
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('user_data', JSON.stringify(userData));
         
@@ -123,11 +128,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     authApi.logout();
   };
 
   const value: AuthContextType = {
     user,
+    token,
     isLoading,
     isAuthenticated,
     login,

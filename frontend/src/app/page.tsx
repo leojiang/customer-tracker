@@ -8,7 +8,8 @@ import CustomerForm from '@/components/customers/CustomerForm';
 
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, Shield } from 'lucide-react';
+import { LogOut, User, Shield, BarChart3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type View = 'list' | 'detail' | 'create';
 
@@ -17,6 +18,7 @@ export default function HomePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -58,8 +60,15 @@ export default function HomePage() {
                 </div>
               </div>
               
-              {/* User Info and Logout */}
+              {/* Navigation and User Info */}
               <div className="flex items-center gap-4">
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="btn-outline flex items-center gap-2 text-sm py-2 px-3"
+                >
+                  <BarChart3 size={16} />
+                  Dashboard
+                </button>
                 <div className="flex items-center gap-2 px-3 py-2 bg-surface-100 rounded-lg">
                   {user?.role === 'ADMIN' ? (
                     <Shield size={16} className="text-primary-600" />
