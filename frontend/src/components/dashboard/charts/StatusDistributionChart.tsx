@@ -104,7 +104,6 @@ export default function StatusDistributionChart({
         cornerRadius: 8,
         titleFont: {
           size: 14,
-          weight: '600',
         },
         bodyFont: {
           size: 13,
@@ -128,8 +127,8 @@ export default function StatusDistributionChart({
 
   // Clean up chart on unmount
   useEffect(() => {
+    const chart = chartRef.current;
     return () => {
-      const chart = chartRef.current;
       if (chart) {
         chart.destroy();
       }
@@ -261,7 +260,8 @@ export default function StatusDistributionChart({
           <div className="space-y-4">
             {Object.entries(data).map(([status, count], index) => {
               const percentage = totalCustomers > 0 ? ((count / totalCustomers) * 100) : 0;
-              const color = chartData.datasets[0].backgroundColor[index];
+              const backgroundColor = chartData?.datasets?.[0]?.backgroundColor;
+              const color = Array.isArray(backgroundColor) ? (backgroundColor[index] || '#6366f1') : (backgroundColor || '#6366f1');
               
               return (
                 <div key={status} className="group hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 cursor-pointer">

@@ -49,7 +49,6 @@ export default function TrendLineChart({
   data, 
   title = "Customer Growth Trends",
   granularity = "daily",
-  days = 30,
   className = "",
   loading = false,
   error = null
@@ -127,12 +126,12 @@ export default function TrendLineChart({
         onClick: (event, legendItem, legend) => {
           // Custom legend click behavior - show/hide datasets
           const chart = legend.chart;
-          const datasets = chart.data.datasets;
           
           // Toggle dataset visibility
           if (legendItem.datasetIndex !== undefined) {
             const meta = chart.getDatasetMeta(legendItem.datasetIndex);
-            meta.hidden = meta.hidden === null ? !chart.data.datasets[legendItem.datasetIndex].hidden : null;
+            const dataset = chart.data.datasets[legendItem.datasetIndex];
+            meta.hidden = meta.hidden === null ? !(dataset?.hidden ?? false) : !meta.hidden;
             chart.update();
           }
         },
@@ -146,12 +145,15 @@ export default function TrendLineChart({
         callbacks: {
           title: function(tooltipItems) {
             if (tooltipItems.length > 0) {
-              const date = new Date(tooltipItems[0].parsed.x);
-              return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              });
+              const item = tooltipItems[0];
+              if (item && typeof item.parsed.x === 'number') {
+                const date = new Date(item.parsed.x);
+                return date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+              }
             }
             return '';
           },
@@ -274,8 +276,8 @@ export default function TrendLineChart({
 
   // Clean up chart on unmount
   useEffect(() => {
+    const chart = chartRef.current;
     return () => {
-      const chart = chartRef.current;
       if (chart) {
         chart.destroy();
       }

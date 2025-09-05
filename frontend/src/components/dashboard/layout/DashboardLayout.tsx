@@ -10,7 +10,6 @@ import {
   RefreshCw, 
   Menu, 
   X,
-  Home,
   Settings,
   LogOut
 } from 'lucide-react';

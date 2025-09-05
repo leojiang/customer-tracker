@@ -26,7 +26,7 @@ export default function ProgressWidget({
   loading = false,
   showPercentages = true
 }: ProgressWidgetProps) {
-  const getStatusIcon = (status: ProgressStep['status'], percentage: number) => {
+  const getStatusIcon = (status: ProgressStep['status']) => {
     switch (status) {
       case 'completed':
         return <CheckCircle size={20} className="text-green-600" />;
@@ -85,7 +85,7 @@ export default function ProgressWidget({
             <div key={step.id} className="flex items-center justify-between">
               <div className="flex items-center flex-1 min-w-0">
                 <div className="flex-shrink-0 mr-3">
-                  {getStatusIcon(step.status, percentage)}
+                  {getStatusIcon(step.status)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">

@@ -12,19 +12,13 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('Dashboard router - user:', user);
     if (user) {
-      // Redirect to role-specific dashboard
-      console.log('User role:', user.role);
       if (user.role === 'ADMIN') {
-        console.log('Redirecting to admin dashboard');
         router.push('/dashboard/admin');
       } else {
-        console.log('Redirecting to sales dashboard');
         router.push('/dashboard/sales');
       }
     } else {
-      console.log('No user, redirecting to auth');
       router.push('/auth');
     }
   }, [user, router]);

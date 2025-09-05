@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Users, RefreshCw } from 'lucide-react';
-import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
-import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
-import ProgressWidget from '@/components/dashboard/widgets/ProgressWidget';
 
 interface DashboardOverview {
   totalCustomers: number;
@@ -48,22 +45,10 @@ export default function SalesDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (!user || !token) {
-      router.push('/auth');
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
+    if (!token) {
       return;
     }
-
-    if (user.role !== 'SALES') {
-      router.push('/dashboard/admin');
-      return;
-    }
-
-    fetchDashboardData();
-  }, [user, token, router]);
-
-  const fetchDashboardData = async (isRefresh = false) => {
-    if (!token) return;
 
     try {
       if (isRefresh) {
@@ -114,7 +99,21 @@ export default function SalesDashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!user || !token) {
+      router.push('/auth');
+      return;
+    }
+
+    if (user.role !== 'SALES') {
+      router.push('/dashboard/admin');
+      return;
+    }
+
+    fetchDashboardData();
+  }, [user, token, router, fetchDashboardData]);
 
   const handleRefresh = () => {
     fetchDashboardData(true);

@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Users, RefreshCw } from 'lucide-react';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
-import ActivityFeed from '@/components/dashboard/widgets/ActivityFeed';
 
 interface DashboardOverview {
   totalCustomers: number;
@@ -67,27 +66,10 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    console.log('Admin dashboard - user:', user, 'token:', token);
-    
-    if (!user || !token) {
-      console.log('No user or token, redirecting to auth');
-      router.push('/auth');
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
+    if (!token) {
       return;
     }
-
-    if (user.role !== 'ADMIN') {
-      console.log('User is not admin, redirecting to sales dashboard');
-      router.push('/dashboard/sales');
-      return;
-    }
-
-    console.log('Admin user authenticated, fetching dashboard data');
-    fetchDashboardData();
-  }, [user, token, router]);
-
-  const fetchDashboardData = async (isRefresh = false) => {
-    if (!token) return;
 
     try {
       if (isRefresh) {
@@ -146,7 +128,21 @@ export default function AdminDashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!user || !token) {
+      router.push('/auth');
+      return;
+    }
+
+    if (user.role !== 'ADMIN') {
+      router.push('/dashboard/sales');
+      return;
+    }
+
+    fetchDashboardData();
+  }, [user, token, router, fetchDashboardData]);
 
   const handleRefresh = () => {
     fetchDashboardData(true);
@@ -264,7 +260,6 @@ export default function AdminDashboard() {
             data={trends?.dataPoints || []}
             title="Customer Growth Trends"
             granularity={trends?.granularity || 'daily'}
-            days={trends?.totalDays || 30}
             loading={loading}
             error={error}
           />
