@@ -64,12 +64,12 @@ wait_for_service() {
 
 # Step 1: Start Database
 echo -e "${BLUE}Step 1: Starting PostgreSQL Database${NC}"
-./start-database.sh
+"$SCRIPT_DIR/start-database.sh"
 echo ""
 
 # Step 2: Start Backend
 echo -e "${BLUE}Step 2: Starting Spring Boot Backend${NC}"
-./start-backend.sh
+"$SCRIPT_DIR/start-backend.sh"
 echo ""
 
 # Step 3: Wait for backend to be ready
