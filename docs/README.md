@@ -16,6 +16,7 @@
 
 ### **🔧 Development**
 - **[⚡ Development Guide](development/DEVELOPMENT.md)** - Setup, workflow, and best practices
+- **[🔄 Workflow Guide](development/WORKFLOW.md)** - Pre-push checklist and CI/CD quality automation
 - **[🏗️ Architecture Guide](development/ARCHITECTURE.md)** - Technical architecture and design decisions
 - **[🗄️ Database Guide](development/DATABASE.md)** - Schema design, migrations, and optimization
 - **[🎨 Code Style Guide](development/CODE_STYLE.md)** - Coding standards and formatting
@@ -43,10 +44,11 @@
 
 ### **👨‍💻 For Developers**  
 1. **[⚡ Development Guide](development/DEVELOPMENT.md)** - Set up development environment
-2. **[🏗️ Architecture Guide](development/ARCHITECTURE.md)** - Understand technical design
-3. **[🗄️ Database Guide](development/DATABASE.md)** - Work with database schema
-4. **[📡 API Reference](api/API_REFERENCE.md)** - Integrate with APIs
-5. **[🎨 Code Style Guide](development/CODE_STYLE.md)** - Follow coding standards
+2. **[🔄 Workflow Guide](development/WORKFLOW.md)** - Pre-push checklist and quality automation
+3. **[🏗️ Architecture Guide](development/ARCHITECTURE.md)** - Understand technical design
+4. **[🗄️ Database Guide](development/DATABASE.md)** - Work with database schema
+5. **[📡 API Reference](api/API_REFERENCE.md)** - Integrate with APIs
+6. **[🎨 Code Style Guide](development/CODE_STYLE.md)** - Follow coding standards
 
 ### **🎯 For Project Managers**
 1. **[✨ Feature Overview](features/FEATURES.md)** - Understand what's built
