@@ -238,4 +238,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 [⭐ Star this repo](https://github.com/leojiang/customer-tracker) | [🚀 Deploy now](docs/deployment/DEPLOYMENT.md) | [📖 Read docs](docs/)
 
-</div>
+</div># Test git hooks
