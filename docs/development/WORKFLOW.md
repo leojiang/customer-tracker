@@ -103,7 +103,7 @@ git pull origin main
 git checkout -b feature/your-feature-name
 
 # Verify environment
-./start-all.sh  # Ensures database, backend, and frontend are running
+./scripts/start-all.sh  # Ensures database, backend, and frontend are running
 ```
 
 #### **2. 💻 During Development**
