@@ -2,7 +2,7 @@ package com.example.customers.repository;
 
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,5 +59,5 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
       COUNT(DISTINCT c.id) DESC
     """)
   List<Object[]> getSalesLeaderboardData(
-      @Param("startDate") LocalDateTime startDate, @Param("metric") String metric);
+      @Param("startDate") ZonedDateTime startDate, @Param("metric") String metric);
 }

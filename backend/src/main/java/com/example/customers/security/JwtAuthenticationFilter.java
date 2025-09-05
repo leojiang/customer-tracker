@@ -84,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
     } catch (Exception e) {
       // Invalid token, continue with unauthenticated request
-      logger.debug("JWT token validation failed", e);
+      // Silent failure - continue with unauthenticated request
     }
 
     filterChain.doFilter(request, response);

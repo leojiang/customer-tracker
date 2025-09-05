@@ -2,7 +2,6 @@ package com.example.customers.repository;
 
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -75,15 +74,15 @@ public interface CustomerRepository
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt BETWEEN :startDate AND :endDate")
   long countNewCustomersInPeriod(
-      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+      @Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
 
   /** Count new customers in date range for specific sales person. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate")
   long countNewCustomersInPeriodBySales(
       @Param("salesPhone") String salesPhone,
-      @Param("startDate") LocalDateTime startDate,
-      @Param("endDate") LocalDateTime endDate);
+      @Param("startDate") ZonedDateTime startDate,
+      @Param("endDate") ZonedDateTime endDate);
 
   /** Count customers by status. */
   @Query(
@@ -99,42 +98,47 @@ public interface CustomerRepository
   long countByCurrentStatusAndDeletedAtIsNull(CustomerStatus currentStatus);
 
   /** Count conversions for specific sales person. */
-  long countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(CustomerStatus currentStatus, String salesPhone);
+  long countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
+      CustomerStatus currentStatus, String salesPhone);
 
   /** Count conversions in date range. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = :status AND c.createdAt BETWEEN :startDate AND :endDate")
   long countConversionsInPeriod(
-      @Param("status") CustomerStatus status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+      @Param("status") CustomerStatus status,
+      @Param("startDate") ZonedDateTime startDate,
+      @Param("endDate") ZonedDateTime endDate);
 
   /** Count conversions in date range for specific sales person. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = :status AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate")
   long countConversionsInPeriodBySales(
-      @Param("status") CustomerStatus status, @Param("salesPhone") String salesPhone,
-      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+      @Param("status") CustomerStatus status,
+      @Param("salesPhone") String salesPhone,
+      @Param("startDate") ZonedDateTime startDate,
+      @Param("endDate") ZonedDateTime endDate);
 
   /** Get customer acquisition trends by date. */
   @Query(
       "SELECT DATE(c.createdAt) as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt BETWEEN :startDate AND :endDate GROUP BY DATE(c.createdAt) ORDER BY DATE(c.createdAt)")
   List<Object[]> getCustomerTrendsByDate(
-      @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+      @Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
 
   /** Get customer acquisition trends by date for specific sales person. */
   @Query(
       "SELECT DATE(c.createdAt) as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate GROUP BY DATE(c.createdAt) ORDER BY DATE(c.createdAt)")
   List<Object[]> getCustomerTrendsByDateForSales(
       @Param("salesPhone") String salesPhone,
-      @Param("startDate") LocalDateTime startDate,
-      @Param("endDate") LocalDateTime endDate);
+      @Param("startDate") ZonedDateTime startDate,
+      @Param("endDate") ZonedDateTime endDate);
 
   /** Get customers created before specific date. */
   @Query("SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt < :date")
-  long countCustomersCreatedBefore(@Param("date") LocalDateTime date);
+  long countCustomersCreatedBefore(@Param("date") ZonedDateTime date);
 
   /** Get customers created before specific date for sales person. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt < :date")
   long countCustomersCreatedBeforeForSales(
-      @Param("salesPhone") String salesPhone, @Param("date") LocalDateTime date);
+      @Param("salesPhone") String salesPhone, @Param("date") ZonedDateTime date);
 }

@@ -17,7 +17,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,9 +59,9 @@ public class AnalyticsService {
    * @return Dashboard overview data
    */
   public DashboardOverviewResponse getDashboardOverview(String salesPhone, int days) {
-    LocalDateTime endDate = LocalDateTime.now();
-    LocalDateTime startDate = endDate.minusDays(days);
-    LocalDateTime previousStartDate = startDate.minusDays(days);
+    ZonedDateTime endDate = ZonedDateTime.now();
+    ZonedDateTime startDate = endDate.minusDays(days);
+    ZonedDateTime previousStartDate = startDate.minusDays(days);
 
     // Current period metrics
     long totalCustomers =
@@ -133,8 +134,8 @@ public class AnalyticsService {
    * @return Trend analysis data
    */
   public TrendAnalysisResponse getCustomerTrends(String salesPhone, int days, String granularity) {
-    LocalDateTime endDate = LocalDateTime.now();
-    LocalDateTime startDate = endDate.minusDays(days);
+    ZonedDateTime endDate = ZonedDateTime.now();
+    ZonedDateTime startDate = endDate.minusDays(days);
 
     List<Object[]> results =
         (salesPhone != null)
@@ -169,7 +170,7 @@ public class AnalyticsService {
    * @return Sales performance data
    */
   public SalesPerformanceResponse getSalesPerformance(String salesPhone, int days) {
-    LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+    ZonedDateTime startDate = ZonedDateTime.now().minusDays(days);
 
     long totalCustomers =
         (salesPhone != null)
@@ -179,14 +180,15 @@ public class AnalyticsService {
     long newCustomers =
         (salesPhone != null)
             ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, startDate, LocalDateTime.now())
-            : customerRepository.countNewCustomersInPeriod(startDate, LocalDateTime.now());
+                salesPhone, startDate, ZonedDateTime.now())
+            : customerRepository.countNewCustomersInPeriod(startDate, ZonedDateTime.now());
 
     long conversions =
         (salesPhone != null)
             ? customerRepository.countConversionsInPeriodBySales(
-                CustomerStatus.BUSINESS_DONE, salesPhone, startDate, LocalDateTime.now())
-            : customerRepository.countConversionsInPeriod(CustomerStatus.BUSINESS_DONE, startDate, LocalDateTime.now());
+                CustomerStatus.BUSINESS_DONE, salesPhone, startDate, ZonedDateTime.now())
+            : customerRepository.countConversionsInPeriod(
+                CustomerStatus.BUSINESS_DONE, startDate, ZonedDateTime.now());
 
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
@@ -210,7 +212,7 @@ public class AnalyticsService {
    * @return Leaderboard data
    */
   public LeaderboardResponse getSalesLeaderboard(int days, String metric) {
-    LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+    ZonedDateTime startDate = ZonedDateTime.now().minusDays(days);
 
     List<Object[]> results = salesRepository.getSalesLeaderboardData(startDate, metric);
 
@@ -221,7 +223,8 @@ public class AnalyticsService {
       String phone = (String) row[0];
       Long totalCustomers = ((Number) row[1]).longValue();
       Long conversions = ((Number) row[2]).longValue();
-      BigDecimal conversionRate = (BigDecimal) row[3];
+      BigDecimal conversionRate =
+          new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
 
       rankings.add(
           new SalesPerformanceEntry(phone, totalCustomers, conversions, conversionRate, rank++));
@@ -237,8 +240,8 @@ public class AnalyticsService {
    * @return Real-time metrics data
    */
   public RealtimeMetricsResponse getRealtimeMetrics(String salesPhone) {
-    LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-    LocalDateTime now = LocalDateTime.now();
+    ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
+    ZonedDateTime now = ZonedDateTime.now();
 
     long activeCustomersToday =
         (salesPhone != null)
@@ -252,8 +255,10 @@ public class AnalyticsService {
 
     long conversionsToday =
         (salesPhone != null)
-            ? customerRepository.countConversionsInPeriodBySales(CustomerStatus.BUSINESS_DONE, salesPhone, startOfDay, now)
-            : customerRepository.countConversionsInPeriod(CustomerStatus.BUSINESS_DONE, startOfDay, now);
+            ? customerRepository.countConversionsInPeriodBySales(
+                CustomerStatus.BUSINESS_DONE, salesPhone, startOfDay, now)
+            : customerRepository.countConversionsInPeriod(
+                CustomerStatus.BUSINESS_DONE, startOfDay, now);
 
     String lastUpdated = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
@@ -277,8 +282,10 @@ public class AnalyticsService {
 
     long conversions =
         (salesPhone != null)
-            ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE, salesPhone)
-            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE);
+            ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
+                CustomerStatus.BUSINESS_DONE, salesPhone)
+            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(
+                CustomerStatus.BUSINESS_DONE);
 
     return BigDecimal.valueOf(conversions)
         .multiply(BigDecimal.valueOf(100))
@@ -287,14 +294,14 @@ public class AnalyticsService {
 
   private long getActiveCustomers(String salesPhone) {
     // Define active customers as those with recent status changes (last 30 days)
-    LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+    ZonedDateTime thirtyDaysAgo = ZonedDateTime.now().minusDays(30);
 
     // For now, use simplified logic - active customers are those created recently
     // This could be enhanced with a proper StatusHistory repository method
     return (salesPhone != null)
         ? customerRepository.countNewCustomersInPeriodBySales(
-            salesPhone, thirtyDaysAgo, LocalDateTime.now())
-        : customerRepository.countNewCustomersInPeriod(thirtyDaysAgo, LocalDateTime.now());
+            salesPhone, thirtyDaysAgo, ZonedDateTime.now())
+        : customerRepository.countNewCustomersInPeriod(thirtyDaysAgo, ZonedDateTime.now());
   }
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {
