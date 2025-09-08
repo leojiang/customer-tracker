@@ -28,7 +28,12 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
     const result = await login(formData);
     if (!result.success) {
-      setError(result.error || 'Login failed');
+      // Show specific message for invalid credentials
+      if (result.error && (result.error.includes('Invalid credentials') || result.error.includes('Invalid username') || result.error.includes('Invalid password'))) {
+        setError('Your username or password is not correct.');
+      } else {
+        setError(result.error || 'Login failed');
+      }
     }
   };
 
@@ -48,7 +53,13 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     let textClass = 'text-red-700';
     let title = 'Login Failed';
 
-    if (error.includes('pending approval') || error.includes('pending')) {
+    if (error.includes('Your username or password is not correct')) {
+      errorType = 'invalid-credentials';
+      icon = <AlertCircle className="w-5 h-5" />;
+      bgClass = 'bg-red-50 border-red-200';
+      textClass = 'text-red-700';
+      title = 'Login Failed';
+    } else if (error.includes('pending approval') || error.includes('pending')) {
       errorType = 'pending';
       icon = <Clock className="w-5 h-5" />;
       bgClass = 'bg-yellow-50 border-yellow-200';
