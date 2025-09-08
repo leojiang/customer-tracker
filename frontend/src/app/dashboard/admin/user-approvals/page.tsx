@@ -3,14 +3,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, Clock, UserCheck, Users, RefreshCw, Search, Filter } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Clock, UserCheck, Users, RefreshCw, Search } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
 import { userApprovalApi } from '@/lib/api';
 import { 
   ApprovalStatistics, 
   UserApprovalDto, 
-  ApprovalStatus,
-  ApprovalPageResponse 
+  ApprovalStatus
 } from '@/types/auth';
 
 /**
@@ -42,7 +41,9 @@ export default function UserApprovalsPage() {
   });
 
   const fetchData = useCallback(async (isRefresh = false) => {
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
     try {
       if (isRefresh) {

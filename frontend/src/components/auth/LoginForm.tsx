@@ -38,7 +38,9 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   };
 
   const renderErrorMessage = () => {
-    if (!error) return null;
+    if (!error) {
+      return null;
+    }
 
     let errorType = 'error';
     let icon = <AlertCircle className="w-5 h-5" />;

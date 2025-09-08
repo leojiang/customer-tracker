@@ -14,12 +14,12 @@ import {
   AuthResponse, 
   ValidateTokenRequest,
   ApprovalPageResponse,
-  ApprovalActionRequest,
   BulkApprovalRequest,
   BulkActionResponse,
   UserApprovalHistory,
   ApprovalStatistics,
-  ApprovalStatus
+  ApprovalStatus,
+  UserApprovalDto
 } from '@/types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -189,22 +189,22 @@ export const userApprovalApi = {
     return fetchApi<ApprovalPageResponse>(`/admin/user-approvals?${params}`);
   },
 
-  async approveUser(phone: string, reason?: string): Promise<any> {
-    return fetchApi<any>(`/admin/user-approvals/${phone}/approve`, {
+  async approveUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+    return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/approve`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     });
   },
 
-  async rejectUser(phone: string, reason?: string): Promise<any> {
-    return fetchApi<any>(`/admin/user-approvals/${phone}/reject`, {
+  async rejectUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+    return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/reject`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     });
   },
 
-  async resetUser(phone: string, reason?: string): Promise<any> {
-    return fetchApi<any>(`/admin/user-approvals/${phone}/reset`, {
+  async resetUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+    return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/reset`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     });

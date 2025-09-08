@@ -22,7 +22,9 @@ export default function ApprovalModal({
 }: ApprovalModalProps) {
   const [reason, setReason] = useState('');
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const getModalConfig = () => {
     switch (type) {
