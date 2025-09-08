@@ -15,8 +15,9 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     password: '',
   });
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +31,9 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       return false;
     }
 
+    setIsLoading(true);
+    setError(null); // Clear any previous errors
+    
     try {
       console.log('Calling login API...'); // Debug log
       const result = await login(formData);
@@ -48,6 +52,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     } catch (error) {
       console.log('Login error caught:', error); // Debug log
       setError('Your username or password is not correct.');
+    } finally {
+      setIsLoading(false);
     }
     
     return false;
