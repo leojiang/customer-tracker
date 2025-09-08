@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Users, RefreshCw, UserCheck } from 'lucide-react';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';

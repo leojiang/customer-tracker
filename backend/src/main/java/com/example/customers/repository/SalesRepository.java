@@ -1,11 +1,14 @@
 package com.example.customers.repository;
 
+import com.example.customers.model.ApprovalStatus;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +28,33 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
 
   /** Find all sales users with SALES role. */
   List<Sales> findByRole(SalesRole role);
+
+  // ========== User Approval Query Methods ==========
+
+  /** Find users by approval status ordered by creation date. */
+  List<Sales> findByApprovalStatusOrderByCreatedAtDesc(ApprovalStatus status);
+
+  /** Find users by approval status with pagination. */
+  Page<Sales> findByApprovalStatusOrderByCreatedAtDesc(ApprovalStatus status, Pageable pageable);
+
+  /** Find pending approvals created since a specific date. */
+  @Query(
+      "SELECT s FROM Sales s WHERE s.approvalStatus = :status "
+          + "AND s.createdAt >= :since ORDER BY s.createdAt DESC")
+  Page<Sales> findPendingApprovalsSince(
+      @Param("status") ApprovalStatus status,
+      @Param("since") ZonedDateTime since,
+      Pageable pageable);
+
+  /** Count users by approval status. */
+  long countByApprovalStatus(ApprovalStatus status);
+
+  /** Find users by multiple approval statuses. */
+  @Query(
+      "SELECT s FROM Sales s WHERE s.approvalStatus IN :statuses "
+          + "ORDER BY s.statusUpdatedAt DESC")
+  Page<Sales> findByApprovalStatusIn(
+      @Param("statuses") List<ApprovalStatus> statuses, Pageable pageable);
 
   // ========== Analytics Query Methods ==========
 

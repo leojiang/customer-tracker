@@ -7,9 +7,10 @@ import { RegisterRequest } from '@/types/auth';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
+  onRegistrationSuccess: (phone: string) => void;
 }
 
-export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
+export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }: RegisterFormProps) {
   const [formData, setFormData] = useState<RegisterRequest>({
     phone: '',
     password: '',
@@ -42,14 +43,15 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     const result = await register(formData);
     if (!result.success) {
       setError(result.error || 'Registration failed');
+    } else {
+      // Navigate to success page
+      onRegistrationSuccess(formData.phone);
     }
   };
 
   const handleInputChange = (field: keyof RegisterRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (error) {
-      setError(null);
-    }
+    // Don't auto-clear errors - let user see them
   };
 
   return (
@@ -63,10 +65,20 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         <div className="card-content">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-error-50 border border-error-200 rounded-lg p-3">
-                <p className="text-error-600 text-sm">{error}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="flex items-start justify-between">
+                  <p className="text-red-600 text-sm flex-1">{error}</p>
+                  <button
+                    type="button"
+                    onClick={() => setError(null)}
+                    className="text-red-400 hover:text-red-600 ml-2"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             )}
+
 
             <div>
               <label className="input-label flex items-center gap-2">

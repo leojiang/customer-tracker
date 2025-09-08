@@ -101,17 +101,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: response.error };
       }
 
-      if (response.token && response.phone && response.role) {
-        const userData: Sales = {
-          phone: response.phone,
-          role: response.role,
-        };
-        
-        setUser(userData);
-        setToken(response.token);
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('user_data', JSON.stringify(userData));
-        
+      // Handle successful registration (either immediate approval or pending status)
+      if (response.phone && response.role) {
+        // If token is provided, user is immediately approved (admin users)
+        if (response.token) {
+          const userData: Sales = {
+            phone: response.phone,
+            role: response.role,
+          };
+          
+          setUser(userData);
+          setToken(response.token);
+          localStorage.setItem('auth_token', response.token);
+          localStorage.setItem('user_data', JSON.stringify(userData));
+        }
+        // If no token but has phone/role, user is pending approval
         return { success: true };
       }
       

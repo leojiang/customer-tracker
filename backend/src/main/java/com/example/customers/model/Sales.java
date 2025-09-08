@@ -59,6 +59,22 @@ public class Sales {
   @Column(name = "deleted_at")
   private ZonedDateTime deletedAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "approval_status")
+  private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
+
+  @Column(name = "approved_by_phone")
+  private String approvedByPhone;
+
+  @Column(name = "approved_at")
+  private ZonedDateTime approvedAt;
+
+  @Column(name = "rejection_reason")
+  private String rejectionReason;
+
+  @Column(name = "status_updated_at")
+  private ZonedDateTime statusUpdatedAt = ZonedDateTime.now();
+
   public Sales() {}
 
   /**
@@ -142,6 +158,59 @@ public class Sales {
 
   public void restore() {
     this.deletedAt = null;
+  }
+
+  public ApprovalStatus getApprovalStatus() {
+    return approvalStatus;
+  }
+
+  public void setApprovalStatus(ApprovalStatus approvalStatus) {
+    this.approvalStatus = approvalStatus;
+  }
+
+  public String getApprovedByPhone() {
+    return approvedByPhone;
+  }
+
+  public void setApprovedByPhone(String approvedByPhone) {
+    this.approvedByPhone = approvedByPhone;
+  }
+
+  public ZonedDateTime getApprovedAt() {
+    return approvedAt;
+  }
+
+  public void setApprovedAt(ZonedDateTime approvedAt) {
+    this.approvedAt = approvedAt;
+  }
+
+  public String getRejectionReason() {
+    return rejectionReason;
+  }
+
+  public void setRejectionReason(String rejectionReason) {
+    this.rejectionReason = rejectionReason;
+  }
+
+  public ZonedDateTime getStatusUpdatedAt() {
+    return statusUpdatedAt;
+  }
+
+  public void setStatusUpdatedAt(ZonedDateTime statusUpdatedAt) {
+    this.statusUpdatedAt = statusUpdatedAt;
+  }
+
+  // Approval status helper methods
+  public boolean isApproved() {
+    return ApprovalStatus.APPROVED.equals(this.approvalStatus);
+  }
+
+  public boolean isPending() {
+    return ApprovalStatus.PENDING.equals(this.approvalStatus);
+  }
+
+  public boolean isRejected() {
+    return ApprovalStatus.REJECTED.equals(this.approvalStatus);
   }
 
   @Override

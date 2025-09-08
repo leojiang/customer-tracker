@@ -8,7 +8,19 @@ import {
   StatusHistory,
   CustomerStatus
 } from '@/types/customer';
-import { LoginRequest, RegisterRequest, AuthResponse, ValidateTokenRequest } from '@/types/auth';
+import { 
+  LoginRequest, 
+  RegisterRequest, 
+  AuthResponse, 
+  ValidateTokenRequest,
+  ApprovalPageResponse,
+  ApprovalActionRequest,
+  BulkApprovalRequest,
+  BulkActionResponse,
+  UserApprovalHistory,
+  ApprovalStatistics,
+  ApprovalStatus
+} from '@/types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -159,6 +171,58 @@ export const authApi = {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
     }
+  },
+};
+
+// User Approval API
+export const userApprovalApi = {
+  async getStatistics(): Promise<ApprovalStatistics> {
+    return fetchApi<ApprovalStatistics>('/admin/user-approvals/statistics');
+  },
+
+  async getUserApprovals(status: ApprovalStatus = ApprovalStatus.PENDING, page: number = 1, limit: number = 20): Promise<ApprovalPageResponse> {
+    const params = new URLSearchParams({
+      status,
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return fetchApi<ApprovalPageResponse>(`/admin/user-approvals?${params}`);
+  },
+
+  async approveUser(phone: string, reason?: string): Promise<any> {
+    return fetchApi<any>(`/admin/user-approvals/${phone}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  async rejectUser(phone: string, reason?: string): Promise<any> {
+    return fetchApi<any>(`/admin/user-approvals/${phone}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  async resetUser(phone: string, reason?: string): Promise<any> {
+    return fetchApi<any>(`/admin/user-approvals/${phone}/reset`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  async bulkAction(request: BulkApprovalRequest): Promise<BulkActionResponse> {
+    return fetchApi<BulkActionResponse>('/admin/user-approvals/bulk-action', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  async getUserHistory(phone: string): Promise<UserApprovalHistory[]> {
+    return fetchApi<UserApprovalHistory[]>(`/admin/user-approvals/${phone}/history`);
+  },
+
+  async getRecentActivity(days: number = 7): Promise<UserApprovalHistory[]> {
+    return fetchApi<UserApprovalHistory[]>(`/admin/user-approvals/activity?days=${days}`);
   },
 };
 

@@ -3,6 +3,7 @@ package com.example.customers.controller;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.service.AuthService;
+import com.example.customers.service.AuthService.AuthResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,23 +45,18 @@ public class AuthController {
   @Operation(summary = "Login with phone and password")
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-    Optional<String> tokenOptional = authService.login(request.getPhone(), request.getPassword());
+    AuthResult result = authService.login(request.getPhone(), request.getPassword());
 
-    if (tokenOptional.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(new AuthResponse(null, null, null, "Invalid phone or password"));
+    if (!result.isSuccess()) {
+      HttpStatus status = "PENDING".equals(result.getStatus()) || "REJECTED".equals(result.getStatus())
+          ? HttpStatus.FORBIDDEN : HttpStatus.UNAUTHORIZED;
+      return ResponseEntity.status(status)
+          .body(new AuthResponse(null, null, null, result.getMessage(), result.getStatus()));
     }
 
-    String token = tokenOptional.get();
-    Optional<Sales> sales = authService.getSalesByPhone(request.getPhone());
-
-    if (sales.isPresent()) {
-      return ResponseEntity.ok(
-          new AuthResponse(token, sales.get().getPhone(), sales.get().getRole(), null));
-    }
-
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new AuthResponse(null, null, null, "Login successful but user data not found"));
+    return ResponseEntity.ok(
+        new AuthResponse(result.getToken(), result.getPhone(), 
+            SalesRole.valueOf(result.getRole()), null, result.getStatus()));
   }
 
   /**
@@ -74,23 +70,24 @@ public class AuthController {
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
     if (!request.getPassword().equals(request.getConfirmPassword())) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, "Passwords do not match"));
+          .body(new AuthResponse(null, null, null, "Passwords do not match", null));
     }
 
     try {
-      Optional<String> tokenOptional =
-          authService.register(request.getPhone(), request.getPassword());
+      AuthResult result = authService.register(request.getPhone(), request.getPassword());
 
-      if (tokenOptional.isPresent()) {
+      if (result.isSuccess()) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new AuthResponse(tokenOptional.get(), request.getPhone(), SalesRole.SALES, null));
+            .body(new AuthResponse(null, result.getPhone(), SalesRole.SALES, 
+                result.getMessage(), result.getStatus()));
       }
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(new AuthResponse(null, null, null, "Registration failed"));
+          .body(new AuthResponse(null, null, null, "Registration failed", null));
 
     } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(new AuthResponse(null, null, null, e.getMessage()));
+      return ResponseEntity.badRequest()
+          .body(new AuthResponse(null, null, null, e.getMessage(), null));
     }
   }
 
@@ -109,11 +106,11 @@ public class AuthController {
     if (sales.isPresent()) {
       return ResponseEntity.ok(
           new AuthResponse(
-              request.getToken(), sales.get().getPhone(), sales.get().getRole(), null));
+              request.getToken(), sales.get().getPhone(), sales.get().getRole(), null, null));
     }
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new AuthResponse(null, null, null, "Invalid or expired token"));
+        .body(new AuthResponse(null, null, null, "Invalid or expired token", null));
   }
 
   // Request DTOs
@@ -199,6 +196,7 @@ public class AuthController {
     private String phone;
     private SalesRole role;
     private String error;
+    private String status;
 
     /**
      * Constructor for AuthResponse.
@@ -207,12 +205,14 @@ public class AuthController {
      * @param phone user phone number
      * @param role user role
      * @param error error message if any
+     * @param status approval status
      */
-    public AuthResponse(String token, String phone, SalesRole role, String error) {
+    public AuthResponse(String token, String phone, SalesRole role, String error, String status) {
       this.token = token;
       this.phone = phone;
       this.role = role;
       this.error = error;
+      this.status = status;
     }
 
     public String getToken() {
@@ -245,6 +245,14 @@ public class AuthController {
 
     public void setError(String error) {
       this.error = error;
+    }
+
+    public String getStatus() {
+      return status;
+    }
+
+    public void setStatus(String status) {
+      this.status = status;
     }
   }
 }

@@ -8,7 +8,7 @@ import CustomerForm from '@/components/customers/CustomerForm';
 
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, Shield, BarChart3 } from 'lucide-react';
+import { LogOut, User, Shield, BarChart3, UserCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 type View = 'list' | 'detail' | 'create';
@@ -69,6 +69,17 @@ export default function HomePage() {
                   <BarChart3 size={16} />
                   Dashboard
                 </button>
+                
+                {/* User Approvals button - only show for admin users */}
+                {user?.role === 'ADMIN' && (
+                  <button
+                    onClick={() => router.push('/dashboard/admin/user-approvals')}
+                    className="btn-outline flex items-center gap-2 text-sm py-2 px-3 bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:border-green-400"
+                  >
+                    <UserCheck size={16} />
+                    User Approvals
+                  </button>
+                )}
                 <div className="flex items-center gap-2 px-3 py-2 bg-surface-100 rounded-lg">
                   {user?.role === 'ADMIN' ? (
                     <Shield size={16} className="text-primary-600" />

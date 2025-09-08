@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, Lock, LogIn } from 'lucide-react';
+import { Phone, Lock, LogIn, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoginRequest } from '@/types/auth';
 
@@ -34,9 +34,74 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
   const handleInputChange = (field: keyof LoginRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (error) {
-      setError(null);
+    // Don't auto-clear errors - let user see them
+  };
+
+  const renderErrorMessage = () => {
+    if (!error) return null;
+
+    let errorType = 'error';
+    let icon = <AlertCircle className="w-5 h-5" />;
+    let bgClass = 'bg-red-50 border-red-200';
+    let textClass = 'text-red-700';
+    let title = 'Login Failed';
+
+    if (error.includes('pending approval') || error.includes('pending')) {
+      errorType = 'pending';
+      icon = <Clock className="w-5 h-5" />;
+      bgClass = 'bg-yellow-50 border-yellow-200';
+      textClass = 'text-yellow-700';
+      title = 'Account Pending Approval';
+    } else if (error.includes('rejected') || error.includes('denied')) {
+      errorType = 'rejected';
+      icon = <XCircle className="w-5 h-5" />;
+      bgClass = 'bg-red-50 border-red-200';
+      textClass = 'text-red-700';
+      title = 'Account Access Denied';
     }
+
+    return (
+      <div className={`${bgClass} border rounded-lg p-4`}>
+        <div className="flex items-start gap-3">
+          <div className={textClass}>
+            {icon}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h4 className={`font-semibold ${textClass} mb-1`}>{title}</h4>
+                <p className={`text-sm ${textClass.replace('700', '600')}`}>
+                  {error}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className={`${textClass.replace('700', '400')} hover:${textClass.replace('700', '600')} ml-2`}
+              >
+                ×
+              </button>
+            </div>
+            {errorType === 'pending' && (
+              <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
+                <p className="font-medium mb-1">What to do next:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Please wait for admin approval</li>
+                  <li>Contact admin if you need immediate access</li>
+                  <li>Try logging in again later</li>
+                </ul>
+              </div>
+            )}
+            {errorType === 'rejected' && (
+              <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
+                <p className="font-medium mb-1">Need help?</p>
+                <p>Contact your system administrator to discuss your account status.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -49,11 +114,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         
         <div className="card-content">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-error-50 border border-error-200 rounded-lg p-3">
-                <p className="text-error-600 text-sm">{error}</p>
-              </div>
-            )}
+            {renderErrorMessage()}
 
             <div>
               <label className="input-label flex items-center gap-2">
