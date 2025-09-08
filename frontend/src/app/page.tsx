@@ -74,7 +74,7 @@ export default function HomePage() {
                 {user?.role === 'ADMIN' && (
                   <button
                     onClick={() => router.push('/dashboard/admin/user-approvals')}
-                    className="btn-outline flex items-center gap-2 text-sm py-2 px-3 bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:border-green-400"
+                    className="btn-outline flex items-center gap-2 text-sm py-2 px-3"
                   >
                     <UserCheck size={16} />
                     User Approvals

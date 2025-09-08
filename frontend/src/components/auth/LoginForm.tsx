@@ -14,7 +14,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     phone: '',
     password: '',
   });
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>('Test error message - this should be visible');
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
