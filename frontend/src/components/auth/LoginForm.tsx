@@ -20,21 +20,37 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Login form submitted'); // Debug log
     
     if (!formData.phone.trim() || !formData.password.trim()) {
       setError('Phone and password are required');
-      return;
+      console.log('Validation error set'); // Debug log
+      return false;
     }
 
-    const result = await login(formData);
-    if (!result.success) {
-      // Show specific message for invalid credentials
-      if (result.error && (result.error.includes('Invalid credentials') || result.error.includes('Invalid username') || result.error.includes('Invalid password'))) {
-        setError('Your username or password is not correct.');
-      } else {
-        setError(result.error || 'Login failed');
+    try {
+      console.log('Calling login API...'); // Debug log
+      const result = await login(formData);
+      console.log('Login result:', result); // Debug log
+      
+      if (!result.success) {
+        // Show specific message for invalid credentials
+        if (result.error && (result.error.includes('Invalid credentials') || result.error.includes('Invalid username') || result.error.includes('Invalid password'))) {
+          console.log('Setting invalid credentials error'); // Debug log
+          setError('Your username or password is not correct.');
+        } else {
+          console.log('Setting other error:', result.error); // Debug log
+          setError(result.error || 'Login failed');
+        }
       }
+    } catch (error) {
+      console.log('Login error caught:', error); // Debug log
+      setError('Your username or password is not correct.');
     }
+    
+    return false;
   };
 
   const handleInputChange = (field: keyof LoginRequest, value: string) => {
@@ -43,6 +59,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   };
 
   const renderErrorMessage = () => {
+    console.log('Rendering error message, error state:', error); // Debug log
     if (!error) {
       return null;
     }
@@ -160,7 +177,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             </div>
 
             <button 
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={isLoading}
               className="btn-primary w-full flex items-center justify-center gap-3"
             >

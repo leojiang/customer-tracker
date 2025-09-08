@@ -24,29 +24,36 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     if (!formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
       setError('All fields are required');
-      return;
+      return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      return;
+      return false;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
-      return;
+      return false;
     }
 
-    const result = await register(formData);
-    if (!result.success) {
-      setError(result.error || 'Registration failed');
-    } else {
-      // Navigate to success page
-      onRegistrationSuccess(formData.phone);
+    try {
+      const result = await register(formData);
+      if (!result.success) {
+        setError(result.error || 'Registration failed');
+      } else {
+        // Navigate to success page
+        onRegistrationSuccess(formData.phone);
+      }
+    } catch (error) {
+      setError('Registration failed. Please try again.');
     }
+    
+    return false;
   };
 
   const handleInputChange = (field: keyof RegisterRequest, value: string) => {
@@ -147,7 +154,8 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
             </div>
 
             <button 
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={isLoading}
               className="btn-primary w-full flex items-center justify-center gap-3"
             >
