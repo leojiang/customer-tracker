@@ -14,7 +14,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     phone: '',
     password: '',
   });
-  const [error, setError] = useState<string | null>('Test error message - this should be visible');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
@@ -23,11 +23,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('Login form submitted'); // Debug log
-    
     if (!formData.phone.trim() || !formData.password.trim()) {
       setError('Phone and password are required');
-      console.log('Validation error set'); // Debug log
       return false;
     }
 
@@ -35,22 +32,17 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     setError(null); // Clear any previous errors
     
     try {
-      console.log('Calling login API...'); // Debug log
       const result = await login(formData);
-      console.log('Login result:', result); // Debug log
       
       if (!result.success) {
         // Show specific message for invalid credentials
         if (result.error && (result.error.includes('Invalid credentials') || result.error.includes('Invalid username') || result.error.includes('Invalid password'))) {
-          console.log('Setting invalid credentials error'); // Debug log
           setError('Your username or password is not correct.');
         } else {
-          console.log('Setting other error:', result.error); // Debug log
           setError(result.error || 'Login failed');
         }
       }
     } catch (error) {
-      console.log('Login error caught:', error); // Debug log
       setError('Your username or password is not correct.');
     } finally {
       setIsLoading(false);
@@ -65,7 +57,6 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   };
 
   const renderErrorMessage = () => {
-    console.log('Rendering error message, error state:', error); // Debug log
     if (!error) {
       return null;
     }
