@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "enhanced-postgres-mcp-server",
+        "postgresql://postgres:postgres@localhost:5432/customers"
+      ]
+    }
+  }
+}

@@ -49,13 +49,21 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
   try {
     const response = await fetch(url, config);
     
+    const contentType = response.headers.get('content-type');
+    const isJsonResponse = contentType && contentType.includes('application/json');
+    
     if (!response.ok) {
+      // For auth endpoints, try to return the error response as JSON if possible
+      if (endpoint.startsWith('/auth/') && isJsonResponse) {
+        const errorData = await response.json();
+        return errorData as T;
+      }
+      
       const errorText = await response.text();
       throw new ApiError(response.status, errorText || `HTTP ${response.status}`);
     }
 
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
+    if (isJsonResponse) {
       return await response.json();
     }
     

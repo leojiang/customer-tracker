@@ -10,6 +10,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+  
   const [formData, setFormData] = useState<LoginRequest>({
     phone: '',
     password: '',
@@ -19,13 +20,15 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   
   const { login } = useAuth();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
+    
     if (!formData.phone.trim() || !formData.password.trim()) {
       setError('Phone and password are required');
-      return false;
+      return;
     }
 
     setIsLoading(true);
@@ -35,25 +38,40 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       const result = await login(formData);
       
       if (!result.success) {
-        // Show specific message for invalid credentials
-        if (result.error && (result.error.includes('Invalid credentials') || result.error.includes('Invalid username') || result.error.includes('Invalid password'))) {
-          setError('Your username or password is not correct.');
+        // Parse error message and provide user-friendly feedback
+        const errorMessage = result.error || 'Login failed';
+        // Display backend messages directly - they are now user-friendly
+        if (errorMessage.includes('Invalid credentials')) {
+          setError('Incorrect phone number or password. Please check your credentials and try again.');
         } else {
-          setError(result.error || 'Login failed');
+          // For all other errors (including pending/rejected), use the backend message directly
+          setError(errorMessage);
         }
       }
     } catch (error) {
-      setError('Your username or password is not correct.');
+      // Handle network errors or other unexpected issues
+      if (error instanceof Error) {
+        if (error.message.includes('Network error')) {
+          setError('Unable to connect to the server. Please check your internet connection and try again.');
+        } else if (error.message.includes('403') || error.message.includes('401')) {
+          setError('Incorrect phone number or password. Please check your credentials and try again.');
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
-    
-    return false;
   };
 
   const handleInputChange = (field: keyof LoginRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Don't auto-clear errors - let user see them
+    // Clear error when user starts typing after seeing invalid credentials error
+    if (error && error.includes('Incorrect phone number or password')) {
+      setError(null);
+    }
   };
 
   const renderErrorMessage = () => {
@@ -65,32 +83,44 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     let icon = <AlertCircle className="w-5 h-5" />;
     let bgClass = 'bg-red-50 border-red-200';
     let textClass = 'text-red-700';
+    let iconClass = 'text-red-500';
     let title = 'Login Failed';
 
-    if (error.includes('Your username or password is not correct')) {
+    // Enhanced error type detection based on improved error messages
+    if (error.includes('Incorrect phone number or password') || error.includes('check your credentials')) {
       errorType = 'invalid-credentials';
       icon = <AlertCircle className="w-5 h-5" />;
       bgClass = 'bg-red-50 border-red-200';
       textClass = 'text-red-700';
-      title = 'Login Failed';
-    } else if (error.includes('pending approval') || error.includes('pending')) {
+      iconClass = 'text-red-500';
+      title = 'Invalid Credentials';
+    } else if (error.includes('pending approval')) {
       errorType = 'pending';
       icon = <Clock className="w-5 h-5" />;
       bgClass = 'bg-yellow-50 border-yellow-200';
       textClass = 'text-yellow-700';
+      iconClass = 'text-yellow-500';
       title = 'Account Pending Approval';
-    } else if (error.includes('rejected') || error.includes('denied')) {
+    } else if (error.includes('access has been denied')) {
       errorType = 'rejected';
       icon = <XCircle className="w-5 h-5" />;
       bgClass = 'bg-red-50 border-red-200';
       textClass = 'text-red-700';
+      iconClass = 'text-red-500';
       title = 'Account Access Denied';
+    } else if (error.includes('Unable to connect') || error.includes('Network error')) {
+      errorType = 'network';
+      icon = <AlertCircle className="w-5 h-5" />;
+      bgClass = 'bg-orange-50 border-orange-200';
+      textClass = 'text-orange-700';
+      iconClass = 'text-orange-500';
+      title = 'Connection Error';
     }
 
     return (
-      <div className={`${bgClass} border rounded-lg p-4`}>
+      <div className={`${bgClass} border rounded-lg p-4 mb-4`}>
         <div className="flex items-start gap-3">
-          <div className={textClass}>
+          <div className={iconClass}>
             {icon}
           </div>
           <div className="flex-1">
@@ -104,11 +134,25 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
               <button
                 type="button"
                 onClick={() => setError(null)}
-                className={`${textClass.replace('700', '400')} hover:${textClass.replace('700', '600')} ml-2`}
+                className={`${textClass.replace('700', '400')} hover:${textClass.replace('700', '600')} ml-2 p-1 rounded-md hover:bg-current hover:bg-opacity-10`}
+                aria-label="Dismiss error message"
               >
                 ×
               </button>
             </div>
+            
+            {/* Contextual help based on error type */}
+            {errorType === 'invalid-credentials' && (
+              <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
+                <p className="font-medium mb-1">Tips:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Double-check your phone number format</li>
+                  <li>Ensure your password is correct</li>
+                  <li>Make sure Caps Lock is not enabled</li>
+                </ul>
+              </div>
+            )}
+            
             {errorType === 'pending' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
                 <p className="font-medium mb-1">What to do next:</p>
@@ -119,10 +163,22 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                 </ul>
               </div>
             )}
+            
             {errorType === 'rejected' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
                 <p className="font-medium mb-1">Need help?</p>
-                <p>Contact your system administrator to discuss your account status.</p>
+                <p>Contact your system administrator to discuss your account status and request access.</p>
+              </div>
+            )}
+            
+            {errorType === 'network' && (
+              <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
+                <p className="font-medium mb-1">Try these steps:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Check your internet connection</li>
+                  <li>Refresh the page and try again</li>
+                  <li>Contact support if the problem persists</li>
+                </ul>
               </div>
             )}
           </div>
@@ -140,7 +196,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </div>
         
         <div className="card-content">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {renderErrorMessage()}
 
             <div>
@@ -174,8 +230,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             </div>
 
             <button 
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="btn-primary w-full flex items-center justify-center gap-3"
             >

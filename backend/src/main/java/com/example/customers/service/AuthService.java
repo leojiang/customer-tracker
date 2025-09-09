@@ -59,9 +59,12 @@ public class AuthService {
     // Check approval status
     if (!sales.isApproved()) {
       if (sales.isPending()) {
-        return AuthResult.failure("Account pending approval. Please contact admin.", "PENDING");
+        return AuthResult.failure(
+            "Your account is pending approval. Please contact your administrator.", "PENDING");
       } else if (sales.isRejected()) {
-        return AuthResult.failure("Account access denied. Contact admin for more information.", "REJECTED");
+        return AuthResult.failure(
+            "Your account access has been denied. Please contact your administrator for assistance.",
+            "REJECTED");
       }
     }
 
@@ -125,7 +128,8 @@ public class AuthService {
     private final String role;
     private final String status;
 
-    private AuthResult(boolean success, String message, String token, String phone, String role, String status) {
+    private AuthResult(
+        boolean success, String message, String token, String phone, String role, String status) {
       this.success = success;
       this.message = message;
       this.token = token;

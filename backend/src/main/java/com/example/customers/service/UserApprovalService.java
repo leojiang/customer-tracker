@@ -181,7 +181,11 @@ public class UserApprovalService {
         log.warn("Failed to approve user {}: {}", phone, e.getMessage());
       }
     }
-    log.info("Bulk approved {} out of {} users by admin {}", approvedCount, userPhones.size(), adminPhone);
+    log.info(
+        "Bulk approved {} out of {} users by admin {}",
+        approvedCount,
+        userPhones.size(),
+        adminPhone);
     return approvedCount;
   }
 
@@ -203,7 +207,11 @@ public class UserApprovalService {
         log.warn("Failed to reject user {}: {}", phone, e.getMessage());
       }
     }
-    log.info("Bulk rejected {} out of {} users by admin {}", rejectedCount, userPhones.size(), adminPhone);
+    log.info(
+        "Bulk rejected {} out of {} users by admin {}",
+        rejectedCount,
+        userPhones.size(),
+        adminPhone);
     return rejectedCount;
   }
 

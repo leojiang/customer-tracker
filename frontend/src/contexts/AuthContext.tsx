@@ -26,6 +26,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user && !!token;
+  
 
   // Check for existing token on app start
   useEffect(() => {
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (credentials: LoginRequest): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
+      // Do NOT use global isLoading for login operations - use local state in components instead
       const response = await authApi.login(credentials);
       
       if (response.error) {
@@ -87,14 +88,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         success: false, 
         error: error instanceof Error ? error.message : 'Login failed' 
       };
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const register = async (data: RegisterRequest): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
+      // Do NOT use global isLoading for register operations - use local state in components instead
       const response = await authApi.register(data);
       
       if (response.error) {
@@ -125,8 +124,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         success: false, 
         error: error instanceof Error ? error.message : 'Registration failed' 
       };
-    } finally {
-      setIsLoading(false);
     }
   };
 

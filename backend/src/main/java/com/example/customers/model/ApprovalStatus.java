@@ -1,8 +1,6 @@
 package com.example.customers.model;
 
-/**
- * Enum representing the approval status of a user registration.
- */
+/** Enum representing the approval status of a user registration. */
 public enum ApprovalStatus {
   PENDING("Pending Approval"),
   APPROVED("Approved"),

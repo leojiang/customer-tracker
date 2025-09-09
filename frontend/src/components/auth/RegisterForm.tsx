@@ -28,17 +28,17 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
     
     if (!formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
       setError('All fields are required');
-      return false;
+      return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      return false;
+      return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
-      return false;
+      return;
     }
 
     try {
@@ -52,13 +52,14 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
     } catch (error) {
       setError('Registration failed. Please try again.');
     }
-    
-    return false;
   };
 
   const handleInputChange = (field: keyof RegisterRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Don't auto-clear errors - let user see them
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+    }
   };
 
   return (
@@ -154,8 +155,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
             </div>
 
             <button 
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="btn-primary w-full flex items-center justify-center gap-3"
             >

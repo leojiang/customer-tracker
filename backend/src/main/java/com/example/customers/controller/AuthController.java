@@ -48,15 +48,21 @@ public class AuthController {
     AuthResult result = authService.login(request.getPhone(), request.getPassword());
 
     if (!result.isSuccess()) {
-      HttpStatus status = "PENDING".equals(result.getStatus()) || "REJECTED".equals(result.getStatus())
-          ? HttpStatus.FORBIDDEN : HttpStatus.UNAUTHORIZED;
+      HttpStatus status =
+          "PENDING".equals(result.getStatus()) || "REJECTED".equals(result.getStatus())
+              ? HttpStatus.FORBIDDEN
+              : HttpStatus.UNAUTHORIZED;
       return ResponseEntity.status(status)
           .body(new AuthResponse(null, null, null, result.getMessage(), result.getStatus()));
     }
 
     return ResponseEntity.ok(
-        new AuthResponse(result.getToken(), result.getPhone(), 
-            SalesRole.valueOf(result.getRole()), null, result.getStatus()));
+        new AuthResponse(
+            result.getToken(),
+            result.getPhone(),
+            SalesRole.valueOf(result.getRole()),
+            null,
+            result.getStatus()));
   }
 
   /**
@@ -78,8 +84,13 @@ public class AuthController {
 
       if (result.isSuccess()) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new AuthResponse(null, result.getPhone(), SalesRole.SALES, 
-                result.getMessage(), result.getStatus()));
+            .body(
+                new AuthResponse(
+                    null,
+                    result.getPhone(),
+                    SalesRole.SALES,
+                    result.getMessage(),
+                    result.getStatus()));
       }
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

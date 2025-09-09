@@ -23,7 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -97,7 +96,9 @@ public class UserApprovalController {
     return ResponseEntity.ok(response);
   }
 
-  @Operation(summary = "Approve user registration", description = "Approve a pending user registration")
+  @Operation(
+      summary = "Approve user registration",
+      description = "Approve a pending user registration")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "User approved successfully"),
@@ -116,7 +117,9 @@ public class UserApprovalController {
     return ResponseEntity.ok(toApprovalDto(approvedUser));
   }
 
-  @Operation(summary = "Reject user registration", description = "Reject a pending user registration")
+  @Operation(
+      summary = "Reject user registration",
+      description = "Reject a pending user registration")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "User rejected successfully"),
@@ -149,18 +152,23 @@ public class UserApprovalController {
     return ResponseEntity.ok(toApprovalDto(resetUser));
   }
 
-  @Operation(summary = "Bulk approve or reject users", description = "Perform bulk approval operations")
+  @Operation(
+      summary = "Bulk approve or reject users",
+      description = "Perform bulk approval operations")
   @PostMapping("/bulk-action")
   public ResponseEntity<BulkActionResponse> bulkAction(
-      @Parameter(description = "Bulk action details") @Valid @RequestBody BulkApprovalRequest request) {
+      @Parameter(description = "Bulk action details") @Valid @RequestBody
+          BulkApprovalRequest request) {
 
     String adminPhone = getCurrentUserPhone();
     int successCount = 0;
 
     if ("APPROVE".equals(request.getAction())) {
-      successCount = approvalService.bulkApprove(request.getPhones(), adminPhone, request.getReason());
+      successCount =
+          approvalService.bulkApprove(request.getPhones(), adminPhone, request.getReason());
     } else if ("REJECT".equals(request.getAction())) {
-      successCount = approvalService.bulkReject(request.getPhones(), adminPhone, request.getReason());
+      successCount =
+          approvalService.bulkReject(request.getPhones(), adminPhone, request.getReason());
     } else {
       return ResponseEntity.badRequest()
           .body(new BulkActionResponse(0, request.getPhones().size(), "Invalid action"));
@@ -170,7 +178,9 @@ public class UserApprovalController {
         new BulkActionResponse(successCount, request.getPhones().size(), "Bulk action completed"));
   }
 
-  @Operation(summary = "Get user approval history", description = "Get approval history for a specific user")
+  @Operation(
+      summary = "Get user approval history",
+      description = "Get approval history for a specific user")
   @GetMapping("/{phone}/history")
   public ResponseEntity<List<UserApprovalHistory>> getUserHistory(
       @Parameter(description = "User phone number", required = true) @PathVariable String phone) {
