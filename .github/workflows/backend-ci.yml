@@ -19,6 +19,7 @@ jobs:
       contents: read
       actions: read
       checks: write
+      pull-requests: write
     
     services:
       postgres:
@@ -76,12 +77,14 @@ jobs:
         
     - name: Generate test report
       uses: dorny/test-reporter@v1.7.0
-      if: success() || failure()
+      if: always()
       with:
         name: Backend Test Results
         path: 'backend/target/surefire-reports/*.xml'
         reporter: java-junit
         fail-on-error: false
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ignore-runs: false
 
     - name: Run code style check
       run: |
