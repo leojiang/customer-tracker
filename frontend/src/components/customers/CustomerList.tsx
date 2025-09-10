@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Building2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Customer, CustomerSearchParams, CustomerPageResponse } from '@/types/customer';
 import { customerApi } from '@/lib/api';
