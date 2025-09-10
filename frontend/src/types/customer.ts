@@ -8,6 +8,32 @@ export enum CustomerStatus {
   LOST = 'LOST'
 }
 
+export enum EducationLevel {
+  ELEMENTARY = 'ELEMENTARY',
+  MIDDLE_SCHOOL = 'MIDDLE_SCHOOL',
+  HIGH_SCHOOL = 'HIGH_SCHOOL',
+  ASSOCIATE = 'ASSOCIATE',
+  BACHELOR = 'BACHELOR',
+  MASTER = 'MASTER',
+  DOCTORATE = 'DOCTORATE',
+  PROFESSIONAL = 'PROFESSIONAL',
+  CERTIFICATE = 'CERTIFICATE',
+  OTHER = 'OTHER'
+}
+
+export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
+  [EducationLevel.ELEMENTARY]: 'Elementary School',
+  [EducationLevel.MIDDLE_SCHOOL]: 'Middle School',
+  [EducationLevel.HIGH_SCHOOL]: 'High School',
+  [EducationLevel.ASSOCIATE]: 'Associate Degree',
+  [EducationLevel.BACHELOR]: 'Bachelor\'s Degree',
+  [EducationLevel.MASTER]: 'Master\'s Degree',
+  [EducationLevel.DOCTORATE]: 'Doctorate/PhD',
+  [EducationLevel.PROFESSIONAL]: 'Professional Degree',
+  [EducationLevel.CERTIFICATE]: 'Certificate/Diploma',
+  [EducationLevel.OTHER]: 'Other'
+};
+
 export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {
   [CustomerStatus.CUSTOMER_CALLED]: 'Customer called',
   [CustomerStatus.REPLIED_TO_CUSTOMER]: 'Replied to customer',
@@ -18,6 +44,30 @@ export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {
   [CustomerStatus.LOST]: 'Lost'
 };
 
+// Status translation keys mapping for use with translation function
+export const CustomerStatusTranslationKeys: Record<CustomerStatus, string> = {
+  [CustomerStatus.CUSTOMER_CALLED]: 'status.customerCalled',
+  [CustomerStatus.REPLIED_TO_CUSTOMER]: 'status.repliedToCustomer',
+  [CustomerStatus.ORDER_PLACED]: 'status.orderPlaced',
+  [CustomerStatus.ORDER_CANCELLED]: 'status.orderCancelled',
+  [CustomerStatus.PRODUCT_DELIVERED]: 'status.productDelivered',
+  [CustomerStatus.BUSINESS_DONE]: 'status.businessDone',
+  [CustomerStatus.LOST]: 'status.lost',
+};
+
+// Helper function to get translated status name
+export const getTranslatedStatusName = (status: string, t: (key: string) => string): string => {
+  // Check if the status exists in our enum
+  if (Object.values(CustomerStatus).includes(status as CustomerStatus)) {
+    return t(CustomerStatusTranslationKeys[status as CustomerStatus]);
+  }
+  // Fallback to formatted string if not in our enum
+  return status
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, l => l.toUpperCase());
+};
+
 export interface Customer {
   id: string;
   name: string;
@@ -26,9 +76,10 @@ export interface Customer {
   businessRequirements?: string;
   businessType?: string;
   age?: number;
-  education?: string;
+  education?: EducationLevel;
   gender?: string;
   location?: string;
+  price?: number;
   currentStatus: CustomerStatus;
   salesPhone?: string;
   createdAt: string;
@@ -53,9 +104,10 @@ export interface CreateCustomerRequest {
   businessRequirements?: string;
   businessType?: string;
   age?: number;
-  education?: string;
+  education?: EducationLevel;
   gender?: string;
   location?: string;
+  price?: number;
   currentStatus?: CustomerStatus;
 }
 
@@ -66,9 +118,10 @@ export interface UpdateCustomerRequest {
   businessRequirements?: string;
   businessType?: string;
   age?: number;
-  education?: string;
+  education?: EducationLevel;
   gender?: string;
   location?: string;
+  price?: number;
 }
 
 export interface StatusTransitionRequest {
