@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
@@ -57,6 +58,7 @@ interface TrendAnalysisResponse {
  */
 export default function AdminDashboard() {
   const { user, token } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
@@ -153,7 +155,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">{t('dashboard.metrics.loadingDashboard')}</p>
         </div>
       </div>
     );
@@ -164,13 +166,13 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="rounded-md bg-red-50 p-4">
-            <h3 className="text-sm font-medium text-red-800">Error loading dashboard</h3>
+            <h3 className="text-sm font-medium text-red-800">{t('dashboard.metrics.errorLoadingDashboard')}</h3>
             <p className="mt-2 text-sm text-red-700">{error}</p>
             <button
               onClick={() => fetchDashboardData()}
               className="mt-3 text-sm font-medium text-red-600 hover:text-red-500"
             >
-              Try again
+              {t('customers.tryAgain')}
             </button>
           </div>
         </div>
@@ -179,42 +181,26 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="space-y-8">
+      <div>
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-4 mb-4">
-              <button
-                onClick={() => router.push('/')}
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft size={16} className="mr-1" />
-                Back to Customers
-              </button>
-            </div>
             <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              Admin Dashboard
+              {t('dashboard.admin.title')}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              System-wide analytics and performance metrics
+              {t('dashboard.admin.subtitle')}
             </p>
           </div>
           <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            >
-              <Users size={16} className="mr-1" />
-              View Customers
-            </button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
               className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing ? t('nav.refreshing') : t('nav.refresh')}
             </button>
           </div>
         </div>
@@ -222,33 +208,33 @@ export default function AdminDashboard() {
         {/* KPI Cards */}
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Customers"
+            title={t('dashboard.metrics.totalCustomers')}
             value={overview?.totalCustomers || 0}
             change={overview?.periodChange.totalCustomersChange}
-            description="from last period"
+            description={t('dashboard.metrics.fromLastPeriod')}
             loading={loading}
           />
           
           <MetricCard
-            title="New Customers (30d)"
+            title={t('dashboard.metrics.newCustomers30d')}
             value={overview?.newCustomersThisPeriod || 0}
             change={overview?.periodChange.newCustomersChange}
-            description="from last period"
+            description={t('dashboard.metrics.fromLastPeriod')}
             loading={loading}
           />
           
           <MetricCard
             title="Active Customers"
             value={overview?.activeCustomers || 0}
-            description="Recent activity in last 30 days"
+            description={t('dashboard.metrics.recentActivity')}
             loading={loading}
           />
           
           <MetricCard
-            title="Conversion Rate"
+            title={t('dashboard.metrics.conversionRate')}
             value={overview?.conversionRate ? `${overview.conversionRate.toFixed(1)}%` : '0%'}
             change={overview?.periodChange.conversionRateChange}
-            description="from last period"
+            description={t('dashboard.metrics.fromLastPeriod')}
             loading={loading}
           />
         </div>
@@ -258,7 +244,7 @@ export default function AdminDashboard() {
           {/* Customer Trends Chart */}
           <TrendLineChart 
             data={trends?.dataPoints || []}
-            title="Customer Growth Trends"
+            title={t('dashboard.charts.trends')}
             granularity={trends?.granularity || 'daily'}
             loading={loading}
             error={error}
@@ -269,62 +255,68 @@ export default function AdminDashboard() {
             <StatusDistributionChart 
               data={statusDistribution?.statusCounts || {}}
               totalCustomers={statusDistribution?.totalCustomers || 0}
-              title="Customer Status Distribution"
+              title={t('dashboard.charts.statusDistribution')}
               loading={loading}
               error={error}
             />
 
             {/* Sales Leaderboard */}
-            <div className="overflow-hidden rounded-lg bg-white shadow">
-              <div className="p-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Sales Team Leaderboard</h3>
+            <div className="overflow-hidden rounded-lg bg-white shadow flex flex-col">
+              <div className="p-6 flex-shrink-0">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">{t('dashboard.charts.leaderboard')}</h3>
+              </div>
+              <div className="flex-1 px-6 pb-6">
                 {loading ? (
-                  <div className="animate-pulse mt-6">
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <div key={i} className="flex items-center justify-between mb-4 last:mb-0">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                          <div className="ml-3">
-                            <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-                            <div className="h-3 bg-gray-200 rounded w-16"></div>
+                  <div className="animate-pulse h-full">
+                    <div className="h-full overflow-y-auto">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex items-center justify-between mb-4 last:mb-0">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                            <div className="ml-3">
+                              <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                              <div className="h-3 bg-gray-200 rounded w-16"></div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded w-12"></div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
-                          <div className="h-3 bg-gray-200 rounded w-12"></div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : error ? (
-                  <div className="mt-6 text-center text-red-500">
-                    <p>Error loading leaderboard</p>
-                    <p className="text-sm text-gray-500 mt-1">{error}</p>
+                  <div className="h-full flex items-center justify-center text-center text-red-500">
+                    <div>
+                      <p>Error loading leaderboard</p>
+                      <p className="text-sm text-gray-500 mt-1">{error}</p>
+                    </div>
                   </div>
                 ) : leaderboard && leaderboard.rankings.length > 0 ? (
-                  <div className="mt-6">
+                  <div className="h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     <div className="space-y-4">
                       {leaderboard.rankings.map((entry) => (
-                        <div key={entry.salesPhone} className="flex items-center justify-between">
+                        <div key={entry.salesPhone} className="flex items-center justify-between hover:bg-gray-50 rounded-lg p-3 transition-colors duration-200">
                           <div className="flex items-center">
                             <span className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full flex items-center justify-center">
                               #{entry.rank}
                             </span>
                             <div className="ml-3">
                               <p className="text-sm font-medium text-gray-900">{entry.salesPhone}</p>
-                              <p className="text-sm text-gray-500">{entry.totalCustomers} customers</p>
+                              <p className="text-sm text-gray-500">{entry.totalCustomers} {t('dashboard.charts.customers')}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">{entry.conversions} conversions</p>
-                            <p className="text-sm text-gray-500">{entry.conversionRate.toFixed(1)}% rate</p>
+                            <p className="text-sm font-medium text-gray-900">{entry.conversions} {t('dashboard.sales.conversions')}</p>
+                            <p className="text-sm text-gray-500">{entry.conversionRate.toFixed(1)}% {t('dashboard.sales.rate')}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-6 text-center text-gray-500">
+                  <div className="h-full flex items-center justify-center text-center text-gray-500">
                     <p>No leaderboard data available</p>
                   </div>
                 )}

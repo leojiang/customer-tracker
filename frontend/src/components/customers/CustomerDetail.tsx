@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X } from 'lucide-react';
-import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, CustomerStatusDisplayNames } from '@/types/customer';
+import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle } from 'lucide-react';
+import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
+import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
+import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
+import { useLanguage } from '@/contexts/LanguageContext';
 // import { format } from 'date-fns'; // Unused import removed
 
 interface CustomerDetailProps {
@@ -14,6 +17,7 @@ interface CustomerDetailProps {
 }
 
 export default function CustomerDetail({ customerId, onBack }: CustomerDetailProps) {
+  const { t } = useLanguage();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +29,10 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     businessRequirements: '',
     businessType: '',
     age: undefined,
-    education: '',
+    education: undefined,
     gender: '',
     location: '',
+    price: undefined,
   });
   const [statusTransition, setStatusTransition] = useState<StatusTransitionRequest>({
     toStatus: CustomerStatus.CUSTOMER_CALLED,
@@ -37,6 +42,9 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   const [updating, setUpdating] = useState(false);
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
   const [validTransitions, setValidTransitions] = useState<CustomerStatus[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
   const loadValidTransitions = useCallback(async () => {
     try {
@@ -62,18 +70,19 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         businessRequirements: data.businessRequirements || '',
         businessType: data.businessType || '',
         age: data.age,
-        education: data.education || '',
+        education: data.education || undefined,
         gender: data.gender || '',
         location: data.location || '',
+        price: data.price,
       });
       // Load valid transitions after customer is loaded
       await loadValidTransitions();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load customer');
+      setError(err instanceof Error ? err.message : t('customers.detail.failedLoad'));
     } finally {
       setLoading(false);
     }
-  }, [customerId, loadValidTransitions]);
+  }, [customerId, loadValidTransitions, t]);
 
   useEffect(() => {
     loadCustomer();
@@ -92,12 +101,68 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         businessRequirements: customer.businessRequirements || '',
         businessType: customer.businessType || '',
         age: customer.age,
-        education: customer.education || '',
+        education: customer.education || undefined,
         gender: customer.gender || '',
         location: customer.location || '',
+        price: customer.price,
       });
     }
     setIsEditing(false);
+    setFieldErrors({});
+  };
+
+  const handleEditFormChange = (field: keyof UpdateCustomerRequest, value: string | number | undefined) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+    
+    // Clear field-specific errors
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateEditField = (field: keyof UpdateCustomerRequest, value: string | number | undefined) => {
+    let validation;
+    
+    switch (field) {
+      case 'name':
+        validation = validateName(value as string);
+        break;
+      case 'phone':
+        validation = validatePhoneNumber(value as string);
+        break;
+      case 'age':
+        validation = validateAge(value as number);
+        break;
+      default:
+        return;
+    }
+    
+    if (!validation.isValid) {
+      setFieldErrors(prev => ({ ...prev, [field]: validation.message! }));
+    } else {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleLocationSelect = (location: LocationData) => {
+    setSelectedLocation(location);
+    setEditForm(prev => ({ ...prev, location: location.address }));
+  };
+
+  const handleOpenMapPicker = () => {
+    setShowMapPicker(true);
+  };
+
+  const handleCloseMapPicker = () => {
+    setShowMapPicker(false);
   };
 
   const handleSave = async () => {
@@ -105,13 +170,48 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       return;
     }
     
+    // Clear previous errors
+    setError(null);
+    setFieldErrors({});
+    
+    // Validate required fields
+    const nameValidation = validateName(editForm.name);
+    const phoneValidation = validatePhoneNumber(editForm.phone);
+    const ageValidation = validateAge(editForm.age);
+    
+    const newFieldErrors: Record<string, string> = {};
+    
+    if (!nameValidation.isValid) {
+      newFieldErrors.name = nameValidation.message!;
+    }
+    
+    if (!phoneValidation.isValid) {
+      newFieldErrors.phone = phoneValidation.message!;
+    }
+    
+    if (!ageValidation.isValid) {
+      newFieldErrors.age = ageValidation.message!;
+    }
+    
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      return;
+    }
+    
     try {
       setUpdating(true);
-      const updatedCustomer = await customerApi.updateCustomer(customer.id, editForm);
+      
+      // Format phone number before sending
+      const cleanedForm = {
+        ...editForm,
+        phone: formatPhoneNumber(editForm.phone)
+      };
+      
+      const updatedCustomer = await customerApi.updateCustomer(customer.id, cleanedForm);
       setCustomer(updatedCustomer);
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update customer');
+      setError(err instanceof Error ? err.message : t('customers.form.failedUpdate'));
     } finally {
       setUpdating(false);
     }
@@ -138,7 +238,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       // Trigger history refresh
       setHistoryRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update status');
+      setError(err instanceof Error ? err.message : t('customers.detail.failedLoad'));
     } finally {
       setUpdating(false);
     }
@@ -152,7 +252,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   if (loading) {
     return (
       <div className="card p-6 text-center">
-        <div className="text-gray-600">Loading customer details...</div>
+        <div className="text-gray-600">{t('customers.detail.loading')}</div>
       </div>
     );
   }
@@ -160,14 +260,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   if (error || !customer) {
     return (
       <div className="card p-6 text-center">
-        <div className="text-red-600 mb-4">Error loading customer</div>
-        <p className="text-gray-600 mb-4">{error || 'Customer not found'}</p>
+        <div className="text-red-600 mb-4">{t('customers.detail.failedLoad')}</div>
+        <p className="text-gray-600 mb-4">{error || t('customers.detail.notFound')}</p>
         <div className="flex gap-2 justify-center">
           <button onClick={onBack} className="btn-secondary">
-            Go Back
+            {t('customers.detail.back')}
           </button>
           <button onClick={loadCustomer} className="btn-primary">
-            Try Again
+            {t('customers.tryAgain')}
           </button>
         </div>
       </div>
@@ -182,11 +282,11 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <button onClick={onBack} className="btn-secondary flex items-center gap-3 sm:w-auto">
           <ArrowLeft size={20} />
-          Back to List
+          {t('customers.detail.back')}
         </button>
         <div className="flex-1">
-          <h1 className="text-headline-2 mb-1">Customer Details</h1>
-          <p className="text-body-2">Manage customer information and track status changes</p>
+          <h1 className="text-headline-2 mb-1">{t('customers.detail.customerDetails')}</h1>
+          <p className="text-body-2">{t('customers.detail.customerDetails')}</p>
         </div>
       </div>
 
@@ -194,20 +294,27 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         <div className="lg:col-span-2 flex">
           <div className="card-elevated flex-1 flex flex-col" id="customer-info-card">
             <div className="card-header flex-shrink-0">
-              <h2 className="text-headline-5">Customer Information</h2>
+              <h2 className="text-headline-5">{t('customers.detail.customerDetails')}</h2>
             </div>
             <div className="card-content flex-grow">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
                 <div className="flex-1">
                   {isEditing ? (
                     <div>
-                      <label className="input-label">Customer Name</label>
+                      <label className='input-label'>{t('customers.form.name')}</label>
                       <input
                         type="text"
                         value={editForm.name}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                        className="input-field text-headline-4 font-medium"
+                        onChange={(e) => handleEditFormChange('name', e.target.value)}
+                        onBlur={(e) => validateEditField('name', e.target.value)}
+                        className={`input-field text-headline-4 font-medium ${fieldErrors.name ? 'border-red-500' : ''}`}
                       />
+                      {fieldErrors.name && (
+                        <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                          <AlertCircle size={14} />
+                          <span>{fieldErrors.name}</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <h2 className="text-headline-3 mb-3">{customer.name}</h2>
@@ -224,20 +331,20 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         className="btn-primary flex items-center justify-center gap-3"
                       >
                         <Save size={18} />
-                        {updating ? 'Saving...' : 'Save Changes'}
+                        {updating ? t('customers.form.updating') : t('customers.form.update')}
                       </button>
                       <button 
                         onClick={handleCancelEdit}
                         className="btn-secondary flex items-center justify-center gap-3"
                       >
                         <X size={18} />
-                        Cancel
+                        {t('customers.form.cancel')}
                       </button>
                     </>
                   ) : (
                     <button onClick={handleEdit} className="btn-outline flex items-center justify-center gap-3">
                       <Edit size={18} />
-                      Edit Details
+                      {t('customers.detail.edit')}
                     </button>
                   )}
                 </div>
@@ -248,16 +355,25 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <Phone size={18} className="text-surface-500" />
-                      Phone Number
+                      {t('customers.form.phone')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="tel"
-                        value={editForm.phone}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                        className="input-field"
-                        placeholder="Enter phone number"
-                      />
+                      <div>
+                        <input
+                          type="tel"
+                          value={editForm.phone}
+                          onChange={(e) => handleEditFormChange('phone', e.target.value)}
+                          onBlur={(e) => validateEditField('phone', e.target.value)}
+                          className={`input-field ${fieldErrors.phone ? 'border-red-500' : ''}`}
+                          placeholder={t('customers.form.phone')}
+                        />
+                        {fieldErrors.phone && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.phone}</span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <p className="text-body-1">{customer.phone}</p>
                     )}
@@ -266,7 +382,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <Building2 size={18} className="text-surface-500" />
-                      Company
+                      {t('customers.form.company')}
                     </label>
                     {isEditing ? (
                       <input
@@ -274,28 +390,73 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         value={editForm.company}
                         onChange={(e) => setEditForm(prev => ({ ...prev, company: e.target.value }))}
                         className="input-field"
-                        placeholder="Enter company name"
+                        placeholder={t('customers.form.company')}
                       />
                     ) : (
-                      <p className="text-body-1">{customer.company || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">{customer.company || <span className="text-surface-400 italic">{t('customers.form.company')}</span>}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <MapPin size={18} className="text-surface-500" />
-                      Location
+                      {t('customers.form.location')}
+                    </label>
+                    {isEditing ? (
+                      <div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editForm.location}
+                            onChange={(e) => handleEditFormChange('location', e.target.value)}
+                            className="input-field flex-1"
+                            placeholder={t('customers.form.location')}
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            onClick={handleOpenMapPicker}
+                            className="btn-outline flex items-center gap-2 px-3"
+                          >
+                            <MapPin size={16} />
+                            {t('map.location')}
+                          </button>
+                        </div>
+                        {selectedLocation && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                            <strong>{t('map.selectedLocation')}:</strong> {selectedLocation.address}
+                            <br />
+                            <span className="text-xs">{t('map.location')}: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-body-1">{customer.location || <span className="text-surface-400 italic">{t('customers.form.location')}</span>}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <DollarSign size={18} className="text-surface-500" />
+                      {t('customers.form.price')}
                     </label>
                     {isEditing ? (
                       <input
-                        type="text"
-                        value={editForm.location}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                        type="number"
+                        value={editForm.price || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, price: e.target.value ? parseFloat(e.target.value) : undefined }))}
                         className="input-field"
-                        placeholder="Enter location"
+                        placeholder={t('customers.form.price')}
+                        min="0"
+                        step="0.01"
                       />
                     ) : (
-                      <p className="text-body-1">{customer.location || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">
+                        {customer.price !== undefined && customer.price !== null 
+                          ? `$${customer.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                          : <span className="text-surface-400 italic">{t('customers.form.price')}</span>
+                        }
+                      </p>
                     )}
                   </div>
                 </div>
@@ -304,43 +465,61 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <User size={18} className="text-surface-500" />
-                      Age
+                      {t('customers.form.age')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="number"
-                        value={editForm.age || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, age: e.target.value ? parseInt(e.target.value) : undefined }))}
-                        className="input-field"
-                        placeholder="Enter age"
-                      />
+                      <div>
+                        <input
+                          type="number"
+                          value={editForm.age || ''}
+                          onChange={(e) => handleEditFormChange('age', e.target.value ? parseInt(e.target.value) : undefined)}
+                          onBlur={(e) => validateEditField('age', e.target.value ? parseInt(e.target.value) : undefined)}
+                          className={`input-field ${fieldErrors.age ? 'border-red-500' : ''}`}
+                          placeholder={t('customers.form.age')}
+                          min="1"
+                          max="120"
+                        />
+                        {fieldErrors.age && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.age}</span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-body-1">{customer.age || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">{customer.age || <span className="text-surface-400 italic">{t('customers.form.age')}</span>}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <GraduationCap size={18} className="text-surface-500" />
-                      Education
+                      {t('customers.form.education')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.education}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, education: e.target.value }))}
+                      <select
+                        value={editForm.education || ''}
+                        onChange={(e) => handleEditFormChange('education', e.target.value && e.target.value !== '' ? e.target.value as EducationLevel : undefined)}
                         className="input-field"
-                        placeholder="Enter education level"
-                      />
+                      >
+                        <option value="">Select education level</option>
+                        {Object.entries(EducationLevelDisplayNames).map(([key, displayName]) => (
+                          <option key={key} value={key}>
+                            {displayName}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
-                      <p className="text-body-1">{customer.education || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">
+                        {customer.education ? EducationLevelDisplayNames[customer.education] : <span className="text-surface-400 italic">Not specified</span>}
+                      </p>
                     )}
                   </div>
 
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <User size={18} className="text-surface-500" />
-                      Gender
+                      {t('customers.form.gender')}
                     </label>
                     {isEditing ? (
                       <select
@@ -361,7 +540,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <Briefcase size={18} className="text-surface-500" />
-                      Business Type
+                      {t('customers.form.businessType')}
                     </label>
                     {isEditing ? (
                       <input
@@ -369,7 +548,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         value={editForm.businessType}
                         onChange={(e) => setEditForm(prev => ({ ...prev, businessType: e.target.value }))}
                         className="input-field"
-                        placeholder="Enter business type"
+                        placeholder={t('customers.form.businessType')}
                       />
                     ) : (
                       <p className="text-body-1">{customer.businessType || <span className="text-surface-400 italic">Not specified</span>}</p>
@@ -378,7 +557,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
                   <div>
                     <label className="input-label">
-                      Business Requirements
+                      {t('customers.form.businessReq')}
                     </label>
                     {isEditing ? (
                       <textarea
@@ -386,7 +565,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         onChange={(e) => setEditForm(prev => ({ ...prev, businessRequirements: e.target.value }))}
                         rows={4}
                         className="input-field"
-                        placeholder="Enter business requirements..."
+                        placeholder={t('customers.form.businessReq')}
                       />
                     ) : (
                       <p className="text-body-1">{customer.businessRequirements || <span className="text-surface-400 italic">Not specified</span>}</p>
@@ -402,7 +581,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
           {/* Status Management Card */}
           <div className="card-elevated flex-shrink-0">
             <div className="card-header">
-              <h3 className="text-headline-6">Status Management</h3>
+              <h3 className="text-headline-6">{t('customers.detail.statusManagement')}</h3>
             </div>
             <div className="card-content">
               {availableTransitions.length > 0 ? (
@@ -419,15 +598,15 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   className="btn-primary w-full flex items-center justify-center gap-3"
                 >
                   <ArrowLeft className="rotate-90" size={18} />
-                  Update Status
+                  {t('customers.detail.updateStatus')}
                 </button>
               ) : (
                 <div className="text-center py-6">
                   <div className="text-body-2 text-surface-500 mb-2">No status transitions available</div>
                   <p className="text-caption text-surface-400">
                     {customer.currentStatus === 'BUSINESS_DONE' 
-                      ? 'Business process is complete - no further transitions allowed'
-                      : 'Loading available transitions...'}
+                      ? t('customers.detail.businessComplete')
+                      : t('customers.detail.loadingTransitions')}
                   </p>
                 </div>
               )}
@@ -447,14 +626,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
             <div className="card-header rounded-t-2xl">
               <h3 className="text-headline-5 flex items-center gap-3">
                 <ArrowLeft className="rotate-90 text-primary-500" size={20} />
-                Update Status
+                {t('customers.detail.updateStatus')}
               </h3>
             </div>
             
             <div className="card-content space-y-6">
               <div>
                 <label className="input-label">
-                  New Status
+                  {t('customers.detail.newStatus')}
                 </label>
                 <select
                   value={statusTransition.toStatus}
@@ -463,7 +642,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 >
                   {availableTransitions.map(status => (
                     <option key={status} value={status}>
-                      {CustomerStatusDisplayNames[status]}
+                      {getTranslatedStatusName(status, t)}
                     </option>
                   ))}
                 </select>
@@ -471,14 +650,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
               <div>
                 <label className="input-label">
-                  Reason (Optional)
+                  {t('customers.detail.reasonOptional')}
                 </label>
                 <textarea
                   value={statusTransition.reason}
                   onChange={(e) => setStatusTransition(prev => ({ ...prev, reason: e.target.value }))}
                   rows={3}
                   className="input-field focus-ring"
-                  placeholder="Enter reason for status change..."
+                  placeholder={t('customers.detail.statusReason')}
                 />
               </div>
             </div>
@@ -492,19 +671,27 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   className="btn-primary flex items-center justify-center gap-3 flex-1"
                 >
                   <ArrowLeft className="rotate-90" size={18} />
-                  {updating ? 'Updating...' : 'Update Status'}
+                  {updating ? t('customers.detail.updating') : t('customers.detail.updateStatus')}
                 </button>
                 <button 
                   onClick={() => setShowStatusModal(false)}
                   className="btn-secondary flex items-center justify-center gap-3 flex-1"
                 >
-                  Cancel
+                  {t('customers.form.cancel')}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Map Picker Modal */}
+      <GaodeMapPicker
+        isOpen={showMapPicker}
+        onClose={handleCloseMapPicker}
+        onSelect={handleLocationSelect}
+        initialLocation={selectedLocation || undefined}
+      />
     </div>
   );
 }

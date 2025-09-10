@@ -2,14 +2,16 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, Clock, UserCheck, Users, RefreshCw, Search } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck, Users, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
 import { userApprovalApi } from '@/lib/api';
 import { 
   ApprovalStatistics, 
   UserApprovalDto, 
-  ApprovalStatus
+  ApprovalStatus,
+  getTranslatedApprovalStatusName
 } from '@/types/auth';
 
 /**
@@ -18,17 +20,21 @@ import {
  */
 export default function UserApprovalsPage() {
   const { user, token } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [statistics, setStatistics] = useState<ApprovalStatistics | null>(null);
   const [users, setUsers] = useState<UserApprovalDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchingUsers, setFetchingUsers] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<ApprovalStatus>(ApprovalStatus.PENDING);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(20);
+  const [previousPage, setPreviousPage] = useState(1);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -40,10 +46,42 @@ export default function UserApprovalsPage() {
     userPhone: ''
   });
 
-  const fetchData = useCallback(async (isRefresh = false) => {
-    if (!token) {
-      return;
+  const _fetchStatistics = useCallback(async () => {
+    if (!token) {return;}
+    
+    try {
+      const statsData = await userApprovalApi.getStatistics();
+      setStatistics(statsData);
+    } catch (err) {
+      console.error('Failed to fetch statistics:', err);
     }
+  }, [token]);
+
+  const _fetchUsers = useCallback(async (status: ApprovalStatus, page: number, isRefresh = false) => {
+    if (!token) {return;}
+
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setFetchingUsers(true);
+      }
+      setError(null);
+
+      const usersData = await userApprovalApi.getUserApprovals(status, page, 20);
+      setUsers(usersData.items);
+      setTotalPages(usersData.totalPages);
+      setTotalUsers(usersData.total);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setFetchingUsers(false);
+      setRefreshing(false);
+    }
+  }, [token]);
+
+  const fetchData = useCallback(async (isRefresh = false) => {
+    if (!token) {return;}
 
     try {
       if (isRefresh) {
@@ -56,7 +94,7 @@ export default function UserApprovalsPage() {
       // Fetch statistics and users in parallel
       const [statsData, usersData] = await Promise.all([
         userApprovalApi.getStatistics(),
-        userApprovalApi.getUserApprovals(selectedStatus, currentPage, 20)
+        userApprovalApi.getUserApprovals(selectedStatus, currentPage, pageSize)
       ]);
 
       setStatistics(statsData);
@@ -64,12 +102,12 @@ export default function UserApprovalsPage() {
       setTotalPages(usersData.totalPages);
       setTotalUsers(usersData.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : t('error.unexpectedError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token, selectedStatus, currentPage]);
+  }, [token, selectedStatus, currentPage, pageSize, t]);
 
   useEffect(() => {
     if (!user || !token) {
@@ -82,13 +120,70 @@ export default function UserApprovalsPage() {
       return;
     }
 
+    // Initial data load only
     fetchData();
   }, [user, token, router, fetchData]);
 
-  // Reset page when status changes
+  // Handle status changes without page refresh
   useEffect(() => {
+    if (!token || loading) {return;}
+    
+    // Reset page to 1 when status changes
     setCurrentPage(1);
-  }, [selectedStatus]);
+    setPreviousPage(1);
+    
+    // Fetch users for new status
+    const loadUsers = async () => {
+      try {
+        setFetchingUsers(true);
+        setError(null);
+        
+        const [statsData, usersData] = await Promise.all([
+          userApprovalApi.getStatistics(),
+          userApprovalApi.getUserApprovals(selectedStatus, 1, pageSize)
+        ]);
+        
+        setStatistics(statsData);
+        setUsers(usersData.items);
+        setTotalPages(usersData.totalPages);
+        setTotalUsers(usersData.total);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setFetchingUsers(false);
+      }
+    };
+    
+    loadUsers();
+  }, [selectedStatus, token, loading, pageSize]);
+
+  // Handle page changes (excluding status-driven resets to page 1)
+  useEffect(() => {
+    if (!token || loading) {return;}
+    
+    // Only fetch if this is a user-initiated page change
+    if (currentPage !== previousPage) {
+      const loadUsersForPage = async () => {
+        try {
+          setFetchingUsers(true);
+          setError(null);
+          
+          const usersData = await userApprovalApi.getUserApprovals(selectedStatus, currentPage, pageSize);
+          setUsers(usersData.items);
+          setTotalPages(usersData.totalPages);
+          setTotalUsers(usersData.total);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+          setFetchingUsers(false);
+        }
+      };
+      
+      loadUsersForPage();
+      setPreviousPage(currentPage);
+    }
+  }, [currentPage, token, loading, selectedStatus, pageSize, previousPage]);
+
 
   const handleStatusChange = (status: ApprovalStatus) => {
     setSelectedStatus(status);
@@ -96,6 +191,38 @@ export default function UserApprovalsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const delta = 2; // Number of pages to show on each side of current page
+    const range: number[] = [];
+    const rangeWithDots: (number | string)[] = [];
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else {
+      if (totalPages > 1) {rangeWithDots.push(totalPages);}
+    }
+
+    return rangeWithDots;
   };
 
   const openModal = (type: 'approve' | 'reject' | 'reset', userPhone: string) => {
@@ -131,18 +258,39 @@ export default function UserApprovalsPage() {
           break;
       }
       
-      await fetchData(true); // Refresh data
+      await Promise.all([
+        userApprovalApi.getUserApprovals(selectedStatus, currentPage, pageSize).then(data => {
+          setUsers(data.items);
+          setTotalPages(data.totalPages);
+          setTotalUsers(data.total);
+        }),
+        userApprovalApi.getStatistics().then(data => setStatistics(data))
+      ]);
       closeModal();
     } catch (error) {
       console.error(`Failed to ${type} user:`, error);
-      alert(`Failed to ${type} user. Please try again.`);
+      alert(`${t('approvals.approveFailed')}. ${t('customers.tryAgain')}.`);
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleRefresh = () => {
-    fetchData(true);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        userApprovalApi.getUserApprovals(selectedStatus, currentPage, pageSize).then(data => {
+          setUsers(data.items);
+          setTotalPages(data.totalPages);
+          setTotalUsers(data.total);
+        }),
+        userApprovalApi.getStatistics().then(data => setStatistics(data))
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const getStatusBadgeColor = (status: ApprovalStatus) => {
@@ -180,7 +328,7 @@ export default function UserApprovalsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading user approvals...</p>
+          <p className="mt-4 text-gray-600">{t('approvals.loadingRequests')}</p>
         </div>
       </div>
     );
@@ -191,13 +339,13 @@ export default function UserApprovalsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="rounded-md bg-red-50 p-4">
-            <h3 className="text-sm font-medium text-red-800">Error loading data</h3>
+            <h3 className="text-sm font-medium text-red-800">{t('approvals.errorLoading')}</h3>
             <p className="mt-2 text-sm text-red-700">{error}</p>
             <button
-              onClick={() => fetchData()}
+              onClick={handleRefresh}
               className="mt-3 text-sm font-medium text-red-600 hover:text-red-500"
             >
-              Try again
+              {t('customers.tryAgain')}
             </button>
           </div>
         </div>
@@ -206,25 +354,16 @@ export default function UserApprovalsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 overflow-y-scroll">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-4 mb-4">
-              <button
-                onClick={() => router.push('/')}
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft size={16} className="mr-1" />
-                Back to Home
-              </button>
-            </div>
             <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              User Approvals
+              {t('approvals.title')}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Manage pending user registrations and approval requests
+              {t('approvals.subtitle')}
             </p>
           </div>
           <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
@@ -234,7 +373,7 @@ export default function UserApprovalsPage() {
               className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing ? t('nav.refreshing') : t('nav.refresh')}
             </button>
           </div>
         </div>
@@ -243,19 +382,19 @@ export default function UserApprovalsPage() {
         {statistics && (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Pending Approvals</dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.pending')}</dt>
               <dd className="mt-1 text-3xl font-semibold text-yellow-600">{statistics.pendingCount}</dd>
             </div>
             <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Approved Users</dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.approved')}</dt>
               <dd className="mt-1 text-3xl font-semibold text-green-600">{statistics.approvedCount}</dd>
             </div>
             <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Rejected Users</dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.rejected')}</dt>
               <dd className="mt-1 text-3xl font-semibold text-red-600">{statistics.rejectedCount}</dd>
             </div>
             <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Approval Rate</dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">{t('dashboard.metrics.conversionRate')}</dt>
               <dd className="mt-1 text-3xl font-semibold text-indigo-600">
                 {statistics.approvalRate.toFixed(1)}%
               </dd>
@@ -277,7 +416,7 @@ export default function UserApprovalsPage() {
                 } border border-gray-300`}
               >
                 {getStatusIcon(status)}
-                <span className="ml-2">{status}</span>
+                <span className="ml-2">{getTranslatedApprovalStatusName(status, t)}</span>
                 {statistics && (
                   <span className="ml-2 bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full">
                     {status === ApprovalStatus.PENDING
@@ -297,10 +436,10 @@ export default function UserApprovalsPage() {
             </div>
             <input
               type="text"
-              placeholder="Search by phone number..."
+              placeholder={`${t('approvals.phone')}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
         </div>
@@ -311,24 +450,56 @@ export default function UserApprovalsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
+                  {t('approvals.phone')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('approvals.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Registered
+                  {t('approvals.requestDate')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Days Waiting
+                  {t('approvals.daysWaiting')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('approvals.actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
+              {fetchingUsers ? (
+                // Loading skeleton rows
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={`loading-${index}`} className="animate-pulse">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-gray-200"></div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <div className="h-5 w-5 bg-gray-200 rounded"></div>
+                        <div className="h-5 w-5 bg-gray-200 rounded"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                filteredUsers.map((user) => (
                 <tr key={user.phone} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -340,7 +511,7 @@ export default function UserApprovalsPage() {
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{user.phone}</div>
                         {user.rejectionReason && (
-                          <div className="text-sm text-red-600">Reason: {user.rejectionReason}</div>
+                          <div className="text-sm text-red-600">{t('approvals.rejectionReason')}: {user.rejectionReason}</div>
                         )}
                       </div>
                     </div>
@@ -348,14 +519,14 @@ export default function UserApprovalsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(user.approvalStatus)}`}>
                       {getStatusIcon(user.approvalStatus)}
-                      <span className="ml-1">{user.approvalStatus}</span>
+                      <span className="ml-1">{getTranslatedApprovalStatusName(user.approvalStatus, t)}</span>
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.daysWaiting} days
+                    {user.daysWaiting} {t('approvals.days')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
@@ -365,7 +536,7 @@ export default function UserApprovalsPage() {
                             onClick={() => openModal('approve', user.phone)}
                             disabled={actionLoading === user.phone}
                             className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                            title="Approve User"
+                            title={t('approvals.approveUser')}
                           >
                             <CheckCircle size={18} />
                           </button>
@@ -373,7 +544,7 @@ export default function UserApprovalsPage() {
                             onClick={() => openModal('reject', user.phone)}
                             disabled={actionLoading === user.phone}
                             className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                            title="Reject User"
+                            title={t('approvals.rejectUser')}
                           >
                             <XCircle size={18} />
                           </button>
@@ -384,7 +555,7 @@ export default function UserApprovalsPage() {
                           onClick={() => openModal('reset', user.phone)}
                           disabled={actionLoading === user.phone}
                           className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
-                          title="Reset to Pending"
+                          title={t('approvals.resetToPending')}
                         >
                           <Clock size={18} />
                         </button>
@@ -392,51 +563,118 @@ export default function UserApprovalsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
           
-          {filteredUsers.length === 0 && (
+          {!fetchingUsers && filteredUsers.length === 0 && (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
               <p className="mt-1 text-sm text-gray-500">
                 {searchTerm 
-                  ? `No users found matching "${searchTerm}"`
-                  : `No users with status "${selectedStatus}"`
+                  ? `${t('approvals.noUsersFoundMatching')} "${searchTerm}"`
+                  : `${t('approvals.noUsersWithStatus')} "${getTranslatedApprovalStatusName(selectedStatus, t)}"`
                 }
               </p>
             </div>
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between">
+        {/* Enhanced Pagination */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Results Info and Page Size Selector */}
+          <div className="flex items-center gap-4">
             <div className="text-sm text-gray-700">
-              Showing {filteredUsers.length} of {totalUsers} users
+              {t('approvals.showing')} {Math.min((currentPage - 1) * pageSize + 1, totalUsers)} {t('approvals.to')} {Math.min(currentPage * pageSize, totalUsers)} {t('approvals.of')} {totalUsers} {t('approvals.users')}
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <label htmlFor="pageSize" className="text-sm text-gray-700">
+                {t('approvals.show')}
+              </label>
+              <select
+                id="pageSize"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+                className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700">{t('approvals.perPage')}</span>
+            </div>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              {/* First Page Button */}
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                title={t('approvals.firstPage')}
+              >
+                <ChevronLeft size={16} />
+                <ChevronLeft size={16} className="-ml-1" />
+              </button>
+
+              {/* Previous Page Button */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('approvals.previousPage')}
               >
-                Previous
+                <ChevronLeft size={16} />
               </button>
-              <span className="px-3 py-2 text-sm font-medium text-gray-700">
-                Page {currentPage} of {totalPages}
-              </span>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((pageNum, index) => (
+                  <button
+                    key={`${pageNum}-${index}`}
+                    onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
+                    disabled={typeof pageNum !== 'number'}
+                    className={`px-3 py-2 text-sm font-medium rounded-md ${
+                      pageNum === currentPage
+                        ? 'bg-indigo-600 text-white border border-indigo-600'
+                        : typeof pageNum === 'number'
+                        ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        : 'text-gray-400 bg-white border border-transparent cursor-default'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next Page Button */}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('approvals.nextPage')}
               >
-                Next
+                <ChevronRight size={16} />
+              </button>
+
+              {/* Last Page Button */}
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                title={t('approvals.lastPage')}
+              >
+                <ChevronRight size={16} />
+                <ChevronRight size={16} className="-ml-1" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Approval Modal */}
         <ApprovalModal

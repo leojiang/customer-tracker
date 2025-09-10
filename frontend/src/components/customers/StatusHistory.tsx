@@ -6,6 +6,7 @@ import { StatusHistory as StatusHistoryType } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface StatusHistoryProps {
   customerId: string;
@@ -13,6 +14,7 @@ interface StatusHistoryProps {
 }
 
 export default function StatusHistory({ customerId, refreshTrigger }: StatusHistoryProps) {
+  const { t } = useLanguage();
   const [history, setHistory] = useState<StatusHistoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +27,14 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
         const data = await customerApi.getStatusHistory(customerId);
         setHistory(data.sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime()));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load status history');
+        setError(err instanceof Error ? err.message : t('detail.errorHistory'));
       } finally {
         setLoading(false);
       }
     };
 
     loadHistory();
-  }, [customerId, refreshTrigger]);
+  }, [customerId, refreshTrigger, t]);
 
   if (loading) {
     return (
@@ -40,13 +42,13 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
         <div className="card-header flex-shrink-0">
           <h3 className="text-headline-6 flex items-center gap-3">
             <Clock size={20} className="text-surface-500" />
-            Status History
+            {t('detail.statusHistory')}
           </h3>
         </div>
         <div className="card-content flex-grow flex items-center justify-center">
           <div className="text-center">
             <div className="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
-            <div className="text-body-1 text-surface-600">Loading history...</div>
+            <div className="text-body-1 text-surface-600">{t('detail.loadingHistory')}</div>
           </div>
         </div>
       </div>
@@ -59,7 +61,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
         <div className="card-header flex-shrink-0">
           <h3 className="text-headline-6 flex items-center gap-3">
             <Clock size={20} className="text-surface-500" />
-            Status History
+            {t('detail.statusHistory')}
           </h3>
         </div>
         <div className="card-content flex-grow flex items-center justify-center">
@@ -78,7 +80,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
         <div className="card-header flex-shrink-0">
           <h3 className="text-headline-6 flex items-center gap-3">
             <Clock size={20} className="text-surface-500" />
-            Status History
+            {t('detail.statusHistory')}
           </h3>
         </div>
         <div className="card-content flex-grow flex items-center justify-center">
@@ -86,7 +88,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
             <div className="w-16 h-16 bg-surface-200 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Clock size={24} className="text-surface-400" />
             </div>
-            <div className="text-body-1 text-surface-600">No status history available</div>
+            <div className="text-body-1 text-surface-600">{t('detail.noHistory')}</div>
           </div>
         </div>
       </div>
@@ -98,7 +100,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
       <div className="card-header flex-shrink-0">
         <h3 className="text-headline-6 flex items-center gap-3">
           <Clock size={20} className="text-surface-500" />
-          Status History
+          {t('detail.statusHistory')}
         </h3>
       </div>
       <div className="card-content flex-grow overflow-hidden">
@@ -127,7 +129,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
                       </div>
                     ) : (
                       <div className="flex items-center gap-3">
-                        <span className="text-body-2 text-surface-600">Initial status:</span>
+                        <span className="text-body-2 text-surface-600">{t('detail.initialStatus')}</span>
                         <StatusBadge status={item.toStatus} />
                       </div>
                     )}
