@@ -47,23 +47,23 @@ public class AuthService {
     Optional<Sales> salesOptional = salesRepository.findByPhone(phone);
 
     if (salesOptional.isEmpty()) {
-      return AuthResult.failure("Invalid credentials", null);
+      return AuthResult.failure("error.incorrectCredentials", null);
     }
 
     Sales sales = salesOptional.get();
 
     if (!passwordEncoder.matches(password, sales.getPassword())) {
-      return AuthResult.failure("Invalid credentials", null);
+      return AuthResult.failure("error.incorrectCredentials", null);
     }
 
     // Check approval status
     if (!sales.isApproved()) {
       if (sales.isPending()) {
         return AuthResult.failure(
-            "Your account is pending approval. Please contact your administrator.", "PENDING");
+            "error.accountPending", "PENDING");
       } else if (sales.isRejected()) {
         return AuthResult.failure(
-            "Your account access has been denied. Please contact your administrator for assistance.",
+            "error.accountDenied",
             "REJECTED");
       }
     }
@@ -82,7 +82,7 @@ public class AuthService {
    */
   public AuthResult register(String phone, String password) {
     if (salesRepository.existsByPhone(phone)) {
-      throw new IllegalArgumentException("Phone number already exists");
+      throw new IllegalArgumentException("error.phoneAlreadyExists");
     }
 
     String hashedPassword = passwordEncoder.encode(password);
@@ -92,7 +92,7 @@ public class AuthService {
     Sales savedSales = salesRepository.save(sales);
 
     return AuthResult.registrationSuccess(
-        "Registration submitted successfully. Your account is pending admin approval.",
+        "register.success.message",
         savedSales.getPhone(),
         "PENDING");
   }

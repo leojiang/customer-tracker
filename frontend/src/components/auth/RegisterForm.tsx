@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Phone, Lock, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { RegisterRequest } from '@/types/auth';
 
 interface RegisterFormProps {
@@ -21,36 +22,39 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { register, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
-      setError('All fields are required');
+      setError(t('register.allFieldsRequired'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('register.passwordsDontMatch'));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('register.passwordTooShort'));
       return;
     }
 
     try {
       const result = await register(formData);
       if (!result.success) {
-        setError(result.error || 'Registration failed');
+        // Always try to translate the error message
+        const errorMessage = result.error || 'auth.registerFailed';
+        setError(t(errorMessage));
       } else {
         // Navigate to success page
         onRegistrationSuccess(formData.phone);
       }
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      setError(t('auth.registerFailed'));
     }
   };
 
@@ -66,8 +70,8 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
     <div className="w-full max-w-md">
       <div className="card-elevated">
         <div className="card-header text-center">
-          <h1 className="text-headline-4">Create Account</h1>
-          <p className="text-body-2 mt-2">Register as a sales person</p>
+          <h1 className="text-headline-4">{t('register.createAccount')}</h1>
+          <p className="text-body-2 mt-2">{t('register.joinPlatform')}</p>
         </div>
         
         <div className="card-content">
@@ -91,14 +95,14 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
             <div>
               <label className="input-label flex items-center gap-2">
                 <Phone size={18} className="text-surface-500" />
-                Phone Number
+                {t('auth.phoneNumber')}
               </label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 className="input-field focus-ring"
-                placeholder="Enter your phone number"
+                placeholder={t('auth.enterPhone')}
                 required
               />
             </div>
@@ -106,7 +110,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
             <div>
               <label className="input-label flex items-center gap-2">
                 <Lock size={18} className="text-surface-500" />
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <input
@@ -114,7 +118,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className="input-field focus-ring pr-12"
-                  placeholder="Create a password"
+                  placeholder={t('register.createPassword')}
                   required
                   minLength={6}
                 />
@@ -126,13 +130,13 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <p className="text-xs text-surface-500 mt-1">Minimum 6 characters</p>
+              <p className="text-xs text-surface-500 mt-1">{t('register.minimumChars')}</p>
             </div>
 
             <div>
               <label className="input-label flex items-center gap-2">
                 <Lock size={18} className="text-surface-500" />
-                Confirm Password
+                {t('register.confirmPassword')}
               </label>
               <div className="relative">
                 <input
@@ -140,7 +144,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className="input-field focus-ring pr-12"
-                  placeholder="Confirm your password"
+                  placeholder={t('register.enterConfirmPassword')}
                   required
                   minLength={6}
                 />
@@ -160,7 +164,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
               className="btn-primary w-full flex items-center justify-center gap-3"
             >
               <UserPlus size={18} />
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? t('register.creating') : t('register.createAccount')}
             </button>
           </form>
 
@@ -168,13 +172,13 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
           
           <div className="text-center">
             <p className="text-body-2">
-              Already have an account?{' '}
+              {t('register.alreadyHaveAccount')}{' '}
               <button
                 type="button"
                 onClick={onSwitchToLogin}
                 className="text-primary-600 hover:text-primary-700 font-medium focus:outline-none focus:underline"
               >
-                Sign In
+                {t('register.signIn')}
               </button>
             </p>
           </div>

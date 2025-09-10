@@ -76,7 +76,7 @@ public class AuthController {
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
     if (!request.getPassword().equals(request.getConfirmPassword())) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, "Passwords do not match", null));
+          .body(new AuthResponse(null, null, null, "register.passwordsDontMatch", null));
     }
 
     try {
@@ -94,7 +94,7 @@ public class AuthController {
       }
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(new AuthResponse(null, null, null, "Registration failed", null));
+          .body(new AuthResponse(null, null, null, "auth.registerFailed", null));
 
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest()
@@ -121,7 +121,7 @@ public class AuthController {
     }
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new AuthResponse(null, null, null, "Invalid or expired token", null));
+        .body(new AuthResponse(null, null, null, "error.invalidToken", null));
   }
 
   // Request DTOs

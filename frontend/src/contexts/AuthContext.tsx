@@ -82,11 +82,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: true };
       }
       
-      return { success: false, error: 'Invalid response from server' };
+      return { success: false, error: 'error.invalidResponse' };
     } catch (error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Login failed' 
+        error: error instanceof Error ? error.message : 'auth.loginFailed' 
       };
     }
   };
@@ -118,11 +118,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: true };
       }
       
-      return { success: false, error: 'Invalid response from server' };
+      return { success: false, error: 'error.invalidResponse' };
     } catch (error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Registration failed' 
+        error: error instanceof Error ? error.message : 'auth.registerFailed' 
       };
     }
   };

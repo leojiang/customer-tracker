@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Phone, Lock, LogIn, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { LoginRequest } from '@/types/auth';
 
 interface LoginFormProps {
@@ -19,6 +20,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
+  const { t } = useLanguage();
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +29,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     
     
     if (!formData.phone.trim() || !formData.password.trim()) {
-      setError('Phone and password are required');
+      setError(t('error.phonePasswordRequired'));
       return;
     }
 
@@ -39,27 +41,22 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       
       if (!result.success) {
         // Parse error message and provide user-friendly feedback
-        const errorMessage = result.error || 'Login failed';
-        // Display backend messages directly - they are now user-friendly
-        if (errorMessage.includes('Invalid credentials')) {
-          setError('Incorrect phone number or password. Please check your credentials and try again.');
-        } else {
-          // For all other errors (including pending/rejected), use the backend message directly
-          setError(errorMessage);
-        }
+        const errorMessage = result.error || 'auth.loginFailed';
+        // Always try to translate the error message
+        setError(t(errorMessage));
       }
     } catch (error) {
       // Handle network errors or other unexpected issues
       if (error instanceof Error) {
         if (error.message.includes('Network error')) {
-          setError('Unable to connect to the server. Please check your internet connection and try again.');
+          setError(t('error.networkError'));
         } else if (error.message.includes('403') || error.message.includes('401')) {
-          setError('Incorrect phone number or password. Please check your credentials and try again.');
+          setError(t('error.incorrectCredentials'));
         } else {
-          setError('An unexpected error occurred. Please try again.');
+          setError(t('error.unexpectedError'));
         }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError(t('error.unexpectedError'));
       }
     } finally {
       setIsLoading(false);
@@ -69,7 +66,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const handleInputChange = (field: keyof LoginRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing after seeing invalid credentials error
-    if (error && error.includes('Incorrect phone number or password')) {
+    if (error && (error === t('error.incorrectCredentials') || error.includes('Incorrect phone number or password') || error.includes('手机号码或密码错误'))) {
       setError(null);
     }
   };
@@ -84,37 +81,37 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     let bgClass = 'bg-red-50 border-red-200';
     let textClass = 'text-red-700';
     let iconClass = 'text-red-500';
-    let title = 'Login Failed';
+    let title = t('error.loginFailed');
 
-    // Enhanced error type detection based on improved error messages
-    if (error.includes('Incorrect phone number or password') || error.includes('check your credentials')) {
+    // Enhanced error type detection based on translation keys and messages
+    if (error === t('error.incorrectCredentials') || error.includes('Incorrect phone number or password') || error.includes('check your credentials') || error.includes('手机号码或密码错误')) {
       errorType = 'invalid-credentials';
       icon = <AlertCircle className="w-5 h-5" />;
       bgClass = 'bg-red-50 border-red-200';
       textClass = 'text-red-700';
       iconClass = 'text-red-500';
-      title = 'Invalid Credentials';
-    } else if (error.includes('pending approval')) {
+      title = t('error.invalidCredentials');
+    } else if (error === t('error.accountPending') || error.includes('pending approval') || error.includes('等待审批')) {
       errorType = 'pending';
       icon = <Clock className="w-5 h-5" />;
       bgClass = 'bg-yellow-50 border-yellow-200';
       textClass = 'text-yellow-700';
       iconClass = 'text-yellow-500';
-      title = 'Account Pending Approval';
-    } else if (error.includes('access has been denied')) {
+      title = t('error.accountPending');
+    } else if (error === t('error.accountDenied') || error.includes('access has been denied') || error.includes('访问被拒绝')) {
       errorType = 'rejected';
       icon = <XCircle className="w-5 h-5" />;
       bgClass = 'bg-red-50 border-red-200';
       textClass = 'text-red-700';
       iconClass = 'text-red-500';
-      title = 'Account Access Denied';
-    } else if (error.includes('Unable to connect') || error.includes('Network error')) {
+      title = t('error.accountDenied');
+    } else if (error === t('error.networkError') || error.includes('Unable to connect') || error.includes('Network error') || error.includes('无法连接')) {
       errorType = 'network';
       icon = <AlertCircle className="w-5 h-5" />;
       bgClass = 'bg-orange-50 border-orange-200';
       textClass = 'text-orange-700';
       iconClass = 'text-orange-500';
-      title = 'Connection Error';
+      title = t('error.connectionError');
     }
 
     return (
@@ -135,7 +132,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                 type="button"
                 onClick={() => setError(null)}
                 className={`${textClass.replace('700', '400')} hover:${textClass.replace('700', '600')} ml-2 p-1 rounded-md hover:bg-current hover:bg-opacity-10`}
-                aria-label="Dismiss error message"
+                aria-label={t('error.dismissMessage')}
               >
                 ×
               </button>
@@ -144,40 +141,40 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             {/* Contextual help based on error type */}
             {errorType === 'invalid-credentials' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
-                <p className="font-medium mb-1">Tips:</p>
+                <p className="font-medium mb-1">{t('error.tips')}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>Double-check your phone number format</li>
-                  <li>Ensure your password is correct</li>
-                  <li>Make sure Caps Lock is not enabled</li>
+                  <li>{t('error.checkPhoneFormat')}</li>
+                  <li>{t('error.ensurePassword')}</li>
+                  <li>{t('error.capsLock')}</li>
                 </ul>
               </div>
             )}
             
             {errorType === 'pending' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
-                <p className="font-medium mb-1">What to do next:</p>
+                <p className="font-medium mb-1">{t('error.whatToDo')}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>Please wait for admin approval</li>
-                  <li>Contact admin if you need immediate access</li>
-                  <li>Try logging in again later</li>
+                  <li>{t('error.waitApproval')}</li>
+                  <li>{t('error.contactAdmin')}</li>
+                  <li>{t('error.tryAgainLater')}</li>
                 </ul>
               </div>
             )}
             
             {errorType === 'rejected' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
-                <p className="font-medium mb-1">Need help?</p>
-                <p>Contact your system administrator to discuss your account status and request access.</p>
+                <p className="font-medium mb-1">{t('error.needHelp')}</p>
+                <p>{t('error.contactSystemAdmin')}</p>
               </div>
             )}
             
             {errorType === 'network' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
-                <p className="font-medium mb-1">Try these steps:</p>
+                <p className="font-medium mb-1">{t('error.trySteps')}</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>Check your internet connection</li>
-                  <li>Refresh the page and try again</li>
-                  <li>Contact support if the problem persists</li>
+                  <li>{t('error.checkConnection')}</li>
+                  <li>{t('error.refreshPage')}</li>
+                  <li>{t('error.contactSupport')}</li>
                 </ul>
               </div>
             )}
@@ -191,8 +188,8 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     <div className="w-full max-w-md">
       <div className="card-elevated">
         <div className="card-header text-center">
-          <h1 className="text-headline-4">Welcome Back</h1>
-          <p className="text-body-2 mt-2">Sign in to your sales account</p>
+          <h1 className="text-headline-4">{t('auth.welcomeBack')}</h1>
+          <p className="text-body-2 mt-2">{t('auth.signInToAccount')}</p>
         </div>
         
         <div className="card-content">
@@ -202,14 +199,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             <div>
               <label className="input-label flex items-center gap-2">
                 <Phone size={18} className="text-surface-500" />
-                Phone Number
+                {t('auth.phoneNumber')}
               </label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 className="input-field focus-ring"
-                placeholder="Enter your phone number"
+                placeholder={t('auth.enterPhone')}
                 required
               />
             </div>
@@ -217,14 +214,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             <div>
               <label className="input-label flex items-center gap-2">
                 <Lock size={18} className="text-surface-500" />
-                Password
+                {t('auth.password')}
               </label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="input-field focus-ring"
-                placeholder="Enter your password"
+                placeholder={t('auth.enterPassword')}
                 required
               />
             </div>
@@ -235,7 +232,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
               className="btn-primary w-full flex items-center justify-center gap-3"
             >
               <LogIn size={18} />
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
@@ -243,13 +240,13 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           
           <div className="text-center">
             <p className="text-body-2">
-              Don&apos;t have an account?{' '}
+              {t('auth.dontHaveAccount')}{' '}
               <button
                 type="button"
                 onClick={onSwitchToRegister}
                 className="text-primary-600 hover:text-primary-700 font-medium focus:outline-none focus:underline"
               >
-                Create Account
+                {t('auth.createAccount')}
               </button>
             </p>
           </div>
