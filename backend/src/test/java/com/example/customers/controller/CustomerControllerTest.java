@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.customers.config.TestSecurityConfig;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
+import com.example.customers.model.EducationLevel;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
@@ -73,7 +74,7 @@ class CustomerControllerTest {
     testCustomer.setBusinessRequirements("Need CRM solution");
     testCustomer.setBusinessType("Technology");
     testCustomer.setAge(30);
-    testCustomer.setEducation("Bachelor's Degree");
+    testCustomer.setEducation(EducationLevel.BACHELOR);
     testCustomer.setGender("Male");
     testCustomer.setLocation("New York");
     testCustomer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
@@ -273,6 +274,7 @@ class CustomerControllerTest {
     CustomerController.UpdateCustomerRequest request =
         new CustomerController.UpdateCustomerRequest();
     request.setName("Updated Name");
+    request.setPhone("+1234567890"); // Add valid phone number to pass validation
 
     when(customerService.getCustomerById(testCustomerId))
         .thenReturn(Optional.empty()); // This will trigger the 404
