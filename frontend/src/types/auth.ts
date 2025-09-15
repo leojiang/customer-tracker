@@ -89,3 +89,23 @@ export interface ApprovalStatistics {
   recentActivityCount: number;
   approvalRate: number;
 }
+
+// Approval status translation keys mapping for use with translation function
+export const ApprovalStatusTranslationKeys: Record<ApprovalStatus, string> = {
+  [ApprovalStatus.PENDING]: 'approvalStatus.pending',
+  [ApprovalStatus.APPROVED]: 'approvalStatus.approved',
+  [ApprovalStatus.REJECTED]: 'approvalStatus.rejected',
+};
+
+// Helper function to get translated approval status name
+export const getTranslatedApprovalStatusName = (status: ApprovalStatus, t: (key: string) => string): string => {
+  // Check if the status exists in our enum
+  if (Object.values(ApprovalStatus).includes(status)) {
+    return t(ApprovalStatusTranslationKeys[status]);
+  }
+  // Fallback to formatted string if not in our enum
+  return status
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, l => l.toUpperCase());
+};
