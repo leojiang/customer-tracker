@@ -59,12 +59,9 @@ public class AuthService {
     // Check approval status
     if (!sales.isApproved()) {
       if (sales.isPending()) {
-        return AuthResult.failure(
-            "error.accountPending", "PENDING");
+        return AuthResult.failure("error.accountPending", "PENDING");
       } else if (sales.isRejected()) {
-        return AuthResult.failure(
-            "error.accountDenied",
-            "REJECTED");
+        return AuthResult.failure("error.accountDenied", "REJECTED");
       }
     }
 
@@ -92,9 +89,7 @@ public class AuthService {
     Sales savedSales = salesRepository.save(sales);
 
     return AuthResult.registrationSuccess(
-        "register.success.message",
-        savedSales.getPhone(),
-        "PENDING");
+        "register.success.message", savedSales.getPhone(), "PENDING");
   }
 
   public Optional<Sales> getSalesByPhone(String phone) {

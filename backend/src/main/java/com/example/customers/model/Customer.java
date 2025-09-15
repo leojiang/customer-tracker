@@ -1,5 +1,6 @@
 package com.example.customers.model;
 
+import com.example.customers.validation.PhoneNumber;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +49,8 @@ public class Customer {
   @Column(nullable = false)
   private String name;
 
-  @NotBlank
+  @NotBlank(message = "Phone number is required")
+  @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
   @Column(nullable = false, unique = true)
   private String phone;
 
@@ -61,11 +64,15 @@ public class Customer {
 
   private Integer age;
 
-  private String education;
+  @Enumerated(EnumType.STRING)
+  private EducationLevel education;
 
   private String gender;
 
   private String location;
+
+  @Column(name = "price", precision = 19, scale = 2)
+  private BigDecimal price;
 
   @NotNull
   @Enumerated(EnumType.STRING)
@@ -168,11 +175,11 @@ public class Customer {
     this.age = age;
   }
 
-  public String getEducation() {
+  public EducationLevel getEducation() {
     return education;
   }
 
-  public void setEducation(String education) {
+  public void setEducation(EducationLevel education) {
     this.education = education;
   }
 
@@ -190,6 +197,14 @@ public class Customer {
 
   public void setLocation(String location) {
     this.location = location;
+  }
+
+  public BigDecimal getPrice() {
+    return price;
+  }
+
+  public void setPrice(BigDecimal price) {
+    this.price = price;
   }
 
   public CustomerStatus getCurrentStatus() {

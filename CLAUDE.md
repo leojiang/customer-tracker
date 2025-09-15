@@ -9,6 +9,7 @@ Branch strategy
 Development guide
 ### Everytime finish coding, ask me to confirm whether need to commit the code. Because I may have more stuff to add.
 ### Code style should follow google java standard for backend  and ESlint standard for frontend.
+### For each UI component, the wordings should be translated to all supported language.
 
 
 

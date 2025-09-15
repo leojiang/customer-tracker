@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -10,9 +11,10 @@ import {
   RefreshCw, 
   Menu, 
   X,
-  Settings,
-  LogOut
+  Settings
 } from 'lucide-react';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import SettingsModal from '@/components/ui/SettingsModal';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,24 +36,26 @@ export default function DashboardLayout({
   actions
 }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const navigation = [
     {
-      name: 'Dashboard',
+      name: t('nav.dashboard'),
       href: '/dashboard',
       icon: BarChart3,
       current: true
     },
     {
-      name: 'Customers',
+      name: t('nav.customers'),
       href: '/',
       icon: Users,
       current: false
     },
     {
-      name: 'Settings',
+      name: t('nav.settings'),
       href: '/settings',
       icon: Settings,
       current: false
@@ -79,7 +83,7 @@ export default function DashboardLayout({
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">CT</span>
               </div>
-              <span className="text-lg font-semibold">Dashboard</span>
+              <span className="text-lg font-semibold">{t('nav.dashboard')}</span>
             </div>
           </div>
           
@@ -100,13 +104,6 @@ export default function DashboardLayout({
                 </a>
               ))}
               
-              <button
-                onClick={logout}
-                className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full"
-              >
-                <LogOut className="mr-4 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                Logout
-              </button>
             </nav>
           </div>
         </div>
@@ -160,10 +157,10 @@ export default function DashboardLayout({
                   </div>
                 </div>
                 <button
-                  onClick={logout}
+                  onClick={() => setShowSettings(true)}
                   className="text-gray-400 hover:text-gray-500"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <Settings className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -206,6 +203,9 @@ export default function DashboardLayout({
               </div>
 
               <div className="flex items-center gap-3">
+                {/* Language Switcher */}
+                <LanguageSwitcher />
+                
                 {onRefresh && (
                   <button
                     onClick={onRefresh}
@@ -213,7 +213,7 @@ export default function DashboardLayout({
                     className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <RefreshCw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                    <span className="hidden sm:inline">{refreshing ? t('nav.refreshing') : t('nav.refresh')}</span>
                   </button>
                 )}
                 
@@ -222,7 +222,7 @@ export default function DashboardLayout({
                   className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                 >
                   <Users size={16} className="mr-1" />
-                  <span className="hidden sm:inline">Customers</span>
+                  <span className="hidden sm:inline">{t('nav.customers')}</span>
                 </button>
                 
                 {actions}
@@ -240,6 +240,13 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onLogout={logout}
+      />
     </div>
   );
 }

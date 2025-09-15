@@ -5,6 +5,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import RegistrationSuccess from '@/components/auth/RegistrationSuccess';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -14,6 +15,7 @@ export default function AuthPage() {
   const [currentView, setCurrentView] = useState<AuthView>('login');
   const [registeredPhone, setRegisteredPhone] = useState('');
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // Redirect if already authenticated
@@ -53,7 +55,7 @@ export default function AuthPage() {
             <span className="text-white font-bold text-xl">CT</span>
           </div>
           <h1 className="text-headline-4 text-surface-900 mb-2">
-            {currentView === 'success' ? 'Registration Complete!' : 'Customer Tracker'}
+            {currentView === 'success' ? t('auth.registrationComplete') : t('auth.customerTracker')}
           </h1>
         </div>
 

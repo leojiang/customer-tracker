@@ -2,10 +2,12 @@ package com.example.customers.controller;
 
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
+import com.example.customers.model.EducationLevel;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.service.CustomerService;
+import com.example.customers.validation.PhoneNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -161,6 +165,7 @@ public class CustomerController {
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
       customer.setLocation(request.getLocation());
+      customer.setPrice(request.getPrice());
 
       if (request.getCurrentStatus() != null) {
         customer.setCurrentStatus(request.getCurrentStatus());
@@ -214,6 +219,7 @@ public class CustomerController {
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
       customer.setLocation(request.getLocation());
+      customer.setPrice(request.getPrice());
 
       Customer updatedCustomer = customerService.updateCustomer(id, customer);
       return ResponseEntity.ok(updatedCustomer);
@@ -435,15 +441,21 @@ public class CustomerController {
   // Request/Response DTOs
   /** Request DTO for creating a new customer. */
   public static class CreateCustomerRequest {
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @NotBlank(message = "Phone number is required")
+    @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
     private String phone;
+
     private String company;
     private String businessRequirements;
     private String businessType;
     private Integer age;
-    private String education;
+    private EducationLevel education;
     private String gender;
     private String location;
+    private BigDecimal price;
     private CustomerStatus currentStatus;
 
     // Getters and setters
@@ -495,11 +507,11 @@ public class CustomerController {
       this.age = age;
     }
 
-    public String getEducation() {
+    public EducationLevel getEducation() {
       return education;
     }
 
-    public void setEducation(String education) {
+    public void setEducation(EducationLevel education) {
       this.education = education;
     }
 
@@ -519,6 +531,14 @@ public class CustomerController {
       this.location = location;
     }
 
+    public BigDecimal getPrice() {
+      return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+      this.price = price;
+    }
+
     public CustomerStatus getCurrentStatus() {
       return currentStatus;
     }
@@ -530,15 +550,21 @@ public class CustomerController {
 
   /** Request DTO for updating customer information. */
   public static class UpdateCustomerRequest {
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @NotBlank(message = "Phone number is required")
+    @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
     private String phone;
+
     private String company;
     private String businessRequirements;
     private String businessType;
     private Integer age;
-    private String education;
+    private EducationLevel education;
     private String gender;
     private String location;
+    private BigDecimal price;
 
     // Getters and setters
     public String getName() {
@@ -589,11 +615,11 @@ public class CustomerController {
       this.age = age;
     }
 
-    public String getEducation() {
+    public EducationLevel getEducation() {
       return education;
     }
 
-    public void setEducation(String education) {
+    public void setEducation(EducationLevel education) {
       this.education = education;
     }
 
@@ -611,6 +637,14 @@ public class CustomerController {
 
     public void setLocation(String location) {
       this.location = location;
+    }
+
+    public BigDecimal getPrice() {
+      return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+      this.price = price;
     }
   }
 

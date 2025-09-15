@@ -14,6 +14,7 @@ import {
   TimeScale,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useLanguage } from '@/contexts/LanguageContext';
 import 'chartjs-adapter-date-fns';
 
 // Register Chart.js components
@@ -47,21 +48,25 @@ interface TrendLineChartProps {
 
 export default function TrendLineChart({ 
   data, 
-  title = "Customer Growth Trends",
+  title,
   granularity = "daily",
   className = "",
   loading = false,
   error = null
 }: TrendLineChartProps) {
+  const { t } = useLanguage();
   const chartRef = useRef<ChartJS<'line'>>(null);
   const [activeDataset, setActiveDataset] = useState('newCustomers');
+  
+  // Use default title if not provided
+  const chartTitle = title || t('dashboard.charts.trends');
 
   // Prepare chart data
   const chartData = {
     labels: data.map(point => new Date(point.date)),
     datasets: [
       {
-        label: 'New Customers',
+        label: t('dashboard.charts.newCustomers'),
         data: data.map(point => point.newCustomers),
         borderColor: 'rgb(99, 102, 241)', // indigo-500
         backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -74,7 +79,7 @@ export default function TrendLineChart({
         hidden: activeDataset !== 'newCustomers' && activeDataset !== 'all',
       },
       {
-        label: 'Total Customers',
+        label: t('dashboard.charts.totalCustomers'),
         data: data.map(point => point.totalCustomers),
         borderColor: 'rgb(34, 197, 94)', // green-500
         backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -88,7 +93,7 @@ export default function TrendLineChart({
         yAxisID: 'y1',
       },
       {
-        label: 'Conversion Rate (%)',
+        label: t('dashboard.charts.conversionRate'),
         data: data.map(point => point.conversionRate),
         borderColor: 'rgb(234, 179, 8)', // yellow-500
         backgroundColor: 'rgba(234, 179, 8, 0.1)',
@@ -213,7 +218,7 @@ export default function TrendLineChart({
         },
         title: {
           display: true,
-          text: 'New Customers',
+          text: t('dashboard.charts.newCustomers'),
           color: 'rgb(107, 114, 128)',
         },
       },
@@ -236,7 +241,7 @@ export default function TrendLineChart({
         },
         title: {
           display: true,
-          text: 'Total Customers',
+          text: t('dashboard.charts.totalCustomers'),
           color: 'rgb(107, 114, 128)',
         },
       },
@@ -259,7 +264,7 @@ export default function TrendLineChart({
         },
         title: {
           display: true,
-          text: 'Conversion Rate (%)',
+          text: t('dashboard.charts.conversionRate'),
           color: 'rgb(107, 114, 128)',
         },
       },
@@ -309,10 +314,10 @@ export default function TrendLineChart({
   if (error) {
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{chartTitle}</h3>
         <div className="flex items-center justify-center h-80 text-red-500">
           <div className="text-center">
-            <p className="mb-2">Error loading chart</p>
+            <p className="mb-2">{t('dashboard.charts.errorLoading')}</p>
             <p className="text-sm text-gray-500">{error}</p>
           </div>
         </div>
@@ -323,7 +328,7 @@ export default function TrendLineChart({
   if (!data || data.length === 0) {
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{chartTitle}</h3>
         <div className="flex items-center justify-center h-80 text-gray-500">
           <p>No trend data available</p>
         </div>
@@ -342,10 +347,10 @@ export default function TrendLineChart({
             onChange={(e) => setActiveDataset(e.target.value)}
             className="text-sm border border-gray-300 rounded px-2 py-1"
           >
-            <option value="newCustomers">New Customers</option>
-            <option value="totalCustomers">Total Customers</option>
-            <option value="conversionRate">Conversion Rate</option>
-            <option value="all">All Metrics</option>
+            <option value="newCustomers">{t('dashboard.charts.newCustomers')}</option>
+            <option value="totalCustomers">{t('dashboard.charts.totalCustomers')}</option>
+            <option value="conversionRate">{t('dashboard.metrics.conversionRate')}</option>
+            <option value="all">{t('dashboard.charts.all')}</option>
           </select>
         </div>
       </div>
@@ -376,7 +381,7 @@ export default function TrendLineChart({
           <div className="text-lg font-semibold text-yellow-600">
             {data[data.length - 1]?.conversionRate.toFixed(1) || '0'}%
           </div>
-          <div className="text-xs text-gray-500">Conversion Rate</div>
+          <div className="text-xs text-gray-500">{t('dashboard.metrics.conversionRate')}</div>
         </div>
       </div>
     </div>

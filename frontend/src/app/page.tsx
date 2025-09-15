@@ -5,20 +5,25 @@ import { Customer } from '@/types/customer';
 import CustomerList from '@/components/customers/CustomerList';
 import CustomerDetail from '@/components/customers/CustomerDetail';
 import CustomerForm from '@/components/customers/CustomerForm';
+import SettingsModal from '@/components/ui/SettingsModal';
 
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, Shield, BarChart3, UserCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { User, Shield, BarChart3, UserCheck, Settings, Users } from 'lucide-react';
+import AdminDashboard from '@/app/dashboard/admin/page';
+import UserApprovalsPage from '@/app/dashboard/admin/user-approvals/page';
+import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
 
-type View = 'list' | 'detail' | 'create';
+type View = 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals';
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
   const { user, logout } = useAuth();
-  const router = useRouter();
+  const { t } = useLanguage();
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -43,6 +48,11 @@ export default function HomePage() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleNavigation = (view: View) => {
+    setCurrentView(view);
+    setSelectedCustomer(null);
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-surface-50">
@@ -55,47 +65,65 @@ export default function HomePage() {
                   <span className="text-white font-bold text-lg">CT</span>
                 </div>
                 <div>
-                  <h1 className="text-headline-5 text-surface-900">Customer Tracker</h1>
-                  <p className="text-body-2 text-surface-600">Professional CRM Solution</p>
+                  <h1 className="text-headline-5 text-surface-900">{t('app.customerTracker')}</h1>
+                  <p className="text-body-2 text-surface-600">{t('app.professionalCRM')}</p>
                 </div>
               </div>
               
               {/* Navigation and User Info */}
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => router.push('/dashboard')}
-                  className="btn-outline flex items-center gap-2 text-sm py-2 px-3"
+                  onClick={() => handleNavigation('list')}
+                  className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
+                    currentView === 'list' 
+                      ? 'bg-primary-100 text-primary-700 border border-primary-200' 
+                      : 'btn-outline'
+                  }`}
                 >
-                  <BarChart3 size={16} />
-                  Dashboard
+                  <Users size={16} />
+                  {t('nav.customers')}
                 </button>
                 
-                {/* User Approvals button - only show for admin users */}
+                <button
+                  onClick={() => handleNavigation('dashboard')}
+                  className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
+                    currentView === 'dashboard' 
+                      ? 'bg-primary-100 text-primary-700 border border-primary-200' 
+                      : 'btn-outline'
+                  }`}
+                >
+                  <BarChart3 size={16} />
+                  {t('nav.dashboard')}
+                </button>
+                
                 {user?.role === 'ADMIN' && (
                   <button
-                    onClick={() => router.push('/dashboard/admin/user-approvals')}
-                    className="btn-outline flex items-center gap-2 text-sm py-2 px-3"
+                    onClick={() => handleNavigation('user-approvals')}
+                    className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
+                      currentView === 'user-approvals' 
+                        ? 'bg-primary-100 text-primary-700 border border-primary-200' 
+                        : 'btn-outline'
+                    }`}
                   >
                     <UserCheck size={16} />
-                    User Approvals
+                    {t('nav.userApprovals')}
                   </button>
                 )}
-                <div className="flex items-center gap-2 px-3 py-2 bg-surface-100 rounded-lg">
+                
+                {/* Settings button - clickable user phone */}
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+                >
                   {user?.role === 'ADMIN' ? (
                     <Shield size={16} className="text-primary-600" />
                   ) : (
                     <User size={16} className="text-surface-600" />
                   )}
                   <span className="text-sm font-medium text-surface-700">
-                    {user?.phone} {user?.role === 'ADMIN' && '(Admin)'}
+                    {user?.phone} {user?.role === 'ADMIN' && t('app.admin')}
                   </span>
-                </div>
-                <button
-                  onClick={logout}
-                  className="btn-outline flex items-center gap-2 text-sm py-2 px-3"
-                >
-                  <LogOut size={16} />
-                  Logout
+                  <Settings size={14} className="text-surface-500" />
                 </button>
               </div>
             </div>
@@ -125,7 +153,29 @@ export default function HomePage() {
             onSuccess={handleFormSuccess}
           />
         )}
+
+        {currentView === 'dashboard' && user?.role === 'ADMIN' && (
+          <AdminDashboard />
+        )}
+
+        {currentView === 'dashboard' && user?.role !== 'ADMIN' && (
+          <div>
+            {/* Import and render Sales Dashboard component without navigation */}
+            <SalesDashboardInline onNavigateToCustomers={() => handleNavigation('list')} />
+          </div>
+        )}
+
+        {currentView === 'user-approvals' && (
+          <UserApprovalsPage />
+        )}
       </main>
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onLogout={logout}
+      />
       </div>
     </AuthGuard>
   );

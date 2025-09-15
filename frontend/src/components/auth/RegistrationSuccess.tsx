@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCircle, Clock, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RegistrationSuccessProps {
   phone: string;
@@ -8,6 +9,7 @@ interface RegistrationSuccessProps {
 }
 
 export default function RegistrationSuccess({ phone, onBackToLogin }: RegistrationSuccessProps) {
+  const { t } = useLanguage();
   return (
     <div className="w-full max-w-md">
       <div className="card-elevated text-center">
@@ -26,16 +28,16 @@ export default function RegistrationSuccess({ phone, onBackToLogin }: Registrati
 
           {/* Success Message */}
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            Your account is successfully registered, please wait for the admin to approve!
+            {t('register.success.title')}
           </h1>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-3">
               <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
               <div>
-                <p className="text-green-800 font-medium">Account Created Successfully</p>
+                <p className="text-green-800 font-medium">{t('register.success.message')}</p>
                 <p className="text-green-700 text-sm mt-1">
-                  Phone: <strong>{phone}</strong>
+                  {t('auth.phone')}: <strong>{phone}</strong>
                 </p>
               </div>
             </div>
@@ -45,9 +47,9 @@ export default function RegistrationSuccess({ phone, onBackToLogin }: Registrati
             <div className="flex items-center gap-3">
               <Clock className="w-6 h-6 text-yellow-600 flex-shrink-0" />
               <div>
-                <p className="text-yellow-800 font-medium">Waiting for Admin Approval</p>
+                <p className="text-yellow-800 font-medium">{t('register.success.adminReview')}</p>
                 <p className="text-yellow-700 text-sm mt-1">
-                  An admin will review and approve your registration soon.
+                  {t('register.success.notification')}
                 </p>
               </div>
             </div>
@@ -60,14 +62,14 @@ export default function RegistrationSuccess({ phone, onBackToLogin }: Registrati
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Login
+              {t('register.success.backToLogin')}
             </button>
           </div>
 
           {/* Contact Info */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              Need help? Contact your system administrator for assistance with account approval.
+              {t('error.needHelp')} {t('error.contactSystemAdmin')}
             </p>
           </div>
         </div>

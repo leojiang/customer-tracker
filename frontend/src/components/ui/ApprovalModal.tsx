@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ApprovalModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function ApprovalModal({
   userPhone,
   loading = false
 }: ApprovalModalProps) {
+  const { t } = useLanguage();
   const [reason, setReason] = useState('');
 
   if (!isOpen) {
@@ -30,33 +32,33 @@ export default function ApprovalModal({
     switch (type) {
       case 'approve':
         return {
-          title: 'Approve User Registration',
-          description: `Approve registration for ${userPhone}?`,
+          title: t('approvals.approveTitle'),
+          description: `${t('approvals.approveDescription')} ${userPhone}?`,
           icon: <CheckCircle className="w-6 h-6 text-green-600" />,
-          buttonText: 'Approve User',
+          buttonText: t('approvals.approveButton'),
           buttonClass: 'bg-green-600 hover:bg-green-700 text-white',
-          reasonLabel: 'Approval reason (optional)',
-          reasonPlaceholder: 'e.g., Application looks good, verified identity...'
+          reasonLabel: t('approvals.approveReason'),
+          reasonPlaceholder: t('approvals.approvePlaceholder')
         };
       case 'reject':
         return {
-          title: 'Reject User Registration',
-          description: `Reject registration for ${userPhone}?`,
+          title: t('approvals.rejectTitle'),
+          description: `${t('approvals.rejectDescription')} ${userPhone}?`,
           icon: <XCircle className="w-6 h-6 text-red-600" />,
-          buttonText: 'Reject User',
+          buttonText: t('approvals.rejectButton'),
           buttonClass: 'bg-red-600 hover:bg-red-700 text-white',
-          reasonLabel: 'Rejection reason *',
-          reasonPlaceholder: 'e.g., Incomplete application, verification failed...'
+          reasonLabel: t('approvals.rejectReason'),
+          reasonPlaceholder: t('approvals.rejectPlaceholder')
         };
       case 'reset':
         return {
-          title: 'Reset User Status',
-          description: `Reset ${userPhone} status back to pending?`,
+          title: t('approvals.resetTitle'),
+          description: `${t('approvals.resetDescription')} ${userPhone} ${t('approvals.resetDescription2')}`,
           icon: <Clock className="w-6 h-6 text-orange-600" />,
-          buttonText: 'Reset Status',
+          buttonText: t('approvals.resetButton'),
           buttonClass: 'bg-orange-600 hover:bg-orange-700 text-white',
-          reasonLabel: 'Reset reason (optional)',
-          reasonPlaceholder: 'e.g., Need to review application again...'
+          reasonLabel: t('approvals.resetReason'),
+          reasonPlaceholder: t('approvals.resetPlaceholder')
         };
       default:
         return {
@@ -121,7 +123,7 @@ export default function ApprovalModal({
                 disabled={loading}
               />
               {type === 'reject' && (
-                <p className="text-sm text-red-600 mt-1">* Rejection reason is required</p>
+                <p className="text-sm text-red-600 mt-1">{t('approvals.rejectRequired')}</p>
               )}
             </div>
           </div>
@@ -134,7 +136,7 @@ export default function ApprovalModal({
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
             disabled={loading}
           >
-            Cancel
+            {t('customers.form.cancel')}
           </button>
           <button
             onClick={handleConfirm}
@@ -144,7 +146,7 @@ export default function ApprovalModal({
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing...
+                {t('approvals.processing')}
               </div>
             ) : (
               config.buttonText

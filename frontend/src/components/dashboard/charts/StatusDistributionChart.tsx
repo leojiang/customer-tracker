@@ -9,6 +9,8 @@ import {
   ChartOptions
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslatedStatusName } from '@/types/customer';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -25,27 +27,23 @@ interface StatusDistributionChartProps {
 export default function StatusDistributionChart({ 
   data, 
   totalCustomers, 
-  title = "Customer Status Distribution",
+  title,
   className = "",
   loading = false,
   error = null
 }: StatusDistributionChartProps) {
+  const { t } = useLanguage();
   const chartRef = useRef<ChartJS<'doughnut'>>(null);
-
-  // Transform status names for better display
-  const formatStatusName = (status: string): string => {
-    return status
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, l => l.toUpperCase());
-  };
+  
+  // Use default title if not provided
+  const chartTitle = title || t('dashboard.charts.statusDistribution');
 
   // Generate chart data
   const chartData = {
-    labels: Object.keys(data).map(formatStatusName),
+    labels: Object.keys(data).map(status => getTranslatedStatusName(status, t)),
     datasets: [
       {
-        label: 'Customers',
+        label: t('dashboard.charts.customers'),
         data: Object.values(data),
         backgroundColor: [
           'rgb(99, 102, 241)',   // indigo-500
@@ -177,9 +175,9 @@ export default function StatusDistributionChart({
     return (
       <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 ${className}`}>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{chartTitle}</h3>
           <div className="px-3 py-1 bg-red-100 rounded-full">
-            <span className="text-sm font-medium text-red-700">Error</span>
+            <span className="text-sm font-medium text-red-700">{t('dashboard.charts.error')}</span>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center h-80 text-red-500 bg-red-50 rounded-xl border-2 border-dashed border-red-200">
@@ -189,7 +187,7 @@ export default function StatusDistributionChart({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-lg font-semibold text-red-700 mb-2">Error loading chart</p>
+            <p className="text-lg font-semibold text-red-700 mb-2">{t('dashboard.charts.errorLoading')}</p>
             <p className="text-sm text-red-600 max-w-md">{error}</p>
           </div>
         </div>
@@ -201,9 +199,9 @@ export default function StatusDistributionChart({
     return (
       <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 ${className}`}>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{chartTitle}</h3>
           <div className="px-3 py-1 bg-gray-100 rounded-full">
-            <span className="text-sm font-medium text-gray-700">No data</span>
+            <span className="text-sm font-medium text-gray-700">{t('dashboard.charts.noData')}</span>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center h-80 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
@@ -213,8 +211,8 @@ export default function StatusDistributionChart({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <p className="text-lg font-semibold text-gray-600 mb-2">No data available</p>
-            <p className="text-sm text-gray-500">Customer status data will appear here when available</p>
+            <p className="text-lg font-semibold text-gray-600 mb-2">{t('dashboard.charts.noData')}</p>
+            <p className="text-sm text-gray-500">{t('dashboard.charts.dataWillAppear')}</p>
           </div>
         </div>
       </div>
@@ -224,10 +222,10 @@ export default function StatusDistributionChart({
   return (
     <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 ${className}`}>
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{chartTitle}</h3>
         <div className="px-3 py-1 bg-gray-100 rounded-full">
           <span className="text-sm font-medium text-gray-700">
-            {totalCustomers.toLocaleString()} total
+            {totalCustomers.toLocaleString()} {t('dashboard.charts.total')}
           </span>
         </div>
       </div>
@@ -248,7 +246,7 @@ export default function StatusDistributionChart({
                 {totalCustomers.toLocaleString()}
               </div>
               <div className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Total Customers
+                {t('dashboard.charts.totalCustomers')}
               </div>
               <div className="mt-2 h-px w-16 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto"></div>
             </div>
@@ -273,10 +271,10 @@ export default function StatusDistributionChart({
                       ></div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {formatStatusName(status)}
+                          {getTranslatedStatusName(status, t)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {percentage.toFixed(1)}% of total
+                          {percentage.toFixed(1)}% {t('dashboard.charts.ofTotal')}
                         </p>
                       </div>
                     </div>
@@ -285,7 +283,7 @@ export default function StatusDistributionChart({
                         {count.toLocaleString()}
                       </div>
                       <div className="text-xs text-gray-500">
-                        customers
+                        {t('dashboard.charts.customers')}
                       </div>
                     </div>
                   </div>
@@ -309,19 +307,19 @@ export default function StatusDistributionChart({
           {/* Summary Stats */}
           <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
             <div className="text-center">
-              <div className="text-sm font-medium text-blue-900 mb-2">Quick Stats</div>
+              <div className="text-sm font-medium text-blue-900 mb-2">{t('dashboard.charts.quickStats')}</div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-2xl font-bold text-blue-700">
                     {Object.values(data).reduce((max, current) => Math.max(max, current), 0)}
                   </div>
-                  <div className="text-xs text-blue-600">Highest Count</div>
+                  <div className="text-xs text-blue-600">{t('dashboard.charts.highestCount')}</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-blue-700">
                     {Object.keys(data).length}
                   </div>
-                  <div className="text-xs text-blue-600">Status Types</div>
+                  <div className="text-xs text-blue-600">{t('dashboard.charts.statusTypes')}</div>
                 </div>
               </div>
             </div>
