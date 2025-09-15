@@ -418,6 +418,9 @@ const translations = {
     'dashboard.charts.daily': 'Daily',
     'dashboard.charts.weekly': 'Weekly',
     'dashboard.charts.monthly': 'Monthly',
+    'dashboard.charts.view': 'View:',
+    'dashboard.charts.latestNew': 'Latest New',
+    'dashboard.charts.totalNow': 'Total Now',
 
     // User Approvals
     'approvals.title': 'User Approvals',
@@ -871,6 +874,9 @@ const translations = {
     'dashboard.charts.daily': '每日',
     'dashboard.charts.weekly': '每周',
     'dashboard.charts.monthly': '每月',
+    'dashboard.charts.view': '查看：',
+    'dashboard.charts.latestNew': '最新新增',
+    'dashboard.charts.totalNow': '当前总数',
 
     // User Approvals
     'approvals.title': '用户审批',

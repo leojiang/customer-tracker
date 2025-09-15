@@ -341,7 +341,7 @@ export default function TrendLineChart({
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">View:</span>
+          <span className="text-sm text-gray-500">{t('dashboard.charts.view')}</span>
           <select 
             value={activeDataset}
             onChange={(e) => setActiveDataset(e.target.value)}
@@ -369,13 +369,13 @@ export default function TrendLineChart({
           <div className="text-lg font-semibold text-indigo-600">
             {data[data.length - 1]?.newCustomers.toLocaleString() || '0'}
           </div>
-          <div className="text-xs text-gray-500">Latest New</div>
+          <div className="text-xs text-gray-500">{t('dashboard.charts.latestNew')}</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-semibold text-green-600">
             {data[data.length - 1]?.totalCustomers.toLocaleString() || '0'}
           </div>
-          <div className="text-xs text-gray-500">Total Now</div>
+          <div className="text-xs text-gray-500">{t('dashboard.charts.totalNow')}</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-semibold text-yellow-600">
