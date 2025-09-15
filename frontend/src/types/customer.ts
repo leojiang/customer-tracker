@@ -55,6 +55,20 @@ export const CustomerStatusTranslationKeys: Record<CustomerStatus, string> = {
   [CustomerStatus.LOST]: 'status.lost',
 };
 
+// Education level translation keys mapping for use with translation function
+export const EducationLevelTranslationKeys: Record<EducationLevel, string> = {
+  [EducationLevel.ELEMENTARY]: 'education.elementary',
+  [EducationLevel.MIDDLE_SCHOOL]: 'education.middleSchool',
+  [EducationLevel.HIGH_SCHOOL]: 'education.highSchool',
+  [EducationLevel.ASSOCIATE]: 'education.associate',
+  [EducationLevel.BACHELOR]: 'education.bachelor',
+  [EducationLevel.MASTER]: 'education.master',
+  [EducationLevel.DOCTORATE]: 'education.doctorate',
+  [EducationLevel.PROFESSIONAL]: 'education.professional',
+  [EducationLevel.CERTIFICATE]: 'education.certificate',
+  [EducationLevel.OTHER]: 'education.other',
+};
+
 // Helper function to get translated status name
 export const getTranslatedStatusName = (status: string, t: (key: string) => string): string => {
   // Check if the status exists in our enum
@@ -66,6 +80,11 @@ export const getTranslatedStatusName = (status: string, t: (key: string) => stri
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, l => l.toUpperCase());
+};
+
+// Helper function to get translated education level name
+export const getTranslatedEducationLevelName = (educationLevel: EducationLevel, t: (key: string) => string): string => {
+  return t(EducationLevelTranslationKeys[educationLevel]);
 };
 
 export interface Customer {

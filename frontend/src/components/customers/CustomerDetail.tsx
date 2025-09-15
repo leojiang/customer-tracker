@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle } from 'lucide-react';
-import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName } from '@/types/customer';
+import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
@@ -502,16 +502,16 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         onChange={(e) => handleEditFormChange('education', e.target.value && e.target.value !== '' ? e.target.value as EducationLevel : undefined)}
                         className="input-field"
                       >
-                        <option value="">Select education level</option>
-                        {Object.entries(EducationLevelDisplayNames).map(([key, displayName]) => (
+                        <option value="">{t('customers.detail.selectEducationLevel')}</option>
+                        {Object.entries(EducationLevelDisplayNames).map(([key]) => (
                           <option key={key} value={key}>
-                            {displayName}
+                            {getTranslatedEducationLevelName(key as EducationLevel, t)}
                           </option>
                         ))}
                       </select>
                     ) : (
                       <p className="text-body-1">
-                        {customer.education ? EducationLevelDisplayNames[customer.education] : <span className="text-surface-400 italic">Not specified</span>}
+                        {customer.education ? getTranslatedEducationLevelName(customer.education, t) : <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}
                       </p>
                     )}
                   </div>
@@ -602,7 +602,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 </button>
               ) : (
                 <div className="text-center py-6">
-                  <div className="text-body-2 text-surface-500 mb-2">No status transitions available</div>
+                  <div className="text-body-2 text-surface-500 mb-2">{t('customers.detail.noTransitionsAvailable')}</div>
                   <p className="text-caption text-surface-400">
                     {customer.currentStatus === 'BUSINESS_DONE' 
                       ? t('customers.detail.businessComplete')

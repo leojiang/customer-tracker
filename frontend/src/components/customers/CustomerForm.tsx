@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle } from 'lucide-react';
-import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames } from '@/types/customer';
+import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
@@ -333,9 +333,9 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   className="input-field"
                 >
                   <option value="">{t('customers.form.education')}</option>
-                  {Object.entries(EducationLevelDisplayNames).map(([key, displayName]) => (
+                  {Object.entries(EducationLevelDisplayNames).map(([key]) => (
                     <option key={key} value={key}>
-                      {displayName}
+                      {getTranslatedEducationLevelName(key as EducationLevel, t)}
                     </option>
                   ))}
                 </select>
