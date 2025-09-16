@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { User, Shield, BarChart3, UserCheck, Settings, Users } from 'lucide-react';
 import AdminDashboard from '@/app/dashboard/admin/page';
-import UserApprovalsPage from '@/app/dashboard/admin/user-approvals/page';
+import UserManagementPage from '@/app/dashboard/admin/user-management/page';
 import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
 
 type View = 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals';
@@ -106,7 +106,7 @@ export default function HomePage() {
                     }`}
                   >
                     <UserCheck size={16} />
-                    {t('nav.userApprovals')}
+                    {t('nav.userManagement')}
                   </button>
                 )}
                 
@@ -166,7 +166,7 @@ export default function HomePage() {
         )}
 
         {currentView === 'user-approvals' && (
-          <UserApprovalsPage />
+          <UserManagementPage />
         )}
       </main>
       

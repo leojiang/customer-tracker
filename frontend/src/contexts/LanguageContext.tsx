@@ -163,6 +163,7 @@ const translations = {
     'nav.customers': 'Customers',
     'nav.settings': 'Settings',
     'nav.userApprovals': 'User Approvals',
+    'nav.userManagement': 'User Management',
     'nav.refresh': 'Refresh',
     'nav.refreshing': 'Refreshing...',
 
@@ -655,6 +656,7 @@ const translations = {
     'nav.customers': '客户',
     'nav.settings': '设置',
     'nav.userApprovals': '用户审批',
+    'nav.userManagement': '用户管理',
     'nav.refresh': '刷新',
     'nav.refreshing': '刷新中...',
 
