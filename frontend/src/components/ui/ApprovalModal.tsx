@@ -8,7 +8,7 @@ interface ApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (reason?: string) => void;
-  type: 'approve' | 'reject' | 'reset';
+  type: 'approve' | 'reject' | 'reset' | 'enable' | 'disable';
   userPhone: string;
   loading?: boolean;
 }
@@ -60,6 +60,26 @@ export default function ApprovalModal({
           reasonLabel: t('approvals.resetReason'),
           reasonPlaceholder: t('approvals.resetPlaceholder')
         };
+      case 'enable':
+        return {
+          title: t('userManagement.enableTitle'),
+          description: `${t('userManagement.enableDescription')} ${userPhone}?`,
+          icon: <CheckCircle className="w-6 h-6 text-green-600" />,
+          buttonText: t('userManagement.enableButton'),
+          buttonClass: 'bg-green-600 hover:bg-green-700 text-white',
+          reasonLabel: t('userManagement.enableReason'),
+          reasonPlaceholder: t('userManagement.enablePlaceholder')
+        };
+      case 'disable':
+        return {
+          title: t('userManagement.disableTitle'),
+          description: `${t('userManagement.disableDescription')} ${userPhone}?`,
+          icon: <XCircle className="w-6 h-6 text-red-600" />,
+          buttonText: t('userManagement.disableButton'),
+          buttonClass: 'bg-red-600 hover:bg-red-700 text-white',
+          reasonLabel: t('userManagement.disableReason'),
+          reasonPlaceholder: t('userManagement.disablePlaceholder')
+        };
       default:
         return {
           title: '',
@@ -76,8 +96,8 @@ export default function ApprovalModal({
   const config = getModalConfig();
 
   const handleConfirm = () => {
-    if (type === 'reject' && !reason.trim()) {
-      return; // Rejection requires a reason
+    if ((type === 'reject' || type === 'disable') && !reason.trim()) {
+      return; // Rejection and disable require a reason
     }
     onConfirm(reason.trim() || undefined);
   };
@@ -122,8 +142,8 @@ export default function ApprovalModal({
                 placeholder={config.reasonPlaceholder}
                 disabled={loading}
               />
-              {type === 'reject' && (
-                <p className="text-sm text-red-600 mt-1">{t('approvals.rejectRequired')}</p>
+              {(type === 'reject' || type === 'disable') && (
+                <p className="text-sm text-red-600 mt-1">{t('approvals.reasonRequired')}</p>
               )}
             </div>
           </div>
@@ -140,7 +160,7 @@ export default function ApprovalModal({
           </button>
           <button
             onClick={handleConfirm}
-            disabled={loading || (type === 'reject' && !reason.trim())}
+            disabled={loading || ((type === 'reject' || type === 'disable') && !reason.trim())}
             className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${config.buttonClass}`}
           >
             {loading ? (

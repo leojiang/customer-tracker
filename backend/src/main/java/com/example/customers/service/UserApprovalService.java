@@ -255,6 +255,130 @@ public class UserApprovalService {
     return historyRepository.findRecentActions(since);
   }
 
+  /**
+   * Enable a user account.
+   *
+   * @param userPhone phone of the user to enable
+   * @param adminPhone phone of the admin performing the action
+   * @param reason reason for enabling
+   * @return the enabled user
+   * @throws EntityNotFoundException if user not found
+   * @throws IllegalStateException if user is not approved
+   */
+  public Sales enableUser(String userPhone, String adminPhone, String reason) {
+    Sales user =
+        salesRepository
+            .findByPhone(userPhone)
+            .orElseThrow(() -> new EntityNotFoundException("User not found: " + userPhone));
+
+    if (!user.isApproved()) {
+      throw new IllegalStateException("Only approved users can be enabled");
+    }
+
+    if (user.isEnabled()) {
+      throw new IllegalStateException("User is already enabled");
+    }
+
+    user.enable();
+    Sales savedUser = salesRepository.save(user);
+
+    // Record enable history
+    UserApprovalHistory history =
+        new UserApprovalHistory(userPhone, ApprovalAction.ENABLED, adminPhone, reason);
+    historyRepository.save(history);
+
+    log.info("User {} enabled by admin {}", userPhone, adminPhone);
+    return savedUser;
+  }
+
+  /**
+   * Disable a user account.
+   *
+   * @param userPhone phone of the user to disable
+   * @param adminPhone phone of the admin performing the action
+   * @param reason reason for disabling
+   * @return the disabled user
+   * @throws EntityNotFoundException if user not found
+   * @throws IllegalStateException if user is not approved
+   */
+  public Sales disableUser(String userPhone, String adminPhone, String reason) {
+    Sales user =
+        salesRepository
+            .findByPhone(userPhone)
+            .orElseThrow(() -> new EntityNotFoundException("User not found: " + userPhone));
+
+    if (!user.isApproved()) {
+      throw new IllegalStateException("Only approved users can be disabled");
+    }
+
+    if (user.isDisabled()) {
+      throw new IllegalStateException("User is already disabled");
+    }
+
+    user.disable(adminPhone, reason);
+    Sales savedUser = salesRepository.save(user);
+
+    // Record disable history
+    UserApprovalHistory history =
+        new UserApprovalHistory(userPhone, ApprovalAction.DISABLED, adminPhone, reason);
+    historyRepository.save(history);
+
+    log.info("User {} disabled by admin {}", userPhone, adminPhone);
+    return savedUser;
+  }
+
+  /**
+   * Bulk enable multiple users.
+   *
+   * @param userPhones list of user phones to enable
+   * @param adminPhone phone of the admin performing the actions
+   * @param reason reason for bulk enable
+   * @return number of successfully enabled users
+   */
+  public int bulkEnable(List<String> userPhones, String adminPhone, String reason) {
+    int enabledCount = 0;
+    for (String phone : userPhones) {
+      try {
+        enableUser(phone, adminPhone, reason);
+        enabledCount++;
+      } catch (Exception e) {
+        log.warn("Failed to enable user {}: {}", phone, e.getMessage());
+      }
+    }
+    log.info(
+        "Bulk enabled {} out of {} users by admin {}",
+        enabledCount,
+        userPhones.size(),
+        adminPhone);
+    return enabledCount;
+  }
+
+  /**
+   * Bulk disable multiple users.
+   *
+   * @param userPhones list of user phones to disable
+   * @param adminPhone phone of the admin performing the actions
+   * @param reason reason for bulk disable
+   * @return number of successfully disabled users
+   */
+  public int bulkDisable(List<String> userPhones, String adminPhone, String reason) {
+    int disabledCount = 0;
+    for (String phone : userPhones) {
+      try {
+        disableUser(phone, adminPhone, reason);
+        disabledCount++;
+      } catch (Exception e) {
+        log.warn("Failed to disable user {}: {}", phone, e.getMessage());
+      }
+    }
+    log.info(
+        "Bulk disabled {} out of {} users by admin {}",
+        disabledCount,
+        userPhones.size(),
+        adminPhone);
+    return disabledCount;
+  }
+
   /** DTO class for approval statistics. */
   public static class ApprovalStatistics {
     private final long pendingCount;

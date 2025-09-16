@@ -153,6 +153,48 @@ public class UserApprovalController {
   }
 
   @Operation(
+      summary = "Enable user account",
+      description = "Enable a disabled user account")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "User enabled successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "400", description = "User not approved or already enabled")
+      })
+  @PostMapping("/{phone}/enable")
+  public ResponseEntity<UserApprovalDto> enableUser(
+      @Parameter(description = "User phone number", required = true) @PathVariable String phone,
+      @Parameter(description = "Enable action details") @Valid @RequestBody
+          ApprovalActionRequest request) {
+
+    String adminPhone = getCurrentUserPhone();
+    Sales enabledUser = approvalService.enableUser(phone, adminPhone, request.getReason());
+
+    return ResponseEntity.ok(toApprovalDto(enabledUser));
+  }
+
+  @Operation(
+      summary = "Disable user account",
+      description = "Disable an enabled user account")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "User disabled successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "400", description = "User not approved or already disabled")
+      })
+  @PostMapping("/{phone}/disable")
+  public ResponseEntity<UserApprovalDto> disableUser(
+      @Parameter(description = "User phone number", required = true) @PathVariable String phone,
+      @Parameter(description = "Disable action details") @Valid @RequestBody
+          ApprovalActionRequest request) {
+
+    String adminPhone = getCurrentUserPhone();
+    Sales disabledUser = approvalService.disableUser(phone, adminPhone, request.getReason());
+
+    return ResponseEntity.ok(toApprovalDto(disabledUser));
+  }
+
+  @Operation(
       summary = "Bulk approve or reject users",
       description = "Perform bulk approval operations")
   @PostMapping("/bulk-action")
@@ -169,6 +211,32 @@ public class UserApprovalController {
     } else if ("REJECT".equals(request.getAction())) {
       successCount =
           approvalService.bulkReject(request.getPhones(), adminPhone, request.getReason());
+    } else {
+      return ResponseEntity.badRequest()
+          .body(new BulkActionResponse(0, request.getPhones().size(), "Invalid action"));
+    }
+
+    return ResponseEntity.ok(
+        new BulkActionResponse(successCount, request.getPhones().size(), "Bulk action completed"));
+  }
+
+  @Operation(
+      summary = "Bulk enable or disable users",
+      description = "Perform bulk enable/disable operations")
+  @PostMapping("/bulk-enable-disable")
+  public ResponseEntity<BulkActionResponse> bulkEnableDisable(
+      @Parameter(description = "Bulk enable/disable action details") @Valid @RequestBody
+          BulkEnableDisableRequest request) {
+
+    String adminPhone = getCurrentUserPhone();
+    int successCount = 0;
+
+    if ("ENABLE".equals(request.getAction())) {
+      successCount =
+          approvalService.bulkEnable(request.getPhones(), adminPhone, request.getReason());
+    } else if ("DISABLE".equals(request.getAction())) {
+      successCount =
+          approvalService.bulkDisable(request.getPhones(), adminPhone, request.getReason());
     } else {
       return ResponseEntity.badRequest()
           .body(new BulkActionResponse(0, request.getPhones().size(), "Invalid action"));
@@ -245,7 +313,11 @@ public class UserApprovalController {
         daysWaiting,
         user.getApprovedByPhone(),
         user.getApprovedAt(),
-        user.getRejectionReason());
+        user.getRejectionReason(),
+        user.getIsEnabled(),
+        user.getDisabledAt(),
+        user.getDisabledByPhone(),
+        user.getDisabledReason());
   }
 
   // Request/Response DTOs
@@ -294,6 +366,37 @@ public class UserApprovalController {
     }
   }
 
+  /** Request DTO for bulk enable/disable operations. */
+  public static class BulkEnableDisableRequest {
+    private String action; // "ENABLE" or "DISABLE"
+    private List<String> phones;
+    private String reason;
+
+    public String getAction() {
+      return action;
+    }
+
+    public void setAction(String action) {
+      this.action = action;
+    }
+
+    public List<String> getPhones() {
+      return phones;
+    }
+
+    public void setPhones(List<String> phones) {
+      this.phones = phones;
+    }
+
+    public String getReason() {
+      return reason;
+    }
+
+    public void setReason(String reason) {
+      this.reason = reason;
+    }
+  }
+
   /** Response DTO for user approval information. */
   public static class UserApprovalDto {
     private String phone;
@@ -304,6 +407,10 @@ public class UserApprovalController {
     private String approvedByPhone;
     private ZonedDateTime approvedAt;
     private String rejectionReason;
+    private Boolean isEnabled;
+    private ZonedDateTime disabledAt;
+    private String disabledByPhone;
+    private String disabledReason;
 
     public UserApprovalDto(
         String phone,
@@ -313,7 +420,11 @@ public class UserApprovalController {
         long daysWaiting,
         String approvedByPhone,
         ZonedDateTime approvedAt,
-        String rejectionReason) {
+        String rejectionReason,
+        Boolean isEnabled,
+        ZonedDateTime disabledAt,
+        String disabledByPhone,
+        String disabledReason) {
       this.phone = phone;
       this.approvalStatus = approvalStatus;
       this.createdAt = createdAt;
@@ -322,6 +433,10 @@ public class UserApprovalController {
       this.approvedByPhone = approvedByPhone;
       this.approvedAt = approvedAt;
       this.rejectionReason = rejectionReason;
+      this.isEnabled = isEnabled;
+      this.disabledAt = disabledAt;
+      this.disabledByPhone = disabledByPhone;
+      this.disabledReason = disabledReason;
     }
 
     // Getters
@@ -355,6 +470,22 @@ public class UserApprovalController {
 
     public String getRejectionReason() {
       return rejectionReason;
+    }
+
+    public Boolean getIsEnabled() {
+      return isEnabled;
+    }
+
+    public ZonedDateTime getDisabledAt() {
+      return disabledAt;
+    }
+
+    public String getDisabledByPhone() {
+      return disabledByPhone;
+    }
+
+    public String getDisabledReason() {
+      return disabledReason;
     }
   }
 

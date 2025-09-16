@@ -65,6 +65,11 @@ public class AuthService {
       }
     }
 
+    // Check if account is enabled
+    if (sales.isDisabled()) {
+      return AuthResult.failure("error.accountDisabled", "DISABLED");
+    }
+
     String token = jwtService.generateToken(sales);
     return AuthResult.success(token, sales.getPhone(), sales.getRole().name());
   }

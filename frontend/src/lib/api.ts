@@ -15,6 +15,7 @@ import {
   ValidateTokenRequest,
   ApprovalPageResponse,
   BulkApprovalRequest,
+  BulkEnableDisableRequest,
   BulkActionResponse,
   UserApprovalHistory,
   ApprovalStatistics,
@@ -218,8 +219,29 @@ export const userApprovalApi = {
     });
   },
 
+  async enableUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+    return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/enable`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  async disableUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+    return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/disable`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
   async bulkAction(request: BulkApprovalRequest): Promise<BulkActionResponse> {
     return fetchApi<BulkActionResponse>('/admin/user-approvals/bulk-action', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  async bulkEnableDisable(request: BulkEnableDisableRequest): Promise<BulkActionResponse> {
+    return fetchApi<BulkActionResponse>('/admin/user-approvals/bulk-enable-disable', {
       method: 'POST',
       body: JSON.stringify(request),
     });

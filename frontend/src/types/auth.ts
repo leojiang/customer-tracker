@@ -47,6 +47,10 @@ export interface UserApprovalDto {
   approvedByPhone?: string;
   approvedAt?: string;
   rejectionReason?: string;
+  isEnabled?: boolean;
+  disabledAt?: string;
+  disabledByPhone?: string;
+  disabledReason?: string;
 }
 
 export interface ApprovalPageResponse {
@@ -63,6 +67,12 @@ export interface ApprovalActionRequest {
 
 export interface BulkApprovalRequest {
   action: 'APPROVE' | 'REJECT';
+  phones: string[];
+  reason?: string;
+}
+
+export interface BulkEnableDisableRequest {
+  action: 'ENABLE' | 'DISABLE';
   phones: string[];
   reason?: string;
 }

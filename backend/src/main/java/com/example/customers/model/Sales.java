@@ -75,6 +75,18 @@ public class Sales {
   @Column(name = "status_updated_at")
   private ZonedDateTime statusUpdatedAt = ZonedDateTime.now();
 
+  @Column(name = "is_enabled")
+  private Boolean isEnabled = true;
+
+  @Column(name = "disabled_at")
+  private ZonedDateTime disabledAt;
+
+  @Column(name = "disabled_by_phone")
+  private String disabledByPhone;
+
+  @Column(name = "disabled_reason")
+  private String disabledReason;
+
   public Sales() {}
 
   /**
@@ -200,6 +212,38 @@ public class Sales {
     this.statusUpdatedAt = statusUpdatedAt;
   }
 
+  public Boolean getIsEnabled() {
+    return isEnabled;
+  }
+
+  public void setIsEnabled(Boolean isEnabled) {
+    this.isEnabled = isEnabled;
+  }
+
+  public ZonedDateTime getDisabledAt() {
+    return disabledAt;
+  }
+
+  public void setDisabledAt(ZonedDateTime disabledAt) {
+    this.disabledAt = disabledAt;
+  }
+
+  public String getDisabledByPhone() {
+    return disabledByPhone;
+  }
+
+  public void setDisabledByPhone(String disabledByPhone) {
+    this.disabledByPhone = disabledByPhone;
+  }
+
+  public String getDisabledReason() {
+    return disabledReason;
+  }
+
+  public void setDisabledReason(String disabledReason) {
+    this.disabledReason = disabledReason;
+  }
+
   // Approval status helper methods
   public boolean isApproved() {
     return ApprovalStatus.APPROVED.equals(this.approvalStatus);
@@ -211,6 +255,31 @@ public class Sales {
 
   public boolean isRejected() {
     return ApprovalStatus.REJECTED.equals(this.approvalStatus);
+  }
+
+  // Enable/disable helper methods
+  public boolean isDisabled() {
+    return isEnabled != null && !isEnabled;
+  }
+
+  public boolean isEnabled() {
+    return isEnabled != null && isEnabled;
+  }
+
+  public void enable() {
+    this.isEnabled = true;
+    this.disabledAt = null;
+    this.disabledByPhone = null;
+    this.disabledReason = null;
+    this.statusUpdatedAt = ZonedDateTime.now();
+  }
+
+  public void disable(String adminPhone, String reason) {
+    this.isEnabled = false;
+    this.disabledAt = ZonedDateTime.now();
+    this.disabledByPhone = adminPhone;
+    this.disabledReason = reason;
+    this.statusUpdatedAt = ZonedDateTime.now();
   }
 
   @Override

@@ -5,5 +5,7 @@ public enum ApprovalAction {
   APPROVED,
   REJECTED,
   RESET,
-  PENDING
+  PENDING,
+  ENABLED,
+  DISABLED
 }
