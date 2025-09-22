@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
 
@@ -33,5 +34,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return null; // Will redirect to /auth
   }
 
-  return <>{children}</>;
+  return (
+    <WebSocketProvider>
+      {children}
+    </WebSocketProvider>
+  );
 }

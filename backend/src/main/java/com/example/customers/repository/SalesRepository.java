@@ -26,6 +26,9 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
 
   boolean existsByPhone(String phone);
 
+  /** Find users by phone number containing the given string (case-insensitive). */
+  List<Sales> findByPhoneContainingIgnoreCase(String phone);
+
   /** Find all sales users with SALES role. */
   List<Sales> findByRole(SalesRole role);
 
