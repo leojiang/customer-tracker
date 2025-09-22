@@ -145,8 +145,9 @@ public class UserApprovalController {
       })
   @GetMapping("/approved-users")
   public ResponseEntity<ApprovalPageResponse> getApprovedUsersByEnabledStatus(
-      @Parameter(description = "Filter by enabled status (true for active, false for disabled)") 
-      @RequestParam Boolean enabled,
+      @Parameter(description = "Filter by enabled status (true for active, false for disabled)")
+          @RequestParam
+          Boolean enabled,
       @Parameter(description = "Page number (1-based)") @RequestParam(defaultValue = "1") int page,
       @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "20")
           int limit) {
