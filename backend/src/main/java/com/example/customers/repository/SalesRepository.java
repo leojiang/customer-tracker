@@ -56,6 +56,13 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
   Page<Sales> findByApprovalStatusIn(
       @Param("statuses") List<ApprovalStatus> statuses, Pageable pageable);
 
+  /** Find approved users by enabled status. */
+  @Query(
+      "SELECT s FROM Sales s WHERE s.approvalStatus = 'APPROVED' AND s.isEnabled = :enabled "
+          + "ORDER BY s.createdAt DESC")
+  Page<Sales> findApprovedUsersByEnabledStatus(
+      @Param("enabled") Boolean enabled, Pageable pageable);
+
   // ========== Analytics Query Methods ==========
 
   /** Get sales leaderboard data with customer and conversion metrics. */

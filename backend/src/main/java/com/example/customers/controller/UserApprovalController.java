@@ -97,6 +97,80 @@ public class UserApprovalController {
   }
 
   @Operation(
+      summary = "Get all users",
+      description = "Retrieve paginated list of all users for management")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved all users",
+            content = @Content(schema = @Schema(implementation = ApprovalPageResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+      })
+  @GetMapping("/all-users")
+  public ResponseEntity<ApprovalPageResponse> getAllUsers(
+      @Parameter(description = "Page number (1-based)") @RequestParam(defaultValue = "1") int page,
+      @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "20")
+          int limit) {
+
+    // Validate pagination parameters
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 20;
+    if (limit > 100) limit = 100;
+
+    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
+
+    Page<Sales> users = approvalService.getAllUsers(pageable);
+
+    List<UserApprovalDto> userDtos =
+        users.getContent().stream().map(this::toApprovalDto).collect(Collectors.toList());
+
+    ApprovalPageResponse response =
+        new ApprovalPageResponse(
+            userDtos, users.getTotalElements(), page, limit, users.getTotalPages());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @Operation(
+      summary = "Get approved users by enabled status",
+      description = "Retrieve paginated list of approved users filtered by enabled/disabled status")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved users",
+            content = @Content(schema = @Schema(implementation = ApprovalPageResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+      })
+  @GetMapping("/approved-users")
+  public ResponseEntity<ApprovalPageResponse> getApprovedUsersByEnabledStatus(
+      @Parameter(description = "Filter by enabled status (true for active, false for disabled)") 
+      @RequestParam Boolean enabled,
+      @Parameter(description = "Page number (1-based)") @RequestParam(defaultValue = "1") int page,
+      @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "20")
+          int limit) {
+
+    // Validate pagination parameters
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 20;
+    if (limit > 100) limit = 100;
+
+    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
+
+    Page<Sales> users = approvalService.getApprovedUsersByEnabledStatus(enabled, pageable);
+
+    List<UserApprovalDto> userDtos =
+        users.getContent().stream().map(this::toApprovalDto).collect(Collectors.toList());
+
+    ApprovalPageResponse response =
+        new ApprovalPageResponse(
+            userDtos, users.getTotalElements(), page, limit, users.getTotalPages());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @Operation(
       summary = "Approve user registration",
       description = "Approve a pending user registration")
   @ApiResponses(
@@ -152,9 +226,7 @@ public class UserApprovalController {
     return ResponseEntity.ok(toApprovalDto(resetUser));
   }
 
-  @Operation(
-      summary = "Enable user account",
-      description = "Enable a disabled user account")
+  @Operation(summary = "Enable user account", description = "Enable a disabled user account")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "User enabled successfully"),
@@ -173,9 +245,7 @@ public class UserApprovalController {
     return ResponseEntity.ok(toApprovalDto(enabledUser));
   }
 
-  @Operation(
-      summary = "Disable user account",
-      description = "Disable an enabled user account")
+  @Operation(summary = "Disable user account", description = "Disable an enabled user account")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "User disabled successfully"),

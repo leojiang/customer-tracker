@@ -198,6 +198,27 @@ export const userApprovalApi = {
     return fetchApi<ApprovalPageResponse>(`/admin/user-approvals?${params}`);
   },
 
+  async getAllUsers(page: number = 1, limit: number = 20): Promise<ApprovalPageResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return fetchApi<ApprovalPageResponse>(`/admin/user-approvals/all-users?${params}`);
+  },
+
+  async getApprovedUsersByEnabledStatus(
+    enabled: boolean, 
+    page: number = 1, 
+    limit: number = 20
+  ): Promise<ApprovalPageResponse> {
+    const params = new URLSearchParams({
+      enabled: enabled.toString(),
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return fetchApi<ApprovalPageResponse>(`/admin/user-approvals/approved-users?${params}`);
+  },
+
   async approveUser(phone: string, reason?: string): Promise<UserApprovalDto> {
     return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/approve`, {
       method: 'POST',

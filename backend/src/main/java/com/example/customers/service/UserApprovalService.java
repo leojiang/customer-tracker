@@ -63,6 +63,29 @@ public class UserApprovalService {
   }
 
   /**
+   * Get all users with pagination for management purposes.
+   *
+   * @param pageable pagination parameters
+   * @return page of all users
+   */
+  @Transactional(readOnly = true)
+  public Page<Sales> getAllUsers(Pageable pageable) {
+    return salesRepository.findAll(pageable);
+  }
+
+  /**
+   * Get approved users by enabled status with pagination.
+   *
+   * @param enabled whether to get enabled or disabled users
+   * @param pageable pagination parameters
+   * @return page of approved users filtered by enabled status
+   */
+  @Transactional(readOnly = true)
+  public Page<Sales> getApprovedUsersByEnabledStatus(Boolean enabled, Pageable pageable) {
+    return salesRepository.findApprovedUsersByEnabledStatus(enabled, pageable);
+  }
+
+  /**
    * Approve a user registration.
    *
    * @param userPhone phone of the user to approve
@@ -346,10 +369,7 @@ public class UserApprovalService {
       }
     }
     log.info(
-        "Bulk enabled {} out of {} users by admin {}",
-        enabledCount,
-        userPhones.size(),
-        adminPhone);
+        "Bulk enabled {} out of {} users by admin {}", enabledCount, userPhones.size(), adminPhone);
     return enabledCount;
   }
 

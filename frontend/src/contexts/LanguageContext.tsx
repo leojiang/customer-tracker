@@ -484,6 +484,10 @@ const translations = {
     'userManagement.disableButton': 'Disable Account',
     'userManagement.disableReason': 'Disable reason *',
     'userManagement.disablePlaceholder': 'e.g., Temporary suspension, policy violation...',
+    'userManagement.allUsers': 'All Users',
+    'userManagement.userApprovals': 'User Approvals',
+    'userManagement.allUsersDescription': 'View and manage all user accounts',
+    'userManagement.active': 'ACTIVE',
 
     // Customer Detail
     'detail.customerDetails': 'Customer Details',
@@ -977,6 +981,10 @@ const translations = {
     'userManagement.disableButton': '禁用账户',
     'userManagement.disableReason': '禁用原因 *',
     'userManagement.disablePlaceholder': '例如：临时暂停，违反政策...',
+    'userManagement.allUsers': '所有用户',
+    'userManagement.userApprovals': '用户审批',
+    'userManagement.allUsersDescription': '查看和管理所有用户账户',
+    'userManagement.active': '活跃',
 
     // Customer Detail
     'detail.customerDetails': '客户详情',
