@@ -31,7 +31,6 @@ class MessagePollingService {
    */
   public startPolling(sessionId: number, onNewMessages: (messages: ChatMessage[]) => void): void {
     if (!this.isPollingEnabled) {
-      console.log('Polling is disabled, not starting polling for session:', sessionId);
       return;
     }
     // Stop existing polling for this session if any
