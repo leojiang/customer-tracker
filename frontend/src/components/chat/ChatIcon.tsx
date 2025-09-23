@@ -32,8 +32,8 @@ export default function ChatIcon({ onClick, className = '' }: ChatIconProps) {
 
     // Only start polling if polling is enabled
     if (isPollingEnabled) {
-      // Refresh unread count every 30 seconds
-      const interval = setInterval(fetchUnreadCount, 30000);
+      // Refresh unread count every 5 seconds
+      const interval = setInterval(fetchUnreadCount, 5000);
       return () => clearInterval(interval);
     }
   }, [isPollingEnabled]);
