@@ -5,11 +5,35 @@ class MessagePollingService {
   private pollingIntervals: Map<number, NodeJS.Timeout> = new Map();
   private messageHandlers: Map<number, (messages: ChatMessage[]) => void> = new Map();
   private lastMessageIds: Map<number, number> = new Map();
+  private isPollingEnabled: boolean = true;
+
+  /**
+   * Enable or disable polling globally
+   */
+  public setPollingEnabled(enabled: boolean): void {
+    this.isPollingEnabled = enabled;
+    
+    if (!enabled) {
+      // Stop all polling when disabled
+      this.stopAllPolling();
+    }
+  }
+
+  /**
+   * Get current polling status
+   */
+  public isPollingOn(): boolean {
+    return this.isPollingEnabled;
+  }
 
   /**
    * Start polling for new messages in a chat session
    */
   public startPolling(sessionId: number, onNewMessages: (messages: ChatMessage[]) => void): void {
+    if (!this.isPollingEnabled) {
+      console.log('Polling is disabled, not starting polling for session:', sessionId);
+      return;
+    }
     // Stop existing polling for this session if any
     this.stopPolling(sessionId);
 

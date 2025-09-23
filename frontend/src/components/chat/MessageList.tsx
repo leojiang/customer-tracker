@@ -18,6 +18,7 @@ export default function MessageList({ sessionId, onMessagesLoaded }: MessageList
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPollingEnabled, setIsPollingEnabled] = useState(messagePollingService.isPollingOn());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function MessageList({ sessionId, onMessagesLoaded }: MessageList
 
   // Start polling for new messages when component mounts
   useEffect(() => {
-    if (sessionId) {
+    if (sessionId && isPollingEnabled) {
       // Start polling for new messages
       messagePollingService.startPolling(sessionId, (newMessages) => {
         setMessages(prevMessages => {
@@ -76,7 +77,22 @@ export default function MessageList({ sessionId, onMessagesLoaded }: MessageList
         messagePollingService.stopPolling(sessionId);
       };
     }
-  }, [sessionId]);
+  }, [sessionId, isPollingEnabled]);
+
+  // Listen for polling status changes
+  useEffect(() => {
+    const checkPollingStatus = () => {
+      const currentStatus = messagePollingService.isPollingOn();
+      if (currentStatus !== isPollingEnabled) {
+        setIsPollingEnabled(currentStatus);
+      }
+    };
+
+    // Check polling status every second
+    const interval = setInterval(checkPollingStatus, 1000);
+    
+    return () => clearInterval(interval);
+  }, [isPollingEnabled]);
 
 
   const formatMessageTime = (dateString: string) => {

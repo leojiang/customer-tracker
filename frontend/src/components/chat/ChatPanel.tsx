@@ -10,6 +10,7 @@ import ChatSessionList from './ChatSessionList';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import UserSearch from './UserSearch';
+import PollingToggle from './PollingToggle';
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -120,10 +121,7 @@ export default function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
                 <h2 className="text-lg font-semibold text-surface-900">{t('chat.title')}</h2>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 text-blue-600">
-                  <MessageCircle size={16} />
-                  <span className="text-xs">Polling</span>
-                </div>
+                <PollingToggle />
               </div>
             </div>
           </div>
