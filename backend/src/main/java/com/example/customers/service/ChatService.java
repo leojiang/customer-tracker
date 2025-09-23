@@ -28,6 +28,7 @@ public class ChatService {
   private final ChatSessionRepository chatSessionRepository;
   private final ChatMessageRepository chatMessageRepository;
   private final SalesRepository salesRepository;
+
   @Autowired
   public ChatService(
       ChatSessionRepository chatSessionRepository,
