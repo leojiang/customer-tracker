@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { chatApi } from '@/services/chatApi';
+import { messagePollingService } from '@/services/messagePollingService';
 
 interface ChatIconProps {
   onClick: () => void;
@@ -12,6 +13,7 @@ interface ChatIconProps {
 export default function ChatIcon({ onClick, className = '' }: ChatIconProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isPollingEnabled, setIsPollingEnabled] = useState(messagePollingService.isPollingOn());
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
@@ -28,10 +30,28 @@ export default function ChatIcon({ onClick, className = '' }: ChatIconProps) {
 
     fetchUnreadCount();
 
-    // Refresh unread count every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000);
+    // Only start polling if polling is enabled
+    if (isPollingEnabled) {
+      // Refresh unread count every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isPollingEnabled]);
+
+  // Listen for polling status changes
+  useEffect(() => {
+    const checkPollingStatus = () => {
+      const currentStatus = messagePollingService.isPollingOn();
+      if (currentStatus !== isPollingEnabled) {
+        setIsPollingEnabled(currentStatus);
+      }
+    };
+
+    // Check polling status every second
+    const interval = setInterval(checkPollingStatus, 1000);
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [isPollingEnabled]);
 
   return (
     <button
