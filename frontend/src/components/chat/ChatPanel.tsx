@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, MessageCircle, Wifi, WifiOff } from 'lucide-react';
+import { X, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useWebSocket } from '@/contexts/WebSocketContext';
+// WebSocket context removed - using HTTP polling instead
 import { chatApi } from '@/services/chatApi';
 import ChatSessionList from './ChatSessionList';
 import MessageList from './MessageList';
@@ -19,13 +19,7 @@ interface ChatPanelProps {
 export default function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { 
-    isConnected, 
-    subscribeToChat, 
-    unsubscribeFromChat, 
-    sendMessage: sendWebSocketMessage,
-    error: webSocketError 
-  } = useWebSocket();
+  // Remove WebSocket dependencies - using HTTP polling instead
   const [selectedSessionId, setSelectedSessionId] = useState<number | undefined>();
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showUserSearch, setShowUserSearch] = useState(false);
@@ -55,22 +49,10 @@ export default function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
 
   const handleSessionSelect = (sessionId: number) => {
     setSelectedSessionId(sessionId);
-    // Subscribe to WebSocket updates for this session
-    subscribeToChat(sessionId);
+    // No need to subscribe to WebSocket - polling handles updates
   };
 
-  // Subscribe to WebSocket when session is selected
-  useEffect(() => {
-    if (selectedSessionId && isConnected) {
-      subscribeToChat(selectedSessionId);
-    }
-    
-    return () => {
-      if (selectedSessionId) {
-        unsubscribeFromChat(selectedSessionId);
-      }
-    };
-  }, [selectedSessionId, isConnected, subscribeToChat, unsubscribeFromChat]);
+  // No WebSocket subscription needed - polling handles updates
 
   const handleSendMessage = async (messageContent: string) => {
     if (!selectedSessionId || !messageContent.trim()) {
@@ -80,13 +62,8 @@ export default function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
     try {
       setSendingMessage(true);
       
-      if (isConnected) {
-        // Send via WebSocket for real-time delivery
-        sendWebSocketMessage(selectedSessionId, messageContent.trim());
-      } else {
-        // Fallback to REST API if WebSocket is not connected
-        await chatApi.sendMessage(selectedSessionId, messageContent.trim());
-      }
+      // Always use REST API - polling will pick up the new message
+      await chatApi.sendMessage(selectedSessionId, messageContent.trim());
     } catch (error) {
       console.error('Failed to send message:', error);
       // You could add a toast notification here
@@ -143,24 +120,12 @@ export default function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
                 <h2 className="text-lg font-semibold text-surface-900">{t('chat.title')}</h2>
               </div>
               <div className="flex items-center gap-2">
-                {isConnected ? (
-                  <div className="flex items-center gap-1 text-green-600">
-                    <Wifi size={16} />
-                    <span className="text-xs">Connected</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-red-600">
-                    <WifiOff size={16} />
-                    <span className="text-xs">Disconnected</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1 text-blue-600">
+                  <MessageCircle size={16} />
+                  <span className="text-xs">Polling</span>
+                </div>
               </div>
             </div>
-            {webSocketError && (
-              <div className="mt-2 text-xs text-red-600">
-                {webSocketError}
-              </div>
-            )}
           </div>
           {showUserSearch ? (
             <UserSearch

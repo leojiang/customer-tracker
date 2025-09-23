@@ -35,16 +35,16 @@ echo "🔧 Backend Quality Checks..."
 cd backend
 
 echo "  🎨 Code formatting..."
-mvn spotless:apply -q
+../apache-maven-3.9.6/bin/mvn spotless:apply -q
 
 echo "  📏 Format verification..."
-mvn spotless:check -q
+../apache-maven-3.9.6/bin/mvn spotless:check -q
 
 echo "  🏗️ Compilation..."
-mvn clean compile -q
+../apache-maven-3.9.6/bin/mvn clean compile -q
 
 echo "  🧪 Unit tests..."
-mvn test -q
+../apache-maven-3.9.6/bin/mvn test -q
 
 echo "  ✅ Backend checks passed!"
 cd ..

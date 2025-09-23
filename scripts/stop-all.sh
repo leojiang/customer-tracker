@@ -62,8 +62,21 @@ read -p "Do you want to stop the database container? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}Stopping database container...${NC}"
-    podman stop customer-tracker-db 2>/dev/null || true
-    echo -e "${GREEN}✅ Database container stopped${NC}"
+    
+    # Detect container runtime (Docker or Podman)
+    CONTAINER_RUNTIME=""
+    if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+        CONTAINER_RUNTIME="docker"
+    elif command -v podman >/dev/null 2>&1; then
+        CONTAINER_RUNTIME="podman"
+    fi
+    
+    if [ -n "$CONTAINER_RUNTIME" ]; then
+        $CONTAINER_RUNTIME stop customer-tracker-db 2>/dev/null || true
+        echo -e "${GREEN}✅ Database container stopped${NC}"
+    else
+        echo -e "${RED}❌ No container runtime found${NC}"
+    fi
 else
     echo -e "${BLUE}Database container left running${NC}"
 fi

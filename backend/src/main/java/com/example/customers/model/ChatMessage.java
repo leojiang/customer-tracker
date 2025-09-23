@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 /**
  * Entity representing a chat message within a chat session.
  *
- * <p>Each message belongs to a chat session and contains the sender's information,
- * message content, and timestamp.
+ * <p>Each message belongs to a chat session and contains the sender's information, message content,
+ * and timestamp.
  */
 @Entity
 @Table(name = "chat_messages")
@@ -104,9 +104,7 @@ public class ChatMessage {
     this.readAt = readAt;
   }
 
-  /**
-   * Mark the message as read.
-   */
+  /** Mark the message as read. */
   public void markAsRead() {
     this.isRead = true;
     this.readAt = LocalDateTime.now();

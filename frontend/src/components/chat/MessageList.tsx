@@ -5,7 +5,7 @@ import { ChatMessage } from '@/types/chat';
 import { chatApi } from '@/services/chatApi';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useWebSocket } from '@/contexts/WebSocketContext';
+import { messagePollingService } from '@/services/messagePollingService';
 
 interface MessageListProps {
   sessionId: number;
@@ -15,7 +15,6 @@ interface MessageListProps {
 export default function MessageList({ sessionId, onMessagesLoaded }: MessageListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { messages: webSocketMessages } = useWebSocket();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,27 +50,34 @@ export default function MessageList({ sessionId, onMessagesLoaded }: MessageList
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Merge WebSocket messages with fetched messages
+  // Start polling for new messages when component mounts
   useEffect(() => {
-    if (webSocketMessages.length > 0) {
-      setMessages(prevMessages => {
-        const allMessages = [...prevMessages];
-        
-        webSocketMessages.forEach(wsMessage => {
-          // Check if message already exists
-          const exists = allMessages.some(msg => msg.id === wsMessage.id);
-          if (!exists) {
-            allMessages.push(wsMessage);
-          }
+    if (sessionId) {
+      // Start polling for new messages
+      messagePollingService.startPolling(sessionId, (newMessages) => {
+        setMessages(prevMessages => {
+          const combined = [...prevMessages];
+          
+          newMessages.forEach(newMessage => {
+            const exists = combined.some(msg => msg.id === newMessage.id);
+            if (!exists) {
+              combined.push(newMessage);
+            }
+          });
+          
+          return combined.sort((a, b) => 
+            new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
+          );
         });
-        
-        // Sort by timestamp
-        return allMessages.sort((a, b) => 
-          new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
-        );
       });
+
+      // Cleanup polling when component unmounts
+      return () => {
+        messagePollingService.stopPolling(sessionId);
+      };
     }
-  }, [webSocketMessages]);
+  }, [sessionId]);
+
 
   const formatMessageTime = (dateString: string) => {
     const date = new Date(dateString);

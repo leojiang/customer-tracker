@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { WebSocketProvider } from '@/contexts/WebSocketContext';
+// WebSocket context removed - using HTTP polling instead
 import { useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
 
@@ -34,9 +34,5 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return null; // Will redirect to /auth
   }
 
-  return (
-    <WebSocketProvider>
-      {children}
-    </WebSocketProvider>
-  );
+  return <>{children}</>;
 }

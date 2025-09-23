@@ -14,16 +14,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST controller for chat operations.
@@ -72,7 +69,7 @@ public class ChatController {
     // Extract phone from Sales object (principal)
     Sales currentUser = (Sales) authentication.getPrincipal();
     String currentUserPhone = currentUser.getPhone();
-    
+
     if (currentUserPhone.equals(otherUserPhone)) {
       return ResponseEntity.badRequest().build();
     }
@@ -153,9 +150,7 @@ public class ChatController {
    * @param authentication the current user's authentication
    * @return ResponseEntity containing the created ChatMessage
    */
-  @Operation(
-      summary = "Send a message",
-      description = "Send a message in a chat session")
+  @Operation(summary = "Send a message", description = "Send a message in a chat session")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -177,7 +172,8 @@ public class ChatController {
     String currentUserPhone = currentUser.getPhone();
 
     try {
-      ChatMessage message = chatService.sendMessage(chatSessionId, currentUserPhone, request.getMessageContent());
+      ChatMessage message =
+          chatService.sendMessage(chatSessionId, currentUserPhone, request.getMessageContent());
       return ResponseEntity.ok(message);
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().build();
@@ -218,7 +214,8 @@ public class ChatController {
     String currentUserPhone = currentUser.getPhone();
 
     try {
-      Page<ChatMessage> messages = chatService.getMessages(chatSessionId, currentUserPhone, page, size);
+      Page<ChatMessage> messages =
+          chatService.getMessages(chatSessionId, currentUserPhone, page, size);
       return ResponseEntity.ok(messages);
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().build();
@@ -350,7 +347,8 @@ public class ChatController {
     String currentUserPhone = currentUser.getPhone();
 
     try {
-      return chatService.getOtherParticipant(chatSessionId, currentUserPhone)
+      return chatService
+          .getOtherParticipant(chatSessionId, currentUserPhone)
           .map(ResponseEntity::ok)
           .orElse(ResponseEntity.notFound().build());
     } catch (IllegalArgumentException e) {

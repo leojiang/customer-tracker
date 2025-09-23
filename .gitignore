@@ -164,3 +164,6 @@ build/
 # Test coverage
 coverage/
 *.lcov
+
+# Apache Maven installation
+apache-maven-*/

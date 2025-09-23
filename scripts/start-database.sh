@@ -13,21 +13,35 @@ DB_USER="postgres"
 DB_PASSWORD="postgres"
 DB_PORT="5432"
 
+# Detect container runtime (Docker or Podman)
+CONTAINER_RUNTIME=""
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    CONTAINER_RUNTIME="docker"
+    echo "🐳 Using Docker as container runtime"
+elif command -v podman >/dev/null 2>&1; then
+    CONTAINER_RUNTIME="podman"
+    echo "🦭 Using Podman as container runtime"
+else
+    echo "❌ Neither Docker nor Podman is available or running"
+    echo "Please install Docker Desktop or Podman to continue"
+    exit 1
+fi
+
 echo "🗄️  Starting PostgreSQL database for Customer Tracker..."
 
 # Check if container already exists and is running
-if podman ps -q -f name="$CONTAINER_NAME" | grep -q .; then
+if $CONTAINER_RUNTIME ps -q -f name="$CONTAINER_NAME" | grep -q .; then
     echo "✅ Database container is already running"
     exit 0
 fi
 
 # Check if container exists but is stopped
-if podman ps -aq -f name="$CONTAINER_NAME" | grep -q .; then
+if $CONTAINER_RUNTIME ps -aq -f name="$CONTAINER_NAME" | grep -q .; then
     echo "🔄 Starting existing database container..."
-    podman start "$CONTAINER_NAME"
+    $CONTAINER_RUNTIME start "$CONTAINER_NAME"
 else
     echo "🆕 Creating new PostgreSQL database container..."
-    podman run -d \
+    $CONTAINER_RUNTIME run -d \
         --name "$CONTAINER_NAME" \
         -e POSTGRES_DB="$DB_NAME" \
         -e POSTGRES_USER="$DB_USER" \
@@ -40,7 +54,7 @@ fi
 # Wait for database to be ready
 echo "⏳ Waiting for database to be ready..."
 for i in {1..30}; do
-    if podman exec "$CONTAINER_NAME" pg_isready -U "$DB_USER" -d "$DB_NAME" >/dev/null 2>&1; then
+    if $CONTAINER_RUNTIME exec "$CONTAINER_NAME" pg_isready -U "$DB_USER" -d "$DB_NAME" >/dev/null 2>&1; then
         echo "✅ Database is ready!"
         break
     fi

@@ -2,14 +2,12 @@ package com.example.customers.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Entity representing a chat session between two users.
  *
- * <p>Each chat session represents a 1-to-1 conversation between two sales users.
- * The session is identified by the combination of participant phone numbers.
+ * <p>Each chat session represents a 1-to-1 conversation between two sales users. The session is
+ * identified by the combination of participant phone numbers.
  */
 @Entity
 @Table(name = "chat_sessions")

@@ -15,10 +15,23 @@ echo "☕ Starting Customer Tracker Backend (Spring Boot)..."
 # Navigate to backend directory
 cd "$BACKEND_DIR"
 
-# Check if Maven is available
+# Initialize SDKMAN and set Java 17
+if [ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    echo "☕ Using Java 17 via SDKMAN"
+fi
+
+# Check if Maven is available, try local installation first
 if ! command -v mvn &> /dev/null; then
-    echo "❌ Maven is not installed or not in PATH"
-    exit 1
+    # Try to use local Maven installation
+    if [ -f "../apache-maven-3.9.6/bin/mvn" ]; then
+        echo "🔧 Using local Maven installation"
+        export PATH="../apache-maven-3.9.6/bin:$PATH"
+    else
+        echo "❌ Maven is not installed or not in PATH"
+        echo "Please install Maven or run the start-all script from the project root"
+        exit 1
+    fi
 fi
 
 # Clean and compile the project

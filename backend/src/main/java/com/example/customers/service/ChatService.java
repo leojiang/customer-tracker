@@ -6,16 +6,15 @@ import com.example.customers.model.Sales;
 import com.example.customers.repository.ChatMessageRepository;
 import com.example.customers.repository.ChatSessionRepository;
 import com.example.customers.repository.SalesRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Service for chat operations.
@@ -29,18 +28,14 @@ public class ChatService {
   private final ChatSessionRepository chatSessionRepository;
   private final ChatMessageRepository chatMessageRepository;
   private final SalesRepository salesRepository;
-  private final ChatWebSocketService webSocketService;
-
   @Autowired
   public ChatService(
       ChatSessionRepository chatSessionRepository,
       ChatMessageRepository chatMessageRepository,
-      SalesRepository salesRepository,
-      ChatWebSocketService webSocketService) {
+      SalesRepository salesRepository) {
     this.chatSessionRepository = chatSessionRepository;
     this.chatMessageRepository = chatMessageRepository;
     this.salesRepository = salesRepository;
-    this.webSocketService = webSocketService;
   }
 
   /**
@@ -61,7 +56,8 @@ public class ChatService {
     }
 
     // Check if session already exists
-    Optional<ChatSession> existingSession = chatSessionRepository.findByParticipants(user1Phone, user2Phone);
+    Optional<ChatSession> existingSession =
+        chatSessionRepository.findByParticipants(user1Phone, user2Phone);
     if (existingSession.isPresent()) {
       return existingSession.get();
     }
@@ -81,8 +77,10 @@ public class ChatService {
    * @throws IllegalArgumentException if session doesn't exist or user is not a participant
    */
   public ChatMessage sendMessage(Long chatSessionId, String senderPhone, String messageContent) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(senderPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
@@ -95,13 +93,7 @@ public class ChatService {
     session.setUpdatedAt(LocalDateTime.now());
     chatSessionRepository.save(session);
 
-    // Broadcast message via WebSocket for real-time delivery
-    try {
-      webSocketService.broadcastMessage(chatSessionId, savedMessage);
-    } catch (Exception e) {
-      // Log error but don't fail the message save
-      System.err.println("Failed to broadcast message via WebSocket: " + e.getMessage());
-    }
+    // No WebSocket broadcasting needed - using HTTP polling instead
 
     return savedMessage;
   }
@@ -143,8 +135,10 @@ public class ChatService {
    */
   @Transactional(readOnly = true)
   public Page<ChatMessage> getMessages(Long chatSessionId, String userPhone, int page, int size) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(userPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
@@ -164,8 +158,10 @@ public class ChatService {
    */
   @Transactional(readOnly = true)
   public List<ChatMessage> getAllMessages(Long chatSessionId, String userPhone) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(userPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
@@ -182,14 +178,17 @@ public class ChatService {
    * @throws IllegalArgumentException if session doesn't exist or user is not a participant
    */
   public void markMessagesAsRead(Long chatSessionId, String userPhone) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(userPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
     }
 
-    chatMessageRepository.markMessagesAsReadInSession(chatSessionId, userPhone, LocalDateTime.now());
+    chatMessageRepository.markMessagesAsReadInSession(
+        chatSessionId, userPhone, LocalDateTime.now());
   }
 
   /**
@@ -213,8 +212,10 @@ public class ChatService {
    */
   @Transactional(readOnly = true)
   public long getUnreadMessageCountInSession(Long chatSessionId, String userPhone) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(userPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
@@ -232,8 +233,10 @@ public class ChatService {
    */
   @Transactional(readOnly = true)
   public Optional<Sales> getOtherParticipant(Long chatSessionId, String currentUserPhone) {
-    ChatSession session = chatSessionRepository.findById(chatSessionId)
-        .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
+    ChatSession session =
+        chatSessionRepository
+            .findById(chatSessionId)
+            .orElseThrow(() -> new IllegalArgumentException("Chat session not found"));
 
     if (!session.isParticipant(currentUserPhone)) {
       throw new IllegalArgumentException("User is not a participant in this chat session");
@@ -257,17 +260,19 @@ public class ChatService {
     }
 
     String trimmedQuery = query.trim();
-    
+
     // Search by phone number (exact match or partial match)
     List<Sales> phoneMatches = salesRepository.findByPhoneContainingIgnoreCase(trimmedQuery);
-    
-    // Search by name (if users have names stored - currently they don't, but for future extensibility)
+
+    // Search by name (if users have names stored - currently they don't, but for future
+    // extensibility)
     // For now, we'll only search by phone since Sales users are identified by phone numbers
-    
+
     // Filter out the current user and only return approved users
     return phoneMatches.stream()
         .filter(user -> !user.getPhone().equals(currentUserPhone))
-        .filter(user -> user.getApprovalStatus() == com.example.customers.model.ApprovalStatus.APPROVED)
+        .filter(
+            user -> user.getApprovalStatus() == com.example.customers.model.ApprovalStatus.APPROVED)
         .filter(user -> !user.isDisabled())
         .limit(10) // Limit results to 10 users
         .collect(java.util.stream.Collectors.toList());
