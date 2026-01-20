@@ -29,7 +29,7 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
   /** Find users by phone number containing the given string (case-insensitive). */
   List<Sales> findByPhoneContainingIgnoreCase(String phone);
 
-  /** Find all sales users with SALES role. */
+  /** Find all sales users by role. */
   List<Sales> findByRole(SalesRole role);
 
   // ========== User Approval Query Methods ==========
@@ -83,7 +83,7 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
     LEFT JOIN Customer c ON s.phone = c.salesPhone
         AND c.createdAt >= :startDate
         AND c.deletedAt IS NULL
-    WHERE s.role = 'SALES' AND s.approvalStatus = 'APPROVED'
+    WHERE s.role IN ('OFFICER', 'CUSTOMER_AGENT') AND s.approvalStatus = 'APPROVED'
     GROUP BY s.phone
     ORDER BY
       CASE
