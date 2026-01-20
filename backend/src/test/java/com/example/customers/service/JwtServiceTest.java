@@ -38,7 +38,7 @@ class JwtServiceTest {
     testSales = new Sales();
     testSales.setId(testId);
     testSales.setPhone(testPhone);
-    testSales.setRole(SalesRole.SALES);
+    testSales.setRole(SalesRole.OFFICER);
 
     // Set test values using reflection
     ReflectionTestUtils.setField(
@@ -65,7 +65,7 @@ class JwtServiceTest {
     // Verify custom claims
     Claims claims = jwtService.extractClaim(token, claims1 -> claims1);
     assertEquals(testPhone, claims.getSubject());
-    assertEquals(SalesRole.SALES.name(), claims.get("role"));
+    assertEquals(SalesRole.OFFICER.name(), claims.get("role"));
     assertEquals(testId.toString(), claims.get("id"));
   }
 
@@ -117,7 +117,7 @@ class JwtServiceTest {
     String role = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
 
     // Then
-    assertEquals(SalesRole.SALES.name(), role);
+    assertEquals(SalesRole.OFFICER.name(), role);
   }
 
   @Test

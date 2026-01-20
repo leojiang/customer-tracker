@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle } from 'lucide-react';
+import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock } from 'lucide-react';
 import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { SalesRole } from '@/types/auth';
 
 interface CustomerFormProps {
   onClose: () => void;
@@ -15,6 +17,11 @@ interface CustomerFormProps {
 
 export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  // Check if user has permission to add customers
+  const canAddCustomer = user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER;
+
   const [formData, setFormData] = useState<CreateCustomerRequest>({
     name: '',
     phone: '',
@@ -147,6 +154,33 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   const handleCloseMapPicker = () => {
     setShowMapPicker(false);
   };
+
+  // Show permission denied message for CUSTOMER_AGENT
+  if (!canAddCustomer) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="flex flex-col items-center justify-center text-center py-8">
+            <div className="bg-orange-100 rounded-full p-4 mb-4">
+              <Lock size={32} className="text-orange-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {t('error.permissionDenied')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              {t('error.onlyAdminOfficerCanAdd')}
+            </p>
+            <button
+              onClick={onClose}
+              className="btn-primary flex items-center justify-center gap-2"
+            >
+              {t('customers.close')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

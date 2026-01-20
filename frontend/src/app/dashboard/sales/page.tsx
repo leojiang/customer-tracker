@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Users, RefreshCw } from 'lucide-react';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
 import { getTranslatedStatusName } from '@/types/customer';
+import { SalesRole } from '@/types/auth';
 
 interface DashboardOverview {
   totalCustomers: number;
@@ -110,7 +111,7 @@ export default function SalesDashboard() {
       return;
     }
 
-    if (user.role !== 'SALES') {
+    if (user.role !== SalesRole.CUSTOMER_AGENT) {
       router.push('/dashboard/admin');
       return;
     }

@@ -1,14 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2 } from 'lucide-react';
 import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName } from '@/types/customer';
-import { customerApi } from '@/lib/api';
+import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import DeleteRequestModal from '@/components/ui/DeleteRequestModal';
+import AlertModal from '@/components/ui/AlertModal';
+import { SalesRole } from '@/types/auth';
 // import { format } from 'date-fns'; // Unused import removed
 
 interface CustomerDetailProps {
@@ -18,6 +22,7 @@ interface CustomerDetailProps {
 
 export default function CustomerDetail({ customerId, onBack }: CustomerDetailProps) {
   const { t } = useLanguage();
+  const { user, token } = useAuth();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +50,18 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [showDeleteRequestModal, setShowDeleteRequestModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type?: 'error' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+  });
 
   const loadValidTransitions = useCallback(async () => {
     try {
@@ -249,6 +266,57 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     return validTransitions;
   };
 
+  const handleDeleteRequest = async (reason: string) => {
+    if (!customer || !token) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await customerDeleteRequestApi.createDeleteRequest(token, {
+        customerId: customer.id,
+        reason
+      });
+      // Success is handled by the modal, just close it
+      setShowDeleteRequestModal(false);
+      setIsDeleting(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      // Check if it's a duplicate request error
+      if (errorMessage.includes('pending delete request already exists')) {
+        // Close the delete request modal first
+        setShowDeleteRequestModal(false);
+        setIsDeleting(false);
+        // Show alert modal with the duplicate request message
+        setAlertModal({
+          isOpen: true,
+          title: t('deleteRequests.requestDeletion'),
+          message: t('deleteRequests.pendingRequestExists'),
+          type: 'warning',
+        });
+      } else {
+        // For other errors, the DeleteRequestModal will show them inline
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const canEdit = (): boolean => {
+    if (!user) {
+      return false;
+    }
+    return user.role === SalesRole.ADMIN || user.role === SalesRole.OFFICER;
+  };
+
+  const canRequestDelete = (): boolean => {
+    if (!user) {
+      return false;
+    }
+    return user.role === SalesRole.ADMIN || user.role === SalesRole.OFFICER;
+  };
+
+  const availableTransitions = getAvailableStatusTransitions();
+
   if (loading) {
     return (
       <div className="card p-6 text-center">
@@ -273,8 +341,6 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       </div>
     );
   }
-
-  const availableTransitions = getAvailableStatusTransitions();
 
   return (
     <div className="space-y-8">
@@ -325,7 +391,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 <div className="flex flex-col sm:flex-row gap-3">
                   {isEditing ? (
                     <>
-                      <button 
+                      <button
                         onClick={handleSave}
                         disabled={updating}
                         className="btn-primary flex items-center justify-center gap-3"
@@ -333,7 +399,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         <Save size={18} />
                         {updating ? t('customers.form.updating') : t('customers.form.update')}
                       </button>
-                      <button 
+                      <button
                         onClick={handleCancelEdit}
                         className="btn-secondary flex items-center justify-center gap-3"
                       >
@@ -342,10 +408,24 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       </button>
                     </>
                   ) : (
-                    <button onClick={handleEdit} className="btn-outline flex items-center justify-center gap-3">
-                      <Edit size={18} />
-                      {t('customers.detail.edit')}
-                    </button>
+                    <>
+                      {canEdit() && (
+                        <button onClick={handleEdit} className="btn-outline flex items-center justify-center gap-3">
+                          <Edit size={18} />
+                          {t('customers.detail.edit')}
+                        </button>
+                      )}
+                      {canRequestDelete() && (
+                        <button
+                          onClick={() => setShowDeleteRequestModal(true)}
+                          disabled={isDeleting}
+                          className="btn-outline flex items-center justify-center gap-3 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        >
+                          <Trash2 size={18} />
+                          {t('deleteRequests.requestDeletion')}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -692,6 +772,26 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         onSelect={handleLocationSelect}
         initialLocation={selectedLocation || undefined}
       />
+
+      {/* Delete Request Modal for Officers */}
+      {customer && (
+        <>
+          <DeleteRequestModal
+            isOpen={showDeleteRequestModal}
+            onClose={() => setShowDeleteRequestModal(false)}
+            onSubmit={handleDeleteRequest}
+            customerName={customer.name}
+          />
+
+          <AlertModal
+            isOpen={alertModal.isOpen}
+            onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+            title={alertModal.title}
+            message={alertModal.message}
+            type={alertModal.type}
+          />
+        </>
+      )}
     </div>
   );
 }

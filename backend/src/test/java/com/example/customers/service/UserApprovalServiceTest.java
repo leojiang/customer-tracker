@@ -52,7 +52,7 @@ class UserApprovalServiceTest {
     testUser.setId(UUID.randomUUID());
     testUser.setPhone(testUserPhone);
     testUser.setPassword("hashedPassword");
-    testUser.setRole(SalesRole.SALES);
+    testUser.setRole(SalesRole.OFFICER);
     testUser.setApprovalStatus(ApprovalStatus.PENDING);
     testUser.setCreatedAt(ZonedDateTime.now());
   }
@@ -288,7 +288,7 @@ class UserApprovalServiceTest {
     secondUser.setId(UUID.randomUUID());
     secondUser.setPhone("+1111111111");
     secondUser.setPassword("hashedPassword");
-    secondUser.setRole(SalesRole.SALES);
+    secondUser.setRole(SalesRole.OFFICER);
     secondUser.setApprovalStatus(ApprovalStatus.PENDING);
     secondUser.setCreatedAt(ZonedDateTime.now());
 

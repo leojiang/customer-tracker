@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, X, CheckCircle } from 'lucide-react';
 
 interface DeleteRequestModalProps {
   isOpen: boolean;
@@ -21,14 +21,22 @@ export default function DeleteRequestModal({
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  if (!isOpen) return null;
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setReason('');
+      setError(null);
+      setShowSuccess(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!reason.trim()) {
-      setError(t('customers.detail.nameRequired'));
+      setError(t('deleteRequests.reasonRequired'));
       return;
     }
 
@@ -38,13 +46,46 @@ export default function DeleteRequestModal({
     try {
       await onSubmit(reason);
       setReason('');
-      onClose();
+      setShowSuccess(true);
+      // Auto-close after success message
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('deleteRequests.requestDeleteError'));
+      // Check if it's the specific error about pending request
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (errorMessage.includes('pending delete request already exists')) {
+        setError(t('deleteRequests.pendingRequestExists'));
+      } else {
+        setError(errorMessage || t('deleteRequests.requestDeleteError'));
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (!isOpen) {
+    return null;
+  }
+
+  // Show success state
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {t('deleteRequests.requestSubmitted')}
+          </h2>
+          <p className="text-sm text-gray-600">
+            {t('deleteRequests.requestDeleteSuccess')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -81,7 +122,7 @@ export default function DeleteRequestModal({
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder={t('deleteRequests.reason')}
+              placeholder={t('deleteRequests.reasonPlaceholder')}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
               disabled={isSubmitting}
@@ -113,7 +154,7 @@ export default function DeleteRequestModal({
               disabled={isSubmitting || !reason.trim()}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? t('customers.detail.deleting') : t('deleteRequests.requestDeletion')}
+              {isSubmitting ? t('deleteRequests.submitting') : t('deleteRequests.requestDeletion')}
             </button>
           </div>
         </form>

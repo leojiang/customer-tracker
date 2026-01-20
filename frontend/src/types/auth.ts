@@ -148,7 +148,7 @@ export interface CustomerDeleteRequest {
   customerName: string;
   customerPhone: string;
   requestedBy: string;
-  requestStatus: DeleteRequestStatus;
+  requestStatus: DeleteRequestStatus | string; // Backend returns string enum
   reason: string;
   createdAt: string;
   reviewedBy?: string;
@@ -162,6 +162,13 @@ export interface DeleteRequestPageResponse {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface DeleteRequestStatistics {
+  pendingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+  approvalRate: number;
 }
 
 export interface CreateDeleteRequestRequest {

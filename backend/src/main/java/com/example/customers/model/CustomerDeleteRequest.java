@@ -44,6 +44,12 @@ public class CustomerDeleteRequest {
   @Column(name = "reason", nullable = false, length = 1000)
   private String reason;
 
+  @Column(name = "customer_name", nullable = false, length = 255)
+  private String customerName;
+
+  @Column(name = "customer_phone", nullable = false, length = 20)
+  private String customerPhone;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private ZonedDateTime createdAt;
@@ -71,6 +77,8 @@ public class CustomerDeleteRequest {
     this.customer = customer;
     this.requestedBy = requestedBy;
     this.reason = reason;
+    this.customerName = customer.getName();
+    this.customerPhone = customer.getPhone();
     this.requestStatus = DeleteRequestStatus.PENDING;
   }
 
@@ -113,6 +121,22 @@ public class CustomerDeleteRequest {
 
   public void setReason(String reason) {
     this.reason = reason;
+  }
+
+  public String getCustomerName() {
+    return customerName;
+  }
+
+  public void setCustomerName(String customerName) {
+    this.customerName = customerName;
+  }
+
+  public String getCustomerPhone() {
+    return customerPhone;
+  }
+
+  public void setCustomerPhone(String customerPhone) {
+    this.customerPhone = customerPhone;
   }
 
   public ZonedDateTime getCreatedAt() {

@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import AllUsersTab from '@/components/user-management/AllUsersTab';
 import UserApprovalsTab from '@/components/user-management/UserApprovalsTab';
+import CustomerDeleteRequestsTab from '@/components/user-management/CustomerDeleteRequestsTab';
 
 /**
  * Admin User Management Dashboard Content
@@ -17,9 +18,9 @@ import UserApprovalsTab from '@/components/user-management/UserApprovalsTab';
 function UserManagementPageContent() {
   const { user, token } = useAuth();
   const { t } = useLanguage();
-  const { refreshAllUsers, refreshUserApprovals, isRefreshing } = useUserManagementRefresh();
+  const { refreshAllUsers, refreshUserApprovals, refreshDeleteRequests, isRefreshing } = useUserManagementRefresh();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all-users' | 'approvals'>('all-users');
+  const [activeTab, setActiveTab] = useState<'all-users' | 'approvals' | 'delete-requests'>('all-users');
 
   useEffect(() => {
     if (!user || !token) {
@@ -38,6 +39,8 @@ function UserManagementPageContent() {
       refreshAllUsers();
     } else if (activeTab === 'approvals') {
       refreshUserApprovals();
+    } else if (activeTab === 'delete-requests') {
+      refreshDeleteRequests();
     }
   };
 
@@ -106,12 +109,24 @@ function UserManagementPageContent() {
             >
               {t('userManagement.userApprovals')}
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('delete-requests')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'delete-requests'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {t('deleteRequests.title')}
+            </button>
           </nav>
         </div>
 
         {/* Tab Content */}
         <AllUsersTab isActive={activeTab === 'all-users'} />
         <UserApprovalsTab isActive={activeTab === 'approvals'} />
+        <CustomerDeleteRequestsTab isActive={activeTab === 'delete-requests'} />
       </div>
     </div>
   );

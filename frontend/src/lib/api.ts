@@ -8,10 +8,10 @@ import {
   StatusHistory,
   CustomerStatus
 } from '@/types/customer';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
   ValidateTokenRequest,
   ApprovalPageResponse,
   BulkApprovalRequest,
@@ -22,6 +22,7 @@ import {
   ApprovalStatus,
   UserApprovalDto
 } from '@/types/auth';
+import { customerDeleteRequestApi } from '@/services/customerDeleteRequestApi';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -277,4 +278,4 @@ export const userApprovalApi = {
   },
 };
 
-export { ApiError };
+export { ApiError, customerDeleteRequestApi };

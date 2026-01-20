@@ -44,7 +44,7 @@ class AuthServiceTest {
     testSales = new Sales();
     testSales.setPhone(testPhone);
     testSales.setPassword(testHashedPassword);
-    testSales.setRole(SalesRole.SALES);
+    testSales.setRole(SalesRole.OFFICER);
     testSales.setApprovalStatus(ApprovalStatus.APPROVED);
   }
 
@@ -185,7 +185,7 @@ class AuthServiceTest {
                 sales ->
                     sales.getPhone().equals(testPhone)
                         && sales.getPassword().equals(testHashedPassword)
-                        && sales.getRole() == SalesRole.SALES
+                        && sales.getRole() == SalesRole.OFFICER
                         && sales.getApprovalStatus() == ApprovalStatus.PENDING));
   }
 

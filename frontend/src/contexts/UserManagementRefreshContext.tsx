@@ -6,13 +6,15 @@ interface RefreshContextType {
   // Refresh functions for each tab
   refreshAllUsers: () => void;
   refreshUserApprovals: () => void;
-  
+  refreshDeleteRequests: () => void;
+
   // Loading state
   isRefreshing: boolean;
-  
+
   // Register refresh handlers from tab components
   registerAllUsersRefresh: (handler: () => void) => void;
   registerUserApprovalsRefresh: (handler: () => void) => void;
+  registerDeleteRequestsRefresh: (handler: () => void) => void;
 }
 
 const RefreshContext = createContext<RefreshContextType | undefined>(undefined);
@@ -25,12 +27,13 @@ export function UserManagementRefreshProvider({ children }: RefreshProviderProps
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [allUsersRefreshHandler, setAllUsersRefreshHandler] = useState<(() => void) | null>(null);
   const [userApprovalsRefreshHandler, setUserApprovalsRefreshHandler] = useState<(() => void) | null>(null);
+  const [deleteRequestsRefreshHandler, setDeleteRequestsRefreshHandler] = useState<(() => void) | null>(null);
 
   const refreshAllUsers = async () => {
     if (isRefreshing || !allUsersRefreshHandler) {
       return;
     }
-    
+
     setIsRefreshing(true);
     try {
       await allUsersRefreshHandler();
@@ -45,12 +48,27 @@ export function UserManagementRefreshProvider({ children }: RefreshProviderProps
     if (isRefreshing || !userApprovalsRefreshHandler) {
       return;
     }
-    
+
     setIsRefreshing(true);
     try {
       await userApprovalsRefreshHandler();
     } catch (error) {
       console.error('Error refreshing user approvals:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const refreshDeleteRequests = async () => {
+    if (isRefreshing || !deleteRequestsRefreshHandler) {
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      await deleteRequestsRefreshHandler();
+    } catch (error) {
+      console.error('Error refreshing delete requests:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -64,12 +82,18 @@ export function UserManagementRefreshProvider({ children }: RefreshProviderProps
     setUserApprovalsRefreshHandler(() => handler);
   };
 
+  const registerDeleteRequestsRefresh = (handler: () => void) => {
+    setDeleteRequestsRefreshHandler(() => handler);
+  };
+
   const value: RefreshContextType = {
     refreshAllUsers,
     refreshUserApprovals,
+    refreshDeleteRequests,
     isRefreshing,
     registerAllUsersRefresh,
     registerUserApprovalsRefresh,
+    registerDeleteRequestsRefresh,
   };
 
   return (

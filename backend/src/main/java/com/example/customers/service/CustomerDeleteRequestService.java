@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 /**
  * Service for managing customer delete requests.
  *
- * <p>Handles the workflow where officers request customer deletion and admins approve/reject
+ * <p>Handles the workflow where admins and officers request customer deletion and admins approve/reject
  * requests.
  */
 @Service
@@ -78,8 +78,18 @@ public class CustomerDeleteRequestService {
    * @param pageable pagination parameters
    * @return page of pending delete requests
    */
+  @Transactional
   public Page<CustomerDeleteRequest> getPendingRequests(Pageable pageable) {
-    return deleteRequestRepository.findByRequestStatus(DeleteRequestStatus.PENDING, pageable);
+    Page<CustomerDeleteRequest> requests = deleteRequestRepository.findByRequestStatus(DeleteRequestStatus.PENDING, pageable);
+
+    // Initialize lazy-loaded relationships before session closes
+    requests.getContent().forEach(request -> {
+      if (request.getRequestedBy() != null) {
+        request.getRequestedBy().getPhone();
+      }
+    });
+
+    return requests;
   }
 
   /**
@@ -95,15 +105,44 @@ public class CustomerDeleteRequestService {
   }
 
   /**
+   * Get all delete requests with optional status filter.
+   *
+   * @param status the status to filter by (ALL for no filter)
+   * @param pageable pagination parameters
+   * @return page of delete requests
+   */
+  @Transactional
+  public Page<CustomerDeleteRequest> getAllDeleteRequests(String status, Pageable pageable) {
+    Page<CustomerDeleteRequest> requests;
+
+    if ("ALL".equalsIgnoreCase(status)) {
+      requests = deleteRequestRepository.findAll(pageable);
+    } else {
+      DeleteRequestStatus requestStatus = DeleteRequestStatus.valueOf(status.toUpperCase());
+      requests = deleteRequestRepository.findByRequestStatus(requestStatus, pageable);
+    }
+
+    // Initialize lazy-loaded relationships before session closes
+    requests.getContent().forEach(request -> {
+      if (request.getRequestedBy() != null) {
+        request.getRequestedBy().getPhone();
+      }
+    });
+
+    return requests;
+  }
+
+  /**
    * Approve a delete request and delete the customer.
    *
    * @param requestId the ID of the delete request
    * @param adminPhone the phone number of the admin approving the request
+   * @param reason the reason for approval (optional)
    * @throws EntityNotFoundException if request not found
    * @throws IllegalStateException if request is not pending
    */
   @Transactional
-  public void approveDeleteRequest(UUID requestId, String adminPhone) {
+  public void approveDeleteRequest(UUID requestId, String adminPhone, String reason) {
     CustomerDeleteRequest request =
         deleteRequestRepository
             .findById(requestId)
@@ -118,7 +157,7 @@ public class CustomerDeleteRequestService {
     request.approve(adminPhone);
     deleteRequestRepository.save(request);
 
-    // Delete the customer (soft delete)
+    // Soft delete the customer
     Customer customer = request.getCustomer();
     customerRepository.delete(customer);
   }
@@ -169,5 +208,26 @@ public class CustomerDeleteRequestService {
    */
   public long countPendingRequests() {
     return deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.PENDING);
+  }
+
+  /**
+   * Get delete request statistics.
+   *
+   * @return statistics including counts by status and approval rate
+   */
+  @Transactional
+  public com.example.customers.controller.CustomerDeleteRequestController.DeleteRequestStatistics getStatistics() {
+    long pendingCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.PENDING);
+    long approvedCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.APPROVED);
+    long rejectedCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.REJECTED);
+
+    long totalProcessed = approvedCount + rejectedCount;
+    double approvalRate = totalProcessed > 0 ? (approvedCount * 100.0 / totalProcessed) : 0.0;
+
+    return new com.example.customers.controller.CustomerDeleteRequestController.DeleteRequestStatistics(
+        pendingCount,
+        approvedCount,
+        rejectedCount,
+        approvalRate);
   }
 }
