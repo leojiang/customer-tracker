@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, Lock, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { Phone, Lock, UserPlus, Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { RegisterRequest } from '@/types/auth';
+import { RegisterRequest, SalesRole } from '@/types/auth';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -16,20 +16,26 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
     phone: '',
     password: '',
     confirmPassword: '',
+    role: SalesRole.CUSTOMER_AGENT, // Default to Customer Agent
   });
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const { register, isLoading } = useAuth();
   const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
       setError(t('register.allFieldsRequired'));
+      return;
+    }
+
+    if (!formData.role) {
+      setError(t('register.selectRole'));
       return;
     }
 
@@ -105,6 +111,26 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
                 placeholder={t('auth.enterPhone')}
                 required
               />
+            </div>
+
+            <div>
+              <label className="input-label flex items-center gap-2">
+                <Shield size={18} className="text-surface-500" />
+                {t('register.role')}
+              </label>
+              <select
+                value={formData.role}
+                onChange={(e) => handleInputChange('role', e.target.value)}
+                className="input-field focus-ring"
+                required
+              >
+                <option value="">{t('register.selectRole')}</option>
+                <option value={SalesRole.OFFICER}>{t('role.officer')}</option>
+                <option value={SalesRole.CUSTOMER_AGENT}>{t('role.customerAgent')}</option>
+              </select>
+              <p className="text-xs text-surface-500 mt-1">
+                {t('register.selectRole')}
+              </p>
             </div>
 
             <div>

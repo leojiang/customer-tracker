@@ -333,6 +333,46 @@ const translations = {
     'register.signIn': 'Sign In',
     'register.createPassword': 'Create a password',
     'register.minimumChars': 'Minimum 6 characters',
+    'register.selectRole': 'Select Role',
+    'register.role': 'Role',
+
+    // Roles
+    'role.admin': 'Admin',
+    'role.officer': 'Officer',
+    'role.customerAgent': 'Customer Agent',
+
+    // Delete Requests
+    'deleteRequests.title': 'Customer Delete Requests',
+    'deleteRequests.subtitle': 'Review and manage customer deletion requests',
+    'deleteRequests.noRequests': 'No pending delete requests',
+    'deleteRequests.loadingRequests': 'Loading delete requests...',
+    'deleteRequests.requestedBy': 'Requested by',
+    'deleteRequests.customer': 'Customer',
+    'deleteRequests.reason': 'Reason',
+    'deleteRequests.requestedAt': 'Requested',
+    'deleteRequests.status': 'Status',
+    'deleteRequests.actions': 'Actions',
+    'deleteRequests.approve': 'Approve',
+    'deleteRequests.reject': 'Reject',
+    'deleteRequests.approveSuccess': 'Delete request approved',
+    'deleteRequests.rejectSuccess': 'Delete request rejected',
+    'deleteRequests.confirmApprove': 'Are you sure you want to approve this request? This will delete the customer.',
+    'deleteRequests.confirmReject': 'Are you sure you want to reject this request?',
+    'deleteRequests.requestDeletion': 'Request Deletion',
+    'deleteRequests.requestDeleteSuccess': 'Delete request submitted successfully',
+    'deleteRequests.requestDeleteError': 'Failed to submit delete request',
+    'deleteRequests.pending': 'Pending',
+    'deleteRequests.approved': 'Approved',
+    'deleteRequests.rejected': 'Rejected',
+    'deleteRequests.rejectionReason': 'Rejection Reason',
+
+    // Permission Errors
+    'error.permissionDenied': 'Permission Denied',
+    'error.onlyAdminCanDelete': 'Only Admins can delete customers directly',
+    'error.officerMustRequestDelete': 'Officers must request customer deletion from Admin',
+    'error.customerAgentReadOnly': 'Customer Agents have read-only access',
+    'error.onlyAdminOfficerCanEdit': 'Only Admins and Officers can edit customers',
+    'error.onlyAdminOfficerCanAdd': 'Only Admins and Officers can add customers',
 
     // Registration Success
     'register.success.title': 'Registration Successful!',
@@ -830,6 +870,46 @@ const translations = {
     'register.signIn': '登录',
     'register.createPassword': '创建密码',
     'register.minimumChars': '至少6个字符',
+    'register.selectRole': '选择角色',
+    'register.role': '角色',
+
+    // Roles
+    'role.admin': '管理员',
+    'role.officer': '文员',
+    'role.customerAgent': '客户代理',
+
+    // Delete Requests
+    'deleteRequests.title': '客户删除请求',
+    'deleteRequests.subtitle': '审查和管理客户删除请求',
+    'deleteRequests.noRequests': '没有待处理的删除请求',
+    'deleteRequests.loadingRequests': '加载删除请求中...',
+    'deleteRequests.requestedBy': '请求人',
+    'deleteRequests.customer': '客户',
+    'deleteRequests.reason': '原因',
+    'deleteRequests.requestedAt': '请求时间',
+    'deleteRequests.status': '状态',
+    'deleteRequests.actions': '操作',
+    'deleteRequests.approve': '批准',
+    'deleteRequests.reject': '拒绝',
+    'deleteRequests.approveSuccess': '删除请求已批准',
+    'deleteRequests.rejectSuccess': '删除请求已拒绝',
+    'deleteRequests.confirmApprove': '确定要批准此请求吗？这将删除该客户。',
+    'deleteRequests.confirmReject': '确定要拒绝此请求吗？',
+    'deleteRequests.requestDeletion': '请求删除',
+    'deleteRequests.requestDeleteSuccess': '删除请求提交成功',
+    'deleteRequests.requestDeleteError': '提交删除请求失败',
+    'deleteRequests.pending': '待处理',
+    'deleteRequests.approved': '已批准',
+    'deleteRequests.rejected': '已拒绝',
+    'deleteRequests.rejectionReason': '拒绝原因',
+
+    // Permission Errors
+    'error.permissionDenied': '权限不足',
+    'error.onlyAdminCanDelete': '只有管理员可以直接删除客户',
+    'error.officerMustRequestDelete': '文员必须向管理员请求删除客户',
+    'error.customerAgentReadOnly': '客户代理只有只读权限',
+    'error.onlyAdminOfficerCanEdit': '只有管理员和文员可以编辑客户',
+    'error.onlyAdminOfficerCanAdd': '只有管理员和文员可以添加客户',
 
     // Registration Success
     'register.success.title': '注册成功！',
