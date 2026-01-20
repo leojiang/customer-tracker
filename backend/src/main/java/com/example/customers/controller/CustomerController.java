@@ -84,7 +84,7 @@ public class CustomerController {
         @ApiResponse(responseCode = "400", description = "Invalid request parameters")
       })
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<CustomerPageResponse> getCustomers(
       @Parameter(description = "Search query for customer name (case-insensitive)")
           @RequestParam(required = false)
@@ -153,7 +153,7 @@ public class CustomerController {
             description = "Invalid input data or duplicate phone number")
       })
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<Customer> createCustomer(
       @Parameter(description = "Customer information", required = true) @Valid @RequestBody
           CreateCustomerRequest request) {
@@ -186,7 +186,7 @@ public class CustomerController {
 
   /** GET /api/customers/:id Get customer by ID. */
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<Customer> getCustomer(@PathVariable UUID id) {
     Optional<Customer> customer = customerService.getCustomerById(id);
 
@@ -204,7 +204,7 @@ public class CustomerController {
 
   /** PATCH /api/customers/:id Update customer. */
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<Customer> updateCustomer(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
     try {
@@ -238,7 +238,7 @@ public class CustomerController {
 
   /** DELETE /api/customers/:id Soft delete customer. */
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
     try {
       // Check if customer exists and user has access
@@ -256,7 +256,7 @@ public class CustomerController {
 
   /** POST /api/customers/:id/restore Restore soft-deleted customer. */
   @PostMapping("/{id}/restore")
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<Customer> restoreCustomer(@PathVariable UUID id) {
     try {
       // Check if customer exists and user has access (need to use includeDeleted version)
@@ -289,7 +289,7 @@ public class CustomerController {
         @ApiResponse(responseCode = "400", description = "Invalid status transition")
       })
   @PostMapping("/{id}/status-transition")
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<Customer> transitionStatus(
       @Parameter(description = "Customer ID", required = true) @PathVariable UUID id,
       @Parameter(description = "Status transition details", required = true) @Valid @RequestBody

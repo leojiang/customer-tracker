@@ -119,7 +119,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "404", description = "Customer not found")
       })
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<CustomerDeleteRequest> createDeleteRequest(
       @RequestBody DeleteRequestRequest request, Authentication authentication) {
 
@@ -151,7 +151,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "403", description = "User not authorized")
       })
   @GetMapping("/pending")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<Page<CustomerDeleteRequest>> getPendingRequests(
       @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0")
           int page,
@@ -178,7 +178,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "404", description = "Delete request not found")
       })
   @PatchMapping("/{requestId}/approve")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<Void> approveDeleteRequest(
       @PathVariable UUID requestId, Authentication authentication) {
 
@@ -204,7 +204,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "404", description = "Delete request not found")
       })
   @PatchMapping("/{requestId}/reject")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<Void> rejectDeleteRequest(
       @PathVariable UUID requestId,
       @RequestBody RejectRequestRequest request,
@@ -231,7 +231,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "404", description = "Delete request not found")
       })
   @GetMapping("/{requestId}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<CustomerDeleteRequest> getDeleteRequest(@PathVariable UUID requestId) {
     try {
       CustomerDeleteRequest deleteRequest = deleteRequestService.getDeleteRequest(requestId);
@@ -248,7 +248,7 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "403", description = "User not authorized")
       })
   @GetMapping("/pending/count")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<Long> countPendingRequests() {
     long count = deleteRequestService.countPendingRequests();
     return ResponseEntity.ok(count);
