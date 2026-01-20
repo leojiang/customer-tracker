@@ -46,7 +46,7 @@ public class Sales {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false)
-  private SalesRole role = SalesRole.SALES;
+  private SalesRole role = SalesRole.CUSTOMER_AGENT;
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
