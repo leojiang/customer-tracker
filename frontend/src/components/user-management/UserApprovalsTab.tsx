@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
 import { CheckCircle, XCircle, Clock, UserCheck, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
 import { userApprovalApi } from '@/lib/api';
@@ -20,6 +21,7 @@ interface UserApprovalsTabProps {
 export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
   const { token } = useAuth();
   const { t } = useLanguage();
+  const { registerUserApprovalsRefresh } = useUserManagementRefresh();
   const [statistics, setStatistics] = useState<ApprovalStatistics | null>(null);
   const [users, setUsers] = useState<UserApprovalDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,6 +67,18 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
       setLoading(false);
     }
   }, [token, isActive]);
+
+  // Create refresh handler that refreshes current status and statistics
+  const handleRefresh = useCallback(async () => {
+    await fetchData(selectedStatus, currentPage, pageSize);
+  }, [fetchData, selectedStatus, currentPage, pageSize]);
+
+  // Register refresh handler with context
+  useEffect(() => {
+    if (isActive) {
+      registerUserApprovalsRefresh(handleRefresh);
+    }
+  }, [isActive, registerUserApprovalsRefresh, handleRefresh]);
 
   useEffect(() => {
     if (isActive) {

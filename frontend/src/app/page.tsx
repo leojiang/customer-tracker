@@ -11,8 +11,6 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { User, Shield, BarChart3, UserCheck, Settings, Users } from 'lucide-react';
-import ChatIcon from '@/components/chat/ChatIcon';
-import ChatPanel from '@/components/chat/ChatPanel';
 import AdminDashboard from '@/app/dashboard/admin/page';
 import UserManagementPage from '@/app/dashboard/admin/user-management/page';
 import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
@@ -24,7 +22,6 @@ export default function HomePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
-  const [showChat, setShowChat] = useState(false);
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
@@ -112,10 +109,7 @@ export default function HomePage() {
                     {t('nav.userManagement')}
                   </button>
                 )}
-                
-                {/* Chat Icon */}
-                <ChatIcon onClick={() => setShowChat(true)} />
-                
+
                 {/* Settings button - clickable user phone */}
                 <button
                   onClick={() => setShowSettings(true)}
@@ -177,16 +171,10 @@ export default function HomePage() {
       </main>
       
       {/* Settings Modal */}
-      <SettingsModal 
+      <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onLogout={logout}
-      />
-      
-      {/* Chat Panel */}
-      <ChatPanel 
-        isOpen={showChat}
-        onClose={() => setShowChat(false)}
       />
       </div>
     </AuthGuard>

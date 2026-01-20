@@ -62,8 +62,6 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/health")
                     .permitAll()
-                    .requestMatchers("/ws/**")
-                    .permitAll() // WebSocket endpoints
                     .requestMatchers(
                         "/swagger-ui/**",
                         "/swagger-ui.html",

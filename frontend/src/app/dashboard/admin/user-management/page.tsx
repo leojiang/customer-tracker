@@ -3,21 +3,23 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
+import { UserManagementRefreshProvider } from '@/contexts/UserManagementRefreshContext';
 import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import AllUsersTab from '@/components/user-management/AllUsersTab';
 import UserApprovalsTab from '@/components/user-management/UserApprovalsTab';
 
 /**
- * Admin User Management Dashboard
+ * Admin User Management Dashboard Content
  * Allows admins to manage user registrations and account status
  */
-export default function UserManagementPage() {
+function UserManagementPageContent() {
   const { user, token } = useAuth();
   const { t } = useLanguage();
+  const { refreshAllUsers, refreshUserApprovals, isRefreshing } = useUserManagementRefresh();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all-users' | 'approvals'>('all-users');
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user || !token) {
@@ -32,7 +34,11 @@ export default function UserManagementPage() {
   }, [user, token, router]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    if (activeTab === 'all-users') {
+      refreshAllUsers();
+    } else if (activeTab === 'approvals') {
+      refreshUserApprovals();
+    }
   };
 
   if (!user || !token || user.role !== 'ADMIN') {
@@ -63,10 +69,14 @@ export default function UserManagementPage() {
             <button
               type="button"
               onClick={handleRefresh}
-              className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              disabled={isRefreshing}
+              className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw size={16} className="mr-1" />
-              {t('nav.refresh')}
+              <RefreshCw 
+                size={16} 
+                className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} 
+              />
+              {isRefreshing ? t('nav.refreshing') : t('nav.refresh')}
             </button>
           </div>
         </div>
@@ -100,9 +110,20 @@ export default function UserManagementPage() {
         </div>
 
         {/* Tab Content */}
-        <AllUsersTab key={`all-users-${refreshKey}`} isActive={activeTab === 'all-users'} />
-        <UserApprovalsTab key={`approvals-${refreshKey}`} isActive={activeTab === 'approvals'} />
+        <AllUsersTab isActive={activeTab === 'all-users'} />
+        <UserApprovalsTab isActive={activeTab === 'approvals'} />
       </div>
     </div>
+  );
+}
+
+/**
+ * Main User Management Page with Refresh Provider
+ */
+export default function UserManagementPage() {
+  return (
+    <UserManagementRefreshProvider>
+      <UserManagementPageContent />
+    </UserManagementRefreshProvider>
   );
 }
