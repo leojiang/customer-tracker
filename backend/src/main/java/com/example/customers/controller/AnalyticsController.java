@@ -62,7 +62,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/dashboard/overview")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SALES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<DashboardOverviewResponse> getDashboardOverview(
       @Parameter(description = "Number of days for trend analysis", example = "30")
           @RequestParam(defaultValue = "30")
@@ -84,7 +84,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/customers/status-distribution")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SALES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<StatusDistributionResponse> getStatusDistribution() {
 
     String salesPhone = getCurrentUserSalesPhone();
@@ -101,7 +101,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/customers/trends")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SALES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<TrendAnalysisResponse> getCustomerTrends(
       @Parameter(description = "Number of days for analysis", example = "90")
           @RequestParam(defaultValue = "90")
@@ -129,7 +129,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/sales/performance")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SALES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<SalesPerformanceResponse> getSalesPerformance(
       @Parameter(description = "Number of days for analysis", example = "30")
           @RequestParam(defaultValue = "30")
@@ -150,7 +150,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "403", description = "Admin access required")
       })
   @GetMapping("/sales/leaderboard")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAuthority('ADMIN')")
   public ResponseEntity<LeaderboardResponse> getSalesLeaderboard(
       @Parameter(description = "Number of days for analysis", example = "30")
           @RequestParam(defaultValue = "30")
@@ -176,7 +176,7 @@ public class AnalyticsController {
         @ApiResponse(responseCode = "401", description = "Unauthorized")
       })
   @GetMapping("/realtime/metrics")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SALES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<RealtimeMetricsResponse> getRealtimeMetrics() {
 
     String salesPhone = getCurrentUserSalesPhone();
