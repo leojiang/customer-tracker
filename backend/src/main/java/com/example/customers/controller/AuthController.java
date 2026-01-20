@@ -68,7 +68,7 @@ public class AuthController {
   /**
    * Registers a new sales user.
    *
-   * @param request registration request containing phone and password
+   * @param request registration request containing phone, password, and role
    * @return ResponseEntity containing auth response with token or error
    */
   @Operation(summary = "Register new sales user")
@@ -79,8 +79,15 @@ public class AuthController {
           .body(new AuthResponse(null, null, null, "register.passwordsDontMatch", null));
     }
 
+    // Validate role selection - users cannot self-register as ADMIN
+    if (request.getRole() == SalesRole.ADMIN) {
+      return ResponseEntity.badRequest()
+          .body(new AuthResponse(null, null, null, "register.cannotSelfRegisterAsAdmin", null));
+    }
+
     try {
-      AuthResult result = authService.register(request.getPhone(), request.getPassword());
+      AuthResult result =
+          authService.register(request.getPhone(), request.getPassword(), request.getRole());
 
       if (result.isSuccess()) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -88,7 +95,7 @@ public class AuthController {
                 new AuthResponse(
                     null,
                     result.getPhone(),
-                    SalesRole.SALES,
+                    request.getRole(),
                     result.getMessage(),
                     result.getStatus()));
       }
@@ -161,6 +168,8 @@ public class AuthController {
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
 
+    private SalesRole role = SalesRole.CUSTOMER_AGENT; // Default to CUSTOMER_AGENT
+
     public String getPhone() {
       return phone;
     }
@@ -183,6 +192,14 @@ public class AuthController {
 
     public void setConfirmPassword(String confirmPassword) {
       this.confirmPassword = confirmPassword;
+    }
+
+    public SalesRole getRole() {
+      return role;
+    }
+
+    public void setRole(SalesRole role) {
+      this.role = role;
     }
   }
 

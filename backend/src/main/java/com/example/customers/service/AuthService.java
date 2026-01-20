@@ -79,22 +79,35 @@ public class AuthService {
    *
    * @param phone user phone number
    * @param password user password
+   * @param role user role (OFFICER or CUSTOMER_AGENT)
    * @return registration result with status information
    * @throws IllegalArgumentException if phone already exists
    */
-  public AuthResult register(String phone, String password) {
+  public AuthResult register(String phone, String password, SalesRole role) {
     if (salesRepository.existsByPhone(phone)) {
       throw new IllegalArgumentException("error.phoneAlreadyExists");
     }
 
     String hashedPassword = passwordEncoder.encode(password);
-    Sales sales = new Sales(phone, hashedPassword, SalesRole.SALES);
+    Sales sales = new Sales(phone, hashedPassword, role);
     // New users start with PENDING status (set in migration default)
     sales.setApprovalStatus(ApprovalStatus.PENDING);
     Sales savedSales = salesRepository.save(sales);
 
     return AuthResult.registrationSuccess(
         "register.success.message", savedSales.getPhone(), "PENDING");
+  }
+
+  /**
+   * Register a new user with default role (CUSTOMER_AGENT).
+   *
+   * @param phone user phone number
+   * @param password user password
+   * @return registration result with status information
+   * @throws IllegalArgumentException if phone already exists
+   */
+  public AuthResult register(String phone, String password) {
+    return register(phone, password, SalesRole.CUSTOMER_AGENT);
   }
 
   public Optional<Sales> getSalesByPhone(String phone) {

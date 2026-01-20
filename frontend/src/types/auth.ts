@@ -1,6 +1,7 @@
 export enum SalesRole {
   ADMIN = 'ADMIN',
-  SALES = 'SALES'
+  OFFICER = 'OFFICER',
+  CUSTOMER_AGENT = 'CUSTOMER_AGENT'
 }
 
 export interface Sales {
@@ -17,6 +18,7 @@ export interface RegisterRequest {
   phone: string;
   password: string;
   confirmPassword: string;
+  role?: SalesRole;
 }
 
 export interface AuthResponse {
@@ -119,3 +121,41 @@ export const getTranslatedApprovalStatusName = (status: ApprovalStatus, t: (key:
     .toLowerCase()
     .replace(/\b\w/g, l => l.toUpperCase());
 };
+
+// Customer Delete Request Types
+export enum DeleteRequestStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+export interface CustomerDeleteRequest {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  requestedBy: string;
+  requestStatus: DeleteRequestStatus;
+  reason: string;
+  createdAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
+export interface DeleteRequestPageResponse {
+  items: CustomerDeleteRequest[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface CreateDeleteRequestRequest {
+  customerId: string;
+  reason: string;
+}
+
+export interface RejectDeleteRequestRequest {
+  rejectionReason: string;
+}
