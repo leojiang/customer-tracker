@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 /**
  * Service for managing customer delete requests.
  *
- * <p>Handles the workflow where admins and officers request customer deletion and admins approve/reject
- * requests.
+ * <p>Handles the workflow where admins and officers request customer deletion and admins
+ * approve/reject requests.
  */
 @Service
 public class CustomerDeleteRequestService {
@@ -56,7 +56,8 @@ public class CustomerDeleteRequestService {
     Customer customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + customerId));
+            .orElseThrow(
+                () -> new EntityNotFoundException("Customer not found with id: " + customerId));
 
     // Check if there's already a pending request for this customer
     java.util.List<CustomerDeleteRequest> existingPending =
@@ -64,8 +65,7 @@ public class CustomerDeleteRequestService {
             customerId, DeleteRequestStatus.PENDING);
 
     if (!existingPending.isEmpty()) {
-      throw new IllegalStateException(
-          "A pending delete request already exists for this customer");
+      throw new IllegalStateException("A pending delete request already exists for this customer");
     }
 
     CustomerDeleteRequest deleteRequest = new CustomerDeleteRequest(customer, requestedBy, reason);
@@ -80,14 +80,18 @@ public class CustomerDeleteRequestService {
    */
   @Transactional
   public Page<CustomerDeleteRequest> getPendingRequests(Pageable pageable) {
-    Page<CustomerDeleteRequest> requests = deleteRequestRepository.findByRequestStatus(DeleteRequestStatus.PENDING, pageable);
+    Page<CustomerDeleteRequest> requests =
+        deleteRequestRepository.findByRequestStatus(DeleteRequestStatus.PENDING, pageable);
 
     // Initialize lazy-loaded relationships before session closes
-    requests.getContent().forEach(request -> {
-      if (request.getRequestedBy() != null) {
-        request.getRequestedBy().getPhone();
-      }
-    });
+    requests
+        .getContent()
+        .forEach(
+            request -> {
+              if (request.getRequestedBy() != null) {
+                request.getRequestedBy().getPhone();
+              }
+            });
 
     return requests;
   }
@@ -99,8 +103,7 @@ public class CustomerDeleteRequestService {
    * @param pageable pagination parameters
    * @return page of delete requests
    */
-  public Page<CustomerDeleteRequest> getRequestsByRequester(
-      UUID requestedById, Pageable pageable) {
+  public Page<CustomerDeleteRequest> getRequestsByRequester(UUID requestedById, Pageable pageable) {
     return deleteRequestRepository.findByRequestedById(requestedById, pageable);
   }
 
@@ -123,11 +126,14 @@ public class CustomerDeleteRequestService {
     }
 
     // Initialize lazy-loaded relationships before session closes
-    requests.getContent().forEach(request -> {
-      if (request.getRequestedBy() != null) {
-        request.getRequestedBy().getPhone();
-      }
-    });
+    requests
+        .getContent()
+        .forEach(
+            request -> {
+              if (request.getRequestedBy() != null) {
+                request.getRequestedBy().getPhone();
+              }
+            });
 
     return requests;
   }
@@ -147,7 +153,8 @@ public class CustomerDeleteRequestService {
         deleteRequestRepository
             .findById(requestId)
             .orElseThrow(
-                () -> new EntityNotFoundException("Delete request not found with id: " + requestId));
+                () ->
+                    new EntityNotFoundException("Delete request not found with id: " + requestId));
 
     if (!request.isPending()) {
       throw new IllegalStateException("Cannot approve a request that is not pending");
@@ -177,7 +184,8 @@ public class CustomerDeleteRequestService {
         deleteRequestRepository
             .findById(requestId)
             .orElseThrow(
-                () -> new EntityNotFoundException("Delete request not found with id: " + requestId));
+                () ->
+                    new EntityNotFoundException("Delete request not found with id: " + requestId));
 
     if (!request.isPending()) {
       throw new IllegalStateException("Cannot reject a request that is not pending");
@@ -216,7 +224,8 @@ public class CustomerDeleteRequestService {
    * @return statistics including counts by status and approval rate
    */
   @Transactional
-  public com.example.customers.controller.CustomerDeleteRequestController.DeleteRequestStatistics getStatistics() {
+  public com.example.customers.controller.CustomerDeleteRequestController.DeleteRequestStatistics
+      getStatistics() {
     long pendingCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.PENDING);
     long approvedCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.APPROVED);
     long rejectedCount = deleteRequestRepository.countByRequestStatus(DeleteRequestStatus.REJECTED);
@@ -224,10 +233,7 @@ public class CustomerDeleteRequestService {
     long totalProcessed = approvedCount + rejectedCount;
     double approvalRate = totalProcessed > 0 ? (approvedCount * 100.0 / totalProcessed) : 0.0;
 
-    return new com.example.customers.controller.CustomerDeleteRequestController.DeleteRequestStatistics(
-        pendingCount,
-        approvedCount,
-        rejectedCount,
-        approvalRate);
+    return new com.example.customers.controller.CustomerDeleteRequestController
+        .DeleteRequestStatistics(pendingCount, approvedCount, rejectedCount, approvalRate);
   }
 }

@@ -63,7 +63,7 @@ class AuthServiceTest {
     assertTrue(result.isSuccess());
     assertEquals(testToken, result.getToken());
     assertEquals(testPhone, result.getPhone());
-    assertEquals("SALES", result.getRole());
+    assertEquals("OFFICER", result.getRole());
     assertEquals("APPROVED", result.getStatus());
     assertNull(result.getMessage());
 
@@ -185,7 +185,7 @@ class AuthServiceTest {
                 sales ->
                     sales.getPhone().equals(testPhone)
                         && sales.getPassword().equals(testHashedPassword)
-                        && sales.getRole() == SalesRole.OFFICER
+                        && sales.getRole() == SalesRole.CUSTOMER_AGENT
                         && sales.getApprovalStatus() == ApprovalStatus.PENDING));
   }
 

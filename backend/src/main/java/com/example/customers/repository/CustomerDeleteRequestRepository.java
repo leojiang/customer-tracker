@@ -18,7 +18,8 @@ import org.springframework.stereotype.Repository;
  * <p>Provides CRUD operations and queries for customer delete requests.
  */
 @Repository
-public interface CustomerDeleteRequestRepository extends JpaRepository<CustomerDeleteRequest, UUID> {
+public interface CustomerDeleteRequestRepository
+    extends JpaRepository<CustomerDeleteRequest, UUID> {
 
   /**
    * Find all pending delete requests with pagination.

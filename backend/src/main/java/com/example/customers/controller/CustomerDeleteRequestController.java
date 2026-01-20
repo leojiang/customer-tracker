@@ -59,9 +59,7 @@ public class CustomerDeleteRequestController {
     this.deleteRequestService = deleteRequestService;
   }
 
-  /**
-   * Request record class for creating delete requests.
-   */
+  /** Request record class for creating delete requests. */
   @Schema(description = "Request to delete a customer")
   public static class DeleteRequestRequest {
     @Schema(description = "ID of the customer to delete", required = true)
@@ -88,9 +86,7 @@ public class CustomerDeleteRequestController {
     }
   }
 
-  /**
-   * Reject request record class.
-   */
+  /** Reject request record class. */
   @Schema(description = "Request to reject a delete request")
   public static class RejectRequestRequest {
     @Schema(description = "Reason for rejection", required = true)
@@ -106,9 +102,7 @@ public class CustomerDeleteRequestController {
     }
   }
 
-  /**
-   * Approve request record class.
-   */
+  /** Approve request record class. */
   @Schema(description = "Request to approve a delete request")
   public static class ApproveRequestRequest {
     @Schema(description = "Reason for approval (optional)")
@@ -125,14 +119,17 @@ public class CustomerDeleteRequestController {
 
   @Operation(
       summary = "Create a delete request for a customer",
-      description = "Admins and Officers can request customer deletion. Admins will review and approve/reject.")
+      description =
+          "Admins and Officers can request customer deletion. Admins will review and approve/reject.")
   @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "201",
             description = "Delete request created successfully",
             content = @Content(schema = @Schema(implementation = CustomerDeleteRequest.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid request or pending request exists"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request or pending request exists"),
         @ApiResponse(responseCode = "403", description = "User not authorized to create requests"),
         @ApiResponse(responseCode = "404", description = "Customer not found")
       })
@@ -164,9 +161,7 @@ public class CustomerDeleteRequestController {
       description = "Retrieve pending customer delete requests with pagination")
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved pending requests"),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved pending requests"),
         @ApiResponse(responseCode = "403", description = "User not authorized")
       })
   @GetMapping("/pending")
@@ -179,7 +174,9 @@ public class CustomerDeleteRequestController {
           String sortDir) {
 
     Sort sort =
-        "asc".equalsIgnoreCase(sortDir) ? Sort.by("createdAt").ascending() : Sort.by("createdAt").descending();
+        "asc".equalsIgnoreCase(sortDir)
+            ? Sort.by("createdAt").ascending()
+            : Sort.by("createdAt").descending();
     Pageable pageable = PageRequest.of(page, pageSize, sort);
 
     Page<CustomerDeleteRequest> requests = deleteRequestService.getPendingRequests(pageable);
@@ -192,7 +189,9 @@ public class CustomerDeleteRequestController {
       description = "Admins can approve delete requests, which will delete the customer")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "204", description = "Delete request approved and customer deleted"),
+        @ApiResponse(
+            responseCode = "204",
+            description = "Delete request approved and customer deleted"),
         @ApiResponse(responseCode = "400", description = "Cannot approve non-pending request"),
         @ApiResponse(responseCode = "403", description = "User not authorized"),
         @ApiResponse(responseCode = "404", description = "Delete request not found")
@@ -209,8 +208,7 @@ public class CustomerDeleteRequestController {
     try {
       deleteRequestService.approveDeleteRequest(requestId, admin.getPhone(), request.getReason());
       return ResponseEntity.noContent().build();
-    } catch (jakarta.persistence.EntityNotFoundException |
-             IllegalStateException e) {
+    } catch (jakarta.persistence.EntityNotFoundException | IllegalStateException e) {
       return ResponseEntity.badRequest().build();
     }
   }
@@ -238,18 +236,17 @@ public class CustomerDeleteRequestController {
       deleteRequestService.rejectDeleteRequest(
           requestId, admin.getPhone(), request.getRejectionReason());
       return ResponseEntity.noContent().build();
-    } catch (jakarta.persistence.EntityNotFoundException |
-             IllegalStateException e) {
+    } catch (jakarta.persistence.EntityNotFoundException | IllegalStateException e) {
       return ResponseEntity.badRequest().build();
     }
   }
 
-  @Operation(summary = "Get delete request by ID", description = "Retrieve a specific delete request")
+  @Operation(
+      summary = "Get delete request by ID",
+      description = "Retrieve a specific delete request")
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved delete request"),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved delete request"),
         @ApiResponse(responseCode = "404", description = "Delete request not found")
       })
   @GetMapping("/{requestId}")
@@ -268,9 +265,7 @@ public class CustomerDeleteRequestController {
       description = "Retrieve delete requests filtered by status with pagination")
   @ApiResponses(
       value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved delete requests"),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved delete requests"),
         @ApiResponse(responseCode = "403", description = "User not authorized")
       })
   @GetMapping
@@ -282,7 +277,8 @@ public class CustomerDeleteRequestController {
       @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0")
           int page,
       @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int pageSize,
-      @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDir) {
+      @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc")
+          String sortDir) {
 
     Sort sort =
         "asc".equalsIgnoreCase(sortDir)
@@ -296,7 +292,9 @@ public class CustomerDeleteRequestController {
     return ResponseEntity.ok(dtoPage);
   }
 
-  @Operation(summary = "Count pending delete requests", description = "Get count of pending requests")
+  @Operation(
+      summary = "Count pending delete requests",
+      description = "Get count of pending requests")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Successfully counted pending requests"),
@@ -353,9 +351,7 @@ public class CustomerDeleteRequestController {
         request.getRejectionReason());
   }
 
-  /**
-   * DTO for customer delete request responses.
-   */
+  /** DTO for customer delete request responses. */
   public static class CustomerDeleteRequestDto {
     private String id;
     private String customerId;
@@ -440,9 +436,7 @@ public class CustomerDeleteRequestController {
     }
   }
 
-  /**
-   * Statistics for customer delete requests.
-   */
+  /** Statistics for customer delete requests. */
   public static class DeleteRequestStatistics {
     private long pendingCount;
     private long approvedCount;
@@ -450,10 +444,7 @@ public class CustomerDeleteRequestController {
     private double approvalRate;
 
     public DeleteRequestStatistics(
-        long pendingCount,
-        long approvedCount,
-        long rejectedCount,
-        double approvalRate) {
+        long pendingCount, long approvedCount, long rejectedCount, double approvalRate) {
       this.pendingCount = pendingCount;
       this.approvedCount = approvedCount;
       this.rejectedCount = rejectedCount;

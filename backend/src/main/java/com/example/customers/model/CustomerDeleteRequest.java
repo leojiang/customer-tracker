@@ -18,8 +18,8 @@ import org.hibernate.annotations.CreationTimestamp;
 /**
  * CustomerDeleteRequest entity representing a request to delete a customer.
  *
- * <p>Officers can request customer deletion, which must be approved by an Admin.
- * Tracks the full lifecycle of the request including approval/rejection.
+ * <p>Officers can request customer deletion, which must be approved by an Admin. Tracks the full
+ * lifecycle of the request including approval/rejection.
  */
 @Entity
 @Table(name = "customer_delete_requests")
