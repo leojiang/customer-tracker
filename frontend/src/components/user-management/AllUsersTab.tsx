@@ -7,7 +7,7 @@ import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContex
 import { CheckCircle, XCircle, UserCheck, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
 import { userApprovalApi } from '@/lib/api';
-import { UserApprovalDto } from '@/types/auth';
+import { UserApprovalDto, getTranslatedRoleName } from '@/types/auth';
 
 interface AllUsersTabProps {
   isActive: boolean;
@@ -218,6 +218,9 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                 {t('approvals.phone')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('register.role')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('userManagement.accountStatus')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -234,7 +237,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center">
+                <td colSpan={6} className="px-6 py-12 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
                 </td>
@@ -253,6 +256,11 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                         <div className="text-sm font-medium text-gray-900">{user.phone}</div>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {user.role ? getTranslatedRoleName(user.role, t) : '-'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

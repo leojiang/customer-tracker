@@ -42,6 +42,7 @@ export enum ApprovalStatus {
 
 export interface UserApprovalDto {
   phone: string;
+  role?: SalesRole;
   approvalStatus: ApprovalStatus;
   createdAt: string;
   statusUpdatedAt: string;
@@ -120,6 +121,18 @@ export const getTranslatedApprovalStatusName = (status: ApprovalStatus, t: (key:
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, l => l.toUpperCase());
+};
+
+// Helper function to get translated role name
+export const getTranslatedRoleName = (role: SalesRole, t: (key: string) => string): string => {
+  const roleTranslationMap: Record<SalesRole, string> = {
+    [SalesRole.ADMIN]: 'role.admin',
+    [SalesRole.OFFICER]: 'role.officer',
+    [SalesRole.CUSTOMER_AGENT]: 'role.customerAgent',
+  };
+
+  const translationKey = roleTranslationMap[role];
+  return translationKey ? t(translationKey) : role;
 };
 
 // Customer Delete Request Types
