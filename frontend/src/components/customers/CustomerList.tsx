@@ -291,7 +291,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 {t('customers.found')} {pageInfo.total} {pageInfo.total === 1 ? t('customers.customersFound') : t('customers.customersFoundPlural')}
               </h2>
               <div className="text-body-2">
-                {t('customers.page')} {pageInfo.page} {t('customers.of')} {pageInfo.totalPages}
+                {t('customers.pageInfo', { page: pageInfo.page, total: pageInfo.totalPages })}
               </div>
             </div>
           </div>

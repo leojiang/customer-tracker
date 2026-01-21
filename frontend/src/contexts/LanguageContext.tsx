@@ -7,7 +7,7 @@ export type Language = 'en' | 'zh-CN';
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -198,6 +198,7 @@ const translations = {
     'customers.found': 'Found',
     'customers.page': 'Page',
     'customers.of': 'of',
+    'customers.pageInfo': 'Page {page} of {total}',
     'customers.showing': 'Showing',
     'customers.to': 'to',
     'customers.customers': 'customers',
@@ -779,7 +780,8 @@ const translations = {
     'customers.customersFoundPlural': '个客户',
     'customers.found': '找到',
     'customers.page': '第',
-    'customers.of': '个，共',
+    'customers.of': '页，共',
+    'customers.pageInfo': '第 {page} 页，共 {total} 页',
     'customers.showing': '显示',
     'customers.to': '到',
     'customers.customers': '个客户',
@@ -1201,10 +1203,19 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     localStorage.setItem('language', newLanguage);
   };
 
-  // Translation function
-  const t = (key: string): string => {
+  // Translation function with parameter support
+  const t = (key: string, params?: Record<string, string | number>): string => {
     const languageTranslations = translations[language];
-    return languageTranslations[key as keyof typeof languageTranslations] || key;
+    let translation = languageTranslations[key as keyof typeof languageTranslations] || key;
+
+    // Replace parameters in the translation string
+    if (params) {
+      Object.keys(params).forEach(param => {
+        translation = translation.replace(`{${param}}`, String(params[param]));
+      });
+    }
+
+    return translation;
   };
 
   return (
