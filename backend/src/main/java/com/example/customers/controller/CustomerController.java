@@ -132,7 +132,15 @@ public class CustomerController {
 
     Page<Customer> customers =
         customerService.searchCustomers(
-            q, phone, status, company, filterBySalesPhone, includeDeleted, certifiedStartDate, certifiedEndDate, pageable);
+            q,
+            phone,
+            status,
+            company,
+            filterBySalesPhone,
+            includeDeleted,
+            certifiedStartDate,
+            certifiedEndDate,
+            pageable);
 
     CustomerPageResponse response =
         new CustomerPageResponse(

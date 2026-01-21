@@ -198,7 +198,14 @@ public class CustomerService {
     // Always use detailed search (only name and phone, as per requirements)
     spec =
         CustomerSpecifications.searchCustomers(
-            nameQuery, phoneQuery, status, company, salesPhone, includeDeleted, certifiedStartDate, certifiedEndDate);
+            nameQuery,
+            phoneQuery,
+            status,
+            company,
+            salesPhone,
+            includeDeleted,
+            certifiedStartDate,
+            certifiedEndDate);
 
     return customerRepository.findAll(spec, pageable);
   }

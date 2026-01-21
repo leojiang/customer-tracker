@@ -4,7 +4,6 @@ import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import jakarta.persistence.criteria.Predicate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
@@ -151,7 +150,8 @@ public class CustomerSpecifications {
           try {
             ZonedDateTime startDate = ZonedDateTime.parse(certifiedStartDate + "T00:00:00Z");
             predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
-            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("certifiedAt"), startDate));
+            predicates.add(
+                criteriaBuilder.greaterThanOrEqualTo(root.get("certifiedAt"), startDate));
           } catch (Exception e2) {
             // Ignore invalid date format
           }

@@ -110,7 +110,15 @@ class CustomerControllerTest {
 
     verify(customerService)
         .searchCustomers(
-            eq(null), eq(null), eq(null), eq(null), any(), eq(false), eq(null), eq(null), any(Pageable.class));
+            eq(null),
+            eq(null),
+            eq(null),
+            eq(null),
+            any(),
+            eq(false),
+            eq(null),
+            eq(null),
+            any(Pageable.class));
   }
 
   @Test
