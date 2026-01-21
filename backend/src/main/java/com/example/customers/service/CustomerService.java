@@ -116,7 +116,7 @@ public class CustomerService {
     existingCustomer.setPhone(updatedCustomer.getPhone());
     existingCustomer.setCompany(updatedCustomer.getCompany());
     existingCustomer.setBusinessRequirements(updatedCustomer.getBusinessRequirements());
-    existingCustomer.setBusinessType(updatedCustomer.getBusinessType());
+    existingCustomer.setCertificateType(updatedCustomer.getCertificateType());
     existingCustomer.setAge(updatedCustomer.getAge());
     existingCustomer.setEducation(updatedCustomer.getEducation());
     existingCustomer.setGender(updatedCustomer.getGender());

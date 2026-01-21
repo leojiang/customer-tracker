@@ -59,8 +59,9 @@ public class Customer {
   @Column(name = "business_requirements")
   private String businessRequirements;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "business_type")
-  private String businessType;
+  private CertificateType certificateType;
 
   private Integer age;
 
@@ -162,12 +163,12 @@ public class Customer {
     this.businessRequirements = businessRequirements;
   }
 
-  public String getBusinessType() {
-    return businessType;
+  public CertificateType getCertificateType() {
+    return certificateType;
   }
 
-  public void setBusinessType(String businessType) {
-    this.businessType = businessType;
+  public void setCertificateType(CertificateType certificateType) {
+    this.certificateType = certificateType;
   }
 
   public Integer getAge() {

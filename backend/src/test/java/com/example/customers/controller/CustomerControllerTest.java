@@ -9,6 +9,7 @@ import com.example.customers.config.TestSecurityConfig;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.EducationLevel;
+import com.example.customers.model.CertificateType;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
@@ -72,7 +73,7 @@ class CustomerControllerTest {
     testCustomer.setPhone("+1234567890");
     testCustomer.setCompany("Test Company");
     testCustomer.setBusinessRequirements("Need CRM solution");
-    testCustomer.setBusinessType("Technology");
+    testCustomer.setCertificateType(CertificateType.ELECTRICIAN);
     testCustomer.setAge(30);
     testCustomer.setEducation(EducationLevel.BACHELOR);
     testCustomer.setGender("Male");

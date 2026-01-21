@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2, UserCircle, Calendar } from 'lucide-react';
-import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName } from '@/types/customer';
+import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
@@ -32,7 +32,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     phone: '',
     company: '',
     businessRequirements: '',
-    businessType: '',
+    certificateType: undefined,
     age: undefined,
     education: undefined,
     gender: '',
@@ -86,12 +86,13 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         phone: data.phone,
         company: data.company || '',
         businessRequirements: data.businessRequirements || '',
-        businessType: data.businessType || '',
+        certificateType: data.certificateType,
         age: data.age,
         education: data.education || undefined,
         gender: data.gender || '',
         location: data.location || '',
         price: data.price,
+        certifiedAt: data.certifiedAt,
       });
       // Load valid transitions after customer is loaded
       await loadValidTransitions();
@@ -117,7 +118,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         phone: customer.phone,
         company: customer.company || '',
         businessRequirements: customer.businessRequirements || '',
-        businessType: customer.businessType || '',
+        certificateType: customer.certificateType,
         age: customer.age,
         education: customer.education || undefined,
         gender: customer.gender || '',
@@ -678,18 +679,33 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <Briefcase size={18} className="text-surface-500" />
-                      {t('customers.form.businessType')}
+                      {t('customers.form.certificateType')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.businessType}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, businessType: e.target.value }))}
+                      <select
+                        value={editForm.certificateType || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const certificateValue = value && value !== '' ? value as CertificateType : undefined;
+                          setEditForm(prev => ({ ...prev, certificateType: certificateValue }));
+                        }}
                         className="input-field"
-                        placeholder={t('customers.form.businessType')}
-                      />
+                      >
+                        <option value="">{t('customers.form.selectCertificateType')}</option>
+                        {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
+                          <option key={key} value={key}>
+                            {t(CertificateTypeTranslationKeys[key as CertificateType])}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
-                      <p className="text-body-1">{customer.businessType || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">
+                        {customer.certificateType ? (
+                          t(CertificateTypeTranslationKeys[customer.certificateType])
+                        ) : (
+                          <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>
+                        )}
+                      </p>
                     )}
                   </div>
 

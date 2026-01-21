@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock, Calendar } from 'lucide-react';
-import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName } from '@/types/customer';
+import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
@@ -27,7 +27,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     phone: '',
     company: '',
     businessRequirements: '',
-    businessType: '',
+    certificateType: undefined as CertificateType | undefined,
     age: undefined,
     education: undefined as EducationLevel | undefined,
     gender: '',
@@ -82,7 +82,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
         phone: formatPhoneNumber(formData.phone), // Format phone number
         company: formData.company?.trim() || undefined,
         businessRequirements: formData.businessRequirements?.trim() || undefined,
-        businessType: formData.businessType?.trim() || undefined,
+        certificateType: formData.certificateType,
         education: formData.education,
         gender: formData.gender?.trim() || undefined,
         location: selectedLocation ? `${selectedLocation.address} (${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)})` : formData.location?.trim() || undefined,
@@ -379,15 +379,24 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Briefcase size={16} className="inline mr-1" />
-                  {t('customers.form.businessType')}
+                  {t('customers.form.certificateType')}
                 </label>
-                <input
-                  type="text"
-                  value={formData.businessType}
-                  onChange={(e) => handleInputChange('businessType', e.target.value)}
+                <select
+                  value={formData.certificateType || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const certificateValue = value && value !== '' ? value as CertificateType : undefined;
+                    handleInputChange('certificateType', certificateValue);
+                  }}
                   className="input-field"
-                  placeholder={t('customers.form.businessType')}
-                />
+                >
+                  <option value="">{t('customers.form.selectCertificateType')}</option>
+                  {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
+                    <option key={key} value={key}>
+                      {t(CertificateTypeTranslationKeys[key as CertificateType])}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

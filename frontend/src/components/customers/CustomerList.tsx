@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Customer, CustomerSearchParams, CustomerPageResponse } from '@/types/customer';
+import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -322,9 +322,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                           <span>{getLocalizedGender(customer.gender)}</span>
                         </div>
                       )}
-                      {customer.businessType && (
+                      {customer.certificateType && (
                         <div className="flex items-center gap-1.5">
-                          <span>{customer.businessType}</span>
+                          <span>{t(CertificateTypeTranslationKeys[customer.certificateType])}</span>
                         </div>
                       )}
                     </div>

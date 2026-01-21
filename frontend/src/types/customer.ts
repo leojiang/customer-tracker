@@ -21,6 +21,12 @@ export enum EducationLevel {
   OTHER = 'OTHER'
 }
 
+export enum CertificateType {
+  ELECTRICIAN = 'ELECTRICIAN',
+  WELDER = 'WELDER',
+  EXCAVATOR = 'EXCAVATOR'
+}
+
 export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
   [EducationLevel.ELEMENTARY]: 'Elementary School',
   [EducationLevel.MIDDLE_SCHOOL]: 'Middle School',
@@ -32,6 +38,12 @@ export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
   [EducationLevel.PROFESSIONAL]: 'Professional Degree',
   [EducationLevel.CERTIFICATE]: 'Certificate/Diploma',
   [EducationLevel.OTHER]: 'Other'
+};
+
+export const CertificateTypeTranslationKeys: Record<CertificateType, string> = {
+  [CertificateType.ELECTRICIAN]: 'certificateType.electrician',
+  [CertificateType.WELDER]: 'certificateType.welder',
+  [CertificateType.EXCAVATOR]: 'certificateType.excavator'
 };
 
 export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {
@@ -93,7 +105,7 @@ export interface Customer {
   phone: string;
   company?: string;
   businessRequirements?: string;
-  businessType?: string;
+  certificateType?: CertificateType;
   age?: number;
   education?: EducationLevel;
   gender?: string;
@@ -122,7 +134,7 @@ export interface CreateCustomerRequest {
   phone: string;
   company?: string;
   businessRequirements?: string;
-  businessType?: string;
+  certificateType?: CertificateType;
   age?: number;
   education?: EducationLevel;
   gender?: string;
@@ -137,7 +149,7 @@ export interface UpdateCustomerRequest {
   phone: string;
   company?: string;
   businessRequirements?: string;
-  businessType?: string;
+  certificateType?: CertificateType;
   age?: number;
   education?: EducationLevel;
   gender?: string;

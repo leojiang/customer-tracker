@@ -3,6 +3,7 @@ package com.example.customers.controller;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.EducationLevel;
+import com.example.customers.model.CertificateType;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
@@ -178,7 +179,7 @@ public class CustomerController {
       customer.setPhone(request.getPhone());
       customer.setCompany(request.getCompany());
       customer.setBusinessRequirements(request.getBusinessRequirements());
-      customer.setBusinessType(request.getBusinessType());
+      customer.setCertificateType(request.getCertificateType());
       customer.setAge(request.getAge());
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
@@ -243,7 +244,7 @@ public class CustomerController {
       customer.setPhone(request.getPhone());
       customer.setCompany(request.getCompany());
       customer.setBusinessRequirements(request.getBusinessRequirements());
-      customer.setBusinessType(request.getBusinessType());
+      customer.setCertificateType(request.getCertificateType());
       customer.setAge(request.getAge());
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
@@ -493,7 +494,7 @@ public class CustomerController {
 
     private String company;
     private String businessRequirements;
-    private String businessType;
+    private CertificateType certificateType;
     private Integer age;
     private EducationLevel education;
     private String gender;
@@ -535,12 +536,12 @@ public class CustomerController {
       this.businessRequirements = businessRequirements;
     }
 
-    public String getBusinessType() {
-      return businessType;
+    public CertificateType getCertificateType() {
+      return certificateType;
     }
 
-    public void setBusinessType(String businessType) {
-      this.businessType = businessType;
+    public void setCertificateType(CertificateType certificateType) {
+      this.certificateType = certificateType;
     }
 
     public Integer getAge() {
@@ -611,7 +612,7 @@ public class CustomerController {
 
     private String company;
     private String businessRequirements;
-    private String businessType;
+    private CertificateType certificateType;
     private Integer age;
     private EducationLevel education;
     private String gender;
@@ -652,12 +653,12 @@ public class CustomerController {
       this.businessRequirements = businessRequirements;
     }
 
-    public String getBusinessType() {
-      return businessType;
+    public CertificateType getCertificateType() {
+      return certificateType;
     }
 
-    public void setBusinessType(String businessType) {
-      this.businessType = businessType;
+    public void setCertificateType(CertificateType certificateType) {
+      this.certificateType = certificateType;
     }
 
     public Integer getAge() {
