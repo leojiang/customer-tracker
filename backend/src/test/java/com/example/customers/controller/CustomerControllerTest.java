@@ -92,7 +92,16 @@ class CustomerControllerTest {
     Page<Customer> customerPage = new PageImpl<>(customers, Pageable.ofSize(5), 1);
 
     when(customerService.searchCustomers(
-            any(), any(), any(), any(), any(), anyBoolean(), any(), any(), any(Pageable.class)))
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            anyBoolean(),
+            any(),
+            any(),
+            any(),
+            any(Pageable.class)))
         .thenReturn(customerPage);
 
     // When & Then
@@ -119,6 +128,7 @@ class CustomerControllerTest {
             eq(false),
             eq(null),
             eq(null),
+            eq(null),
             any(Pageable.class));
   }
 
@@ -136,6 +146,7 @@ class CustomerControllerTest {
             eq("test"),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             any(Pageable.class)))
@@ -161,6 +172,7 @@ class CustomerControllerTest {
             eq("test"),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             any(Pageable.class));
@@ -584,7 +596,16 @@ class CustomerControllerTest {
     Page<Customer> customerPage = new PageImpl<>(customers, Pageable.ofSize(20), 1);
 
     when(customerService.searchCustomers(
-            any(), any(), any(), any(), any(), anyBoolean(), any(), any(), any(Pageable.class)))
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            anyBoolean(),
+            any(),
+            any(),
+            any(),
+            any(Pageable.class)))
         .thenReturn(customerPage);
 
     // When & Then - Test with invalid page (should default to 1)
@@ -603,6 +624,7 @@ class CustomerControllerTest {
             any(),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             argThat(pageable -> pageable.getPageNumber() == 0 && pageable.getPageSize() == 100));

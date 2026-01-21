@@ -1,5 +1,6 @@
 package com.example.customers.service;
 
+import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.StatusHistory;
@@ -190,6 +191,7 @@ public class CustomerService {
       String company,
       String salesPhone,
       boolean includeDeleted,
+      CertificateType certificateType,
       String certifiedStartDate,
       String certifiedEndDate,
       Pageable pageable) {
@@ -204,6 +206,7 @@ public class CustomerService {
             company,
             salesPhone,
             includeDeleted,
+            certificateType,
             certifiedStartDate,
             certifiedEndDate);
 

@@ -177,6 +177,7 @@ export interface CustomerSearchParams {
   status?: CustomerStatus;
   company?: string;
   includeDeleted?: boolean;
+  certificateType?: CertificateType;
   certifiedStartDate?: string;
   certifiedEndDate?: string;
   page?: number;

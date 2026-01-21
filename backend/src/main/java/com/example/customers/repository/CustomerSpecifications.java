@@ -1,5 +1,6 @@
 package com.example.customers.repository;
 
+import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import jakarta.persistence.criteria.Predicate;
@@ -102,6 +103,7 @@ public class CustomerSpecifications {
       String company,
       String salesPhone,
       boolean includeDeleted,
+      CertificateType certificateType,
       String certifiedStartDate,
       String certifiedEndDate) {
 
@@ -137,6 +139,11 @@ public class CustomerSpecifications {
       // Sales phone filter
       if (salesPhone != null && !salesPhone.trim().isEmpty()) {
         predicates.add(criteriaBuilder.equal(root.get("salesPhone"), salesPhone.trim()));
+      }
+
+      // Certificate type filter
+      if (certificateType != null) {
+        predicates.add(criteriaBuilder.equal(root.get("certificateType"), certificateType));
       }
 
       // Certified date range filter

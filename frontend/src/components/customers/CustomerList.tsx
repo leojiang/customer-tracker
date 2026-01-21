@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys } from '@/types/customer';
+import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CertificateType } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
+import { enUS, zhCN } from 'date-fns/locale';
 import { SalesRole } from '@/types/auth';
 
 interface CustomerListProps {
@@ -15,7 +16,7 @@ interface CustomerListProps {
 }
 
 export default function CustomerList({ onCustomerSelect, onCreateCustomer }: CustomerListProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,10 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [searchTerm, setSearchTerm] = useState('');
   const [certifiedStartDate, setCertifiedStartDate] = useState('');
   const [certifiedEndDate, setCertifiedEndDate] = useState('');
+  const [selectedCertificateType, setSelectedCertificateType] = useState('');
+
+  // Map language to date-fns locale
+  const locale = language === 'zh-CN' ? zhCN : enUS;
 
   const loadCustomers = useCallback(async (params: CustomerSearchParams) => {
     try {
@@ -70,6 +75,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       ...prev,
       q: !isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
+      certificateType: selectedCertificateType ? selectedCertificateType as CertificateType : undefined,
       certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
       certifiedEndDate: certifiedEndDate ? `${certifiedEndDate}T00:00:00Z` : undefined,
       page: 1,
@@ -201,6 +207,25 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   </div>
                 </div>
 
+                {/* Certificate Type Filter */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    {t('customers.form.certificateType')}
+                  </h3>
+                  <select
+                    value={selectedCertificateType}
+                    onChange={(e) => setSelectedCertificateType(e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">{t('customers.form.selectCertificateType')}</option>
+                    {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
+                      <option key={key} value={key}>
+                        {t(CertificateTypeTranslationKeys[key as CertificateType])}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Certified Date Range Filter */}
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between mb-3">
@@ -303,37 +328,40 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 className="list-item-interactive group"
               >
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-headline-6 mb-2 group-hover:text-primary-600 transition-colors">
-                    {customer.name}
-                  </h3>
-                  <div className="flex items-center justify-between gap-4 text-body-2">
-                    <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Customer Name on the left */}
+                    <h3 className="text-headline-6 group-hover:text-primary-600 transition-colors flex-shrink-0">
+                      {customer.name}
+                    </h3>
+
+                    {/* All other fields on the right */}
+                    <div className="flex flex-wrap items-center gap-4 text-body-2 justify-end">
                       <div className="flex items-center gap-1.5">
                         <Phone size={16} className="text-surface-500" />
-                        <span>{customer.phone}</span>
+                        <span>{t('customers.form.phone')}: {customer.phone}</span>
                       </div>
                       {customer.age && (
                         <div className="flex items-center gap-1.5">
-                          <span>{customer.age}</span>
+                          <span>{t('customers.form.age')}: {customer.age}</span>
                         </div>
                       )}
                       {customer.gender && (
                         <div className="flex items-center gap-1.5">
-                          <span>{getLocalizedGender(customer.gender)}</span>
+                          <span>{t('customers.form.gender')}: {getLocalizedGender(customer.gender)}</span>
                         </div>
                       )}
                       {customer.certificateType && (
                         <div className="flex items-center gap-1.5">
-                          <span>{t(CertificateTypeTranslationKeys[customer.certificateType])}</span>
+                          <span>{t('customers.form.certificateType')}: {t(CertificateTypeTranslationKeys[customer.certificateType])}</span>
+                        </div>
+                      )}
+                      {customer.certifiedAt && (
+                        <div className="flex-shrink-0 text-surface-600 flex items-center gap-1.5">
+                          <Calendar size={16} className="text-surface-500" />
+                          <span>{t('customers.form.certifiedAt')}: {format(new Date(customer.certifiedAt), 'PPP', { locale })}</span>
                         </div>
                       )}
                     </div>
-                    {customer.certifiedAt && (
-                      <div className="flex-shrink-0 text-surface-600 flex items-center gap-1.5">
-                        <Calendar size={16} className="text-surface-500" />
-                        <span>{format(new Date(customer.certifiedAt), 'MMM dd, yyyy')}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

@@ -102,6 +102,8 @@ public class CustomerController {
       @Parameter(description = "Include soft-deleted customers in results")
           @RequestParam(defaultValue = "false")
           boolean includeDeleted,
+      @Parameter(description = "Filter by certificate type") @RequestParam(required = false)
+          String certificateType,
       @Parameter(description = "Filter by certified date start (ISO format)")
           @RequestParam(required = false)
           String certifiedStartDate,
@@ -131,6 +133,16 @@ public class CustomerController {
     // customers)
     String filterBySalesPhone = getCurrentUserSalesPhone();
 
+    // Convert certificate type string to enum
+    CertificateType certificateTypeEnum = null;
+    if (certificateType != null && !certificateType.trim().isEmpty()) {
+      try {
+        certificateTypeEnum = CertificateType.valueOf(certificateType.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        // Invalid certificate type, ignore
+      }
+    }
+
     Page<Customer> customers =
         customerService.searchCustomers(
             q,
@@ -139,6 +151,7 @@ public class CustomerController {
             company,
             filterBySalesPhone,
             includeDeleted,
+            certificateTypeEnum,
             certifiedStartDate,
             certifiedEndDate,
             pageable);

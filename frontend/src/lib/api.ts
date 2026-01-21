@@ -97,6 +97,9 @@ export const customerApi = {
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', params.includeDeleted.toString());
     }
+    if (params.certificateType) {
+      searchParams.append('certificateType', params.certificateType);
+    }
     if (params.certifiedStartDate) {
       searchParams.append('certifiedStartDate', params.certifiedStartDate);
     }
