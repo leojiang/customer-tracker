@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock } from 'lucide-react';
+import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock, Calendar } from 'lucide-react';
 import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
@@ -34,6 +34,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     location: '',
     price: undefined,
     currentStatus: CustomerStatus.CUSTOMER_CALLED,
+    certifiedAt: undefined,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -309,6 +310,20 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   placeholder={t('customers.form.price')}
                   min="0"
                   step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Calendar size={16} className="inline mr-1" />
+                  {t('customers.form.certifiedAt')}
+                </label>
+                <input
+                  type="date"
+                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
+                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
+                  className="input-field"
+                  placeholder={t('customers.form.certifiedAt.placeholder')}
                 />
               </div>
             </div>

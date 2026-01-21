@@ -442,7 +442,11 @@ export default function CustomerDeleteRequestsTab({
                   <p className="mt-1 text-sm text-gray-500">
                     {searchTerm
                       ? `${t('deleteRequests.noRequestsMatching')} "${searchTerm}"`
-                      : t('deleteRequests.noPendingRequests')}
+                      : selectedStatus === DeleteRequestStatus.PENDING
+                      ? t('deleteRequests.noPendingRequests')
+                      : selectedStatus === DeleteRequestStatus.APPROVED
+                      ? t('deleteRequests.noApprovedRequests')
+                      : t('deleteRequests.noRejectedRequests')}
                   </p>
                 </td>
               </tr>

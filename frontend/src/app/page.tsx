@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Customer } from '@/types/customer';
 import CustomerList from '@/components/customers/CustomerList';
 import CustomerDetail from '@/components/customers/CustomerDetail';
@@ -31,6 +31,10 @@ export default function HomePage() {
   };
 
   const handleCreateCustomer = () => {
+    // Prevent CUSTOMER_AGENT from accessing create view
+    if (user?.role === 'CUSTOMER_AGENT') {
+      return;
+    }
     setCurrentView('create');
   };
 
@@ -49,9 +53,20 @@ export default function HomePage() {
   };
 
   const handleNavigation = (view: View) => {
+    // Prevent CUSTOMER_AGENT from accessing dashboard or user management
+    if (user?.role === 'CUSTOMER_AGENT' && (view === 'dashboard' || view === 'user-approvals')) {
+      return;
+    }
     setCurrentView(view);
     setSelectedCustomer(null);
   };
+
+  // Redirect CUSTOMER_AGENT users away from restricted views
+  useEffect(() => {
+    if (user?.role === 'CUSTOMER_AGENT' && (currentView === 'dashboard' || currentView === 'user-approvals')) {
+      setCurrentView('list');
+    }
+  }, [user, currentView]);
 
   return (
     <AuthGuard>
@@ -84,17 +99,19 @@ export default function HomePage() {
                   {t('nav.customers')}
                 </button>
                 
-                <button
-                  onClick={() => handleNavigation('dashboard')}
-                  className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
-                    currentView === 'dashboard' 
-                      ? 'bg-primary-100 text-primary-700 border border-primary-200' 
-                      : 'btn-outline'
-                  }`}
-                >
-                  <BarChart3 size={16} />
-                  {t('nav.dashboard')}
-                </button>
+                {user?.role !== 'CUSTOMER_AGENT' && (
+                  <button
+                    onClick={() => handleNavigation('dashboard')}
+                    className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
+                      currentView === 'dashboard'
+                        ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                        : 'btn-outline'
+                    }`}
+                  >
+                    <BarChart3 size={16} />
+                    {t('nav.dashboard')}
+                  </button>
+                )}
                 
                 {user?.role === 'ADMIN' && (
                   <button

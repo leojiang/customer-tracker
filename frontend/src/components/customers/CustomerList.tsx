@@ -5,8 +5,10 @@ import { Search, Plus, Phone, Building2, Calendar, ChevronLeft, ChevronRight } f
 import { Customer, CustomerSearchParams, CustomerPageResponse } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { format } from 'date-fns';
+import { SalesRole } from '@/types/auth';
 
 interface CustomerListProps {
   onCustomerSelect?: (customer: Customer) => void;
@@ -15,6 +17,7 @@ interface CustomerListProps {
 
 export default function CustomerList({ onCustomerSelect, onCreateCustomer }: CustomerListProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,13 +125,15 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
           <h1 className="text-headline-2 mb-2">{t('customers.management')}</h1>
           <p className="text-body-2">{t('customers.manageTrack')}</p>
         </div>
-        <button 
-          onClick={onCreateCustomer}
-          className="btn-primary flex items-center justify-center gap-3 sm:w-auto"
-        >
-          <Plus size={20} />
-          {t('customers.addCustomer')}
-        </button>
+        {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
+          <button
+            onClick={onCreateCustomer}
+            className="btn-primary flex items-center justify-center gap-3 sm:w-auto"
+          >
+            <Plus size={20} />
+            {t('customers.addCustomer')}
+          </button>
+        )}
       </div>
 
       {/* Search Card */}

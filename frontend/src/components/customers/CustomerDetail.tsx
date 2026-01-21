@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2, UserCircle, Calendar } from 'lucide-react';
 import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -38,6 +38,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     gender: '',
     location: '',
     price: undefined,
+    certifiedAt: undefined,
   });
   const [statusTransition, setStatusTransition] = useState<StatusTransitionRequest>({
     toStatus: CustomerStatus.CUSTOMER_CALLED,
@@ -122,6 +123,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         gender: customer.gender || '',
         location: customer.location || '',
         price: customer.price,
+        certifiedAt: customer.certifiedAt,
       });
     }
     setIsEditing(false);
@@ -315,6 +317,20 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     return user.role === SalesRole.ADMIN || user.role === SalesRole.OFFICER;
   };
 
+  const getSalesPersonDisplayName = (salesPhone: string): string => {
+    if (!salesPhone) {
+      return t('customers.form.salesPerson.unknown');
+    }
+
+    // If it's the current user, show "You"
+    if (user && salesPhone === user.phone) {
+      return t('customers.form.salesPerson.you');
+    }
+
+    // Otherwise show phone number
+    return salesPhone;
+  };
+
   const availableTransitions = getAvailableStatusTransitions();
 
   if (loading) {
@@ -474,6 +490,32 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       />
                     ) : (
                       <p className="text-body-1">{customer.company || <span className="text-surface-400 italic">{t('customers.form.company')}</span>}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <UserCircle size={18} className="text-surface-500" />
+                      {t('customers.form.salesPerson')}
+                    </label>
+                    <p className="text-body-1">{getSalesPersonDisplayName(customer.salesPhone || '')}</p>
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <Calendar size={18} className="text-surface-500" />
+                      {t('customers.form.certifiedAt')}
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="date"
+                        value={editForm.certifiedAt ? editForm.certifiedAt.split('T')[0] : ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, certifiedAt: e.target.value ? `${e.target.value}T00:00:00Z` : undefined }))}
+                        className="input-field"
+                        placeholder={t('customers.form.certifiedAt.placeholder')}
+                      />
+                    ) : (
+                      <p className="text-body-1">{customer.certifiedAt ? new Date(customer.certifiedAt).toLocaleDateString() : <span className="text-surface-400 italic">{t('customers.form.certifiedAt.placeholder')}</span>}</p>
                     )}
                   </div>
 

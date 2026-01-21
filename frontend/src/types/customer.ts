@@ -101,6 +101,7 @@ export interface Customer {
   price?: number;
   currentStatus: CustomerStatus;
   salesPhone?: string;
+  certifiedAt?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
@@ -128,6 +129,7 @@ export interface CreateCustomerRequest {
   location?: string;
   price?: number;
   currentStatus?: CustomerStatus;
+  certifiedAt?: string;
 }
 
 export interface UpdateCustomerRequest {
@@ -141,6 +143,7 @@ export interface UpdateCustomerRequest {
   gender?: string;
   location?: string;
   price?: number;
+  certifiedAt?: string;
 }
 
 export interface StatusTransitionRequest {

@@ -82,6 +82,9 @@ public class Customer {
   @Column(name = "sales_phone")
   private String salesPhone;
 
+  @Column(name = "certified_at")
+  private ZonedDateTime certifiedAt;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private ZonedDateTime createdAt;
@@ -253,6 +256,14 @@ public class Customer {
 
   public void setSalesPhone(String salesPhone) {
     this.salesPhone = salesPhone;
+  }
+
+  public ZonedDateTime getCertifiedAt() {
+    return certifiedAt;
+  }
+
+  public void setCertifiedAt(ZonedDateTime certifiedAt) {
+    this.certifiedAt = certifiedAt;
   }
 
   // Soft delete methods

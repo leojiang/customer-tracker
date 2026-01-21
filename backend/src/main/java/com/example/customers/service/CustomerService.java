@@ -122,6 +122,7 @@ public class CustomerService {
     existingCustomer.setGender(updatedCustomer.getGender());
     existingCustomer.setLocation(updatedCustomer.getLocation());
     existingCustomer.setPrice(updatedCustomer.getPrice());
+    existingCustomer.setCertifiedAt(updatedCustomer.getCertifiedAt());
 
     return customerRepository.save(existingCustomer);
   }

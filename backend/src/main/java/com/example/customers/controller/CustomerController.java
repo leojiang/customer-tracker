@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -170,6 +171,15 @@ public class CustomerController {
       customer.setLocation(request.getLocation());
       customer.setPrice(request.getPrice());
 
+      if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
+        try {
+          customer.setCertifiedAt(ZonedDateTime.parse(request.getCertifiedAt()));
+        } catch (Exception e) {
+          // If date parsing fails, set to null
+          customer.setCertifiedAt(null);
+        }
+      }
+
       if (request.getCurrentStatus() != null) {
         customer.setCurrentStatus(request.getCurrentStatus());
       }
@@ -225,6 +235,17 @@ public class CustomerController {
       customer.setGender(request.getGender());
       customer.setLocation(request.getLocation());
       customer.setPrice(request.getPrice());
+
+      if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
+        try {
+          customer.setCertifiedAt(ZonedDateTime.parse(request.getCertifiedAt()));
+        } catch (Exception e) {
+          // If date parsing fails, set to null
+          customer.setCertifiedAt(null);
+        }
+      } else {
+        customer.setCertifiedAt(null);
+      }
 
       Customer updatedCustomer = customerService.updateCustomer(id, customer);
       return ResponseEntity.ok(updatedCustomer);
@@ -465,6 +486,7 @@ public class CustomerController {
     private String location;
     private BigDecimal price;
     private CustomerStatus currentStatus;
+    private String certifiedAt;
 
     // Getters and setters
     public String getName() {
@@ -554,6 +576,14 @@ public class CustomerController {
     public void setCurrentStatus(CustomerStatus currentStatus) {
       this.currentStatus = currentStatus;
     }
+
+    public String getCertifiedAt() {
+      return certifiedAt;
+    }
+
+    public void setCertifiedAt(String certifiedAt) {
+      this.certifiedAt = certifiedAt;
+    }
   }
 
   /** Request DTO for updating customer information. */
@@ -573,6 +603,7 @@ public class CustomerController {
     private String gender;
     private String location;
     private BigDecimal price;
+    private String certifiedAt;
 
     // Getters and setters
     public String getName() {
@@ -653,6 +684,14 @@ public class CustomerController {
 
     public void setPrice(BigDecimal price) {
       this.price = price;
+    }
+
+    public String getCertifiedAt() {
+      return certifiedAt;
+    }
+
+    public void setCertifiedAt(String certifiedAt) {
+      this.certifiedAt = certifiedAt;
     }
   }
 
@@ -766,14 +805,14 @@ public class CustomerController {
 
   private String getCurrentUserSalesPhone() {
     Sales currentUser = getCurrentUser();
-    // Admin can see all customers (no filter), regular sales can only see their own
-    return currentUser.getRole() == SalesRole.ADMIN ? null : currentUser.getPhone();
+    // Admin and CUSTOMER_AGENT can see all customers (no filter), regular sales can only see their own
+    return (currentUser.getRole() == SalesRole.ADMIN || currentUser.getRole() == SalesRole.CUSTOMER_AGENT) ? null : currentUser.getPhone();
   }
 
   private boolean hasAccessToCustomer(Customer customer) {
     Sales currentUser = getCurrentUser();
-    // Admin has access to all customers
-    if (currentUser.getRole() == SalesRole.ADMIN) {
+    // Admin and CUSTOMER_AGENT have access to all customers
+    if (currentUser.getRole() == SalesRole.ADMIN || currentUser.getRole() == SalesRole.CUSTOMER_AGENT) {
       return true;
     }
     // Regular sales can only access customers they created
