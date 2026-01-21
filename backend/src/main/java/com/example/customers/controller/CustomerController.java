@@ -805,14 +805,19 @@ public class CustomerController {
 
   private String getCurrentUserSalesPhone() {
     Sales currentUser = getCurrentUser();
-    // Admin and CUSTOMER_AGENT can see all customers (no filter), regular sales can only see their own
-    return (currentUser.getRole() == SalesRole.ADMIN || currentUser.getRole() == SalesRole.CUSTOMER_AGENT) ? null : currentUser.getPhone();
+    // Admin and CUSTOMER_AGENT can see all customers (no filter), regular sales can only see their
+    // own
+    return (currentUser.getRole() == SalesRole.ADMIN
+            || currentUser.getRole() == SalesRole.CUSTOMER_AGENT)
+        ? null
+        : currentUser.getPhone();
   }
 
   private boolean hasAccessToCustomer(Customer customer) {
     Sales currentUser = getCurrentUser();
     // Admin and CUSTOMER_AGENT have access to all customers
-    if (currentUser.getRole() == SalesRole.ADMIN || currentUser.getRole() == SalesRole.CUSTOMER_AGENT) {
+    if (currentUser.getRole() == SalesRole.ADMIN
+        || currentUser.getRole() == SalesRole.CUSTOMER_AGENT) {
       return true;
     }
     // Regular sales can only access customers they created

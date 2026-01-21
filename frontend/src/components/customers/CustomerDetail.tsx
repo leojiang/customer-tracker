@@ -331,6 +331,20 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     return salesPhone;
   };
 
+  const getLocalizedGender = (gender: string | undefined): string => {
+    if (!gender) return '';
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return t('customers.form.gender.male');
+      case 'female':
+        return t('customers.form.gender.female');
+      case 'other':
+        return t('customers.form.gender.other');
+      default:
+        return gender;
+    }
+  };
+
   const availableTransitions = getAvailableStatusTransitions();
 
   if (loading) {
@@ -649,13 +663,13 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         onChange={(e) => setEditForm(prev => ({ ...prev, gender: e.target.value }))}
                         className="input-field"
                       >
-                        <option value="">Not specified</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
+                        <option value="">{t('customers.form.gender.select')}</option>
+                        <option value="male">{t('customers.form.gender.male')}</option>
+                        <option value="female">{t('customers.form.gender.female')}</option>
+                        <option value="other">{t('customers.form.gender.other')}</option>
                       </select>
                     ) : (
-                      <p className="text-body-1">{customer.gender || <span className="text-surface-400 italic">Not specified</span>}</p>
+                      <p className="text-body-1">{getLocalizedGender(customer.gender) || <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}</p>
                     )}
                   </div>
 

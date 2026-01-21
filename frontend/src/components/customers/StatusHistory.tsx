@@ -6,6 +6,7 @@ import { StatusHistory as StatusHistoryType } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { format } from 'date-fns';
+import { enUS, zhCN } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface StatusHistoryProps {
@@ -14,10 +15,14 @@ interface StatusHistoryProps {
 }
 
 export default function StatusHistory({ customerId, refreshTrigger }: StatusHistoryProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [history, setHistory] = useState<StatusHistoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getLocale = () => {
+    return language === 'zh-CN' ? zhCN : enUS;
+  };
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -136,7 +141,7 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
                   </div>
                   
                   <div className="text-caption text-surface-500 mb-3">
-                    {format(new Date(item.changedAt), 'MMM dd, yyyy HH:mm')}
+                    {format(new Date(item.changedAt), 'PPPpp', { locale: getLocale() })}
                   </div>
                   
                   {item.reason && (

@@ -102,6 +102,20 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }
   };
 
+  const getLocalizedGender = (gender: string | undefined) => {
+    if (!gender) return '';
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return t('customers.form.gender.male');
+      case 'female':
+        return t('customers.form.gender.female');
+      case 'other':
+        return t('customers.form.gender.other');
+      default:
+        return gender;
+    }
+  };
+
   if (error) {
     return (
       <div className="card p-6 text-center">
@@ -118,7 +132,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
@@ -136,53 +150,69 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
         )}
       </div>
 
-      {/* Search Card */}
-      <div className="card-elevated">
-        <div className="card-header">
-          <h2 className="text-headline-6">{t('customers.searchFilter')}</h2>
-        </div>
-        <div className="card-content">
-          <form onSubmit={handleSearch}>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-surface-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder={t('customers.searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input-field pl-12"
-                  />
-                </div>
-              </div>
-              <button type="submit" className="btn-primary md:w-auto flex items-center justify-center gap-2">
-                <Search size={18} />
-                {t('customers.search')}
-              </button>
+      {/* Main Content: Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Column: Search & Filter */}
+        <div className="lg:col-span-1">
+          <div className="card-elevated sticky top-24">
+            <div className="card-header">
+              <h2 className="text-headline-6">{t('customers.searchFilter')}</h2>
             </div>
-          </form>
-        </div>
-      </div>
+            <div className="card-content">
+              <form onSubmit={handleSearch} className="space-y-4">
+                {/* Search Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('customers.search')}
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400" size={18} />
+                    <input
+                      type="text"
+                      placeholder={t('customers.searchPlaceholder')}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
 
-      {/* Results Card */}
-      <div className="card-elevated">{loading ? (
-        <div className="card-content text-center py-12">
-          <div className="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
-          <div className="text-body-1 text-surface-600">{t('customers.loadingCustomers')}</div>
-        </div>
-      ) : customers.length === 0 ? (
-        <div className="card-content text-center py-12">
-          <div className="w-16 h-16 bg-surface-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <Phone size={24} className="text-surface-400" />
+                {/* Search Button */}
+                <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+                  <Search size={18} />
+                  {t('customers.search')}
+                </button>
+
+                {/* Additional filters can be added here */}
+                <div className="border-t pt-4">
+                  <p className="text-sm text-surface-500 italic">
+                    More filters coming soon...
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
-          <div className="text-headline-6 mb-2">{t('customers.noCustomersFound')}</div>
-          <p className="text-body-2 mb-6">
-            {searchTerm ? t('customers.adjustSearch') : t('customers.getStartedFirst')}
-          </p>
-          {searchTerm && (
-            <button 
-              onClick={() => {
+        </div>
+
+        {/* Right Column: Customer List */}
+        <div className="lg:col-span-3">
+        <div className="card-elevated">{loading ? (
+          <div className="card-content text-center py-12">
+            <div className="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
+            <div className="text-body-1 text-surface-600">{t('customers.loadingCustomers')}</div>
+          </div>
+        ) : customers.length === 0 ? (
+          <div className="card-content text-center py-12">
+            <div className="w-16 h-16 bg-surface-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Phone size={24} className="text-surface-400" />
+            </div>
+            <div className="text-headline-6 mb-2">{t('customers.noCustomersFound')}</div>
+            <p className="text-body-2 mb-6">
+              {searchTerm ? t('customers.adjustSearch') : t('customers.getStartedFirst')}
+            </p>
+            {searchTerm && (
+              <button
+                onClick={() => {
                 setSearchTerm('');
                 setSearchParams(prev => ({ ...prev, q: undefined, page: 1 }));
               }}
@@ -213,38 +243,38 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 className="list-item-interactive group"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-headline-6 mb-2 group-hover:text-primary-600 transition-colors">
-                        {customer.name}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-4 text-body-2">
-                        <div className="flex items-center gap-1.5">
-                          <Phone size={16} className="text-surface-500" />
-                          <span>{customer.phone}</span>
-                        </div>
-                        {customer.company && (
-                          <div className="flex items-center gap-1.5">
-                            <Building2 size={16} className="text-surface-500" />
-                            <span>{customer.company}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <Calendar size={16} className="text-surface-500" />
-                          <span>{format(new Date(customer.createdAt), 'MMM dd, yyyy')}</span>
-                        </div>
+                  <h3 className="text-headline-6 mb-2 group-hover:text-primary-600 transition-colors">
+                    {customer.name}
+                  </h3>
+                  <div className="flex items-center justify-between gap-4 text-body-2">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <Phone size={16} className="text-surface-500" />
+                        <span>{customer.phone}</span>
                       </div>
+                      {customer.age && (
+                        <div className="flex items-center gap-1.5">
+                          <span>{customer.age}</span>
+                        </div>
+                      )}
+                      {customer.gender && (
+                        <div className="flex items-center gap-1.5">
+                          <span>{getLocalizedGender(customer.gender)}</span>
+                        </div>
+                      )}
+                      {customer.businessType && (
+                        <div className="flex items-center gap-1.5">
+                          <span>{customer.businessType}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="ml-4 flex-shrink-0">
-                      <StatusBadge status={customer.currentStatus} />
-                    </div>
+                    {customer.certifiedAt && (
+                      <div className="flex-shrink-0 text-surface-600 flex items-center gap-1.5">
+                        <Calendar size={16} className="text-surface-500" />
+                        <span>{format(new Date(customer.certifiedAt), 'MMM dd, yyyy')}</span>
+                      </div>
+                    )}
                   </div>
-                  
-                  {customer.businessRequirements && (
-                    <p className="text-body-2 text-surface-600 line-clamp-2 mt-2">
-                      {customer.businessRequirements}
-                    </p>
-                  )}
                 </div>
               </div>
             ))}
@@ -350,6 +380,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
           </div>
         </div>
       )}
+      </div>
+      </div>
     </div>
   );
 }
