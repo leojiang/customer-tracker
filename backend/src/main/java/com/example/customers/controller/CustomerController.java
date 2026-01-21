@@ -101,6 +101,12 @@ public class CustomerController {
       @Parameter(description = "Include soft-deleted customers in results")
           @RequestParam(defaultValue = "false")
           boolean includeDeleted,
+      @Parameter(description = "Filter by certified date start (ISO format)")
+          @RequestParam(required = false)
+          String certifiedStartDate,
+      @Parameter(description = "Filter by certified date end (ISO format)")
+          @RequestParam(required = false)
+          String certifiedEndDate,
       @Parameter(description = "Page number (1-based)") @RequestParam(defaultValue = "1") int page,
       @Parameter(description = "Number of items per page (max 100)")
           @RequestParam(defaultValue = "5")
@@ -117,8 +123,8 @@ public class CustomerController {
       limit = 100; // Max limit as per plan
     }
 
-    // Convert to 0-based page for Spring Data
-    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("updatedAt").descending());
+    // Convert to 0-based page for Spring Data - always sort by certified date DESC
+    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").descending());
 
     // Get current user's sales phone for filtering (non-admin users can only see their own
     // customers)
@@ -126,7 +132,7 @@ public class CustomerController {
 
     Page<Customer> customers =
         customerService.searchCustomers(
-            q, phone, status, company, filterBySalesPhone, includeDeleted, pageable);
+            q, phone, status, company, filterBySalesPhone, includeDeleted, certifiedStartDate, certifiedEndDate, pageable);
 
     CustomerPageResponse response =
         new CustomerPageResponse(

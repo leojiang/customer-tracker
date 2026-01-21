@@ -190,19 +190,15 @@ public class CustomerService {
       String company,
       String salesPhone,
       boolean includeDeleted,
+      String certifiedStartDate,
+      String certifiedEndDate,
       Pageable pageable) {
     Specification<Customer> spec;
 
-    // If we have specific field queries, use the detailed search
-    if (phoneQuery != null || company != null) {
-      spec =
-          CustomerSpecifications.searchCustomers(
-              nameQuery, phoneQuery, status, company, salesPhone, includeDeleted);
-    } else {
-      // Use unified search for general query (searches across name, phone, company, business
-      // requirements)
-      spec = CustomerSpecifications.unifiedSearch(nameQuery, status, salesPhone, includeDeleted);
-    }
+    // Always use detailed search (only name and phone, as per requirements)
+    spec =
+        CustomerSpecifications.searchCustomers(
+            nameQuery, phoneQuery, status, company, salesPhone, includeDeleted, certifiedStartDate, certifiedEndDate);
 
     return customerRepository.findAll(spec, pageable);
   }

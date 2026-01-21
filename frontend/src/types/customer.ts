@@ -165,6 +165,8 @@ export interface CustomerSearchParams {
   status?: CustomerStatus;
   company?: string;
   includeDeleted?: boolean;
+  certifiedStartDate?: string;
+  certifiedEndDate?: string;
   page?: number;
   limit?: number;
 }

@@ -91,7 +91,7 @@ class CustomerControllerTest {
     Page<Customer> customerPage = new PageImpl<>(customers, Pageable.ofSize(5), 1);
 
     when(customerService.searchCustomers(
-            any(), any(), any(), any(), any(), anyBoolean(), any(Pageable.class)))
+            any(), any(), any(), any(), any(), anyBoolean(), any(), any(), any(Pageable.class)))
         .thenReturn(customerPage);
 
     // When & Then
@@ -110,7 +110,7 @@ class CustomerControllerTest {
 
     verify(customerService)
         .searchCustomers(
-            eq(null), eq(null), eq(null), eq(null), any(), eq(false), any(Pageable.class));
+            eq(null), eq(null), eq(null), eq(null), any(), eq(false), eq(null), eq(null), any(Pageable.class));
   }
 
   @Test
@@ -127,6 +127,8 @@ class CustomerControllerTest {
             eq("test"),
             any(),
             eq(false),
+            eq(null),
+            eq(null),
             any(Pageable.class)))
         .thenReturn(customerPage);
 
@@ -150,6 +152,8 @@ class CustomerControllerTest {
             eq("test"),
             any(),
             eq(false),
+            eq(null),
+            eq(null),
             any(Pageable.class));
   }
 
@@ -571,7 +575,7 @@ class CustomerControllerTest {
     Page<Customer> customerPage = new PageImpl<>(customers, Pageable.ofSize(20), 1);
 
     when(customerService.searchCustomers(
-            any(), any(), any(), any(), any(), anyBoolean(), any(Pageable.class)))
+            any(), any(), any(), any(), any(), anyBoolean(), any(), any(), any(Pageable.class)))
         .thenReturn(customerPage);
 
     // When & Then - Test with invalid page (should default to 1)
@@ -590,6 +594,8 @@ class CustomerControllerTest {
             any(),
             any(),
             eq(false),
+            eq(null),
+            eq(null),
             argThat(pageable -> pageable.getPageNumber() == 0 && pageable.getPageSize() == 100));
   }
 

@@ -312,20 +312,6 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   step="0.01"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar size={16} className="inline mr-1" />
-                  {t('customers.form.certifiedAt')}
-                </label>
-                <input
-                  type="date"
-                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
-                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
-                  className="input-field"
-                  placeholder={t('customers.form.certifiedAt.placeholder')}
-                />
-              </div>
             </div>
 
             <div className="space-y-6">
@@ -401,6 +387,20 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   onChange={(e) => handleInputChange('businessType', e.target.value)}
                   className="input-field"
                   placeholder={t('customers.form.businessType')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Calendar size={16} className="inline mr-1" />
+                  {t('customers.form.certifiedAt')}
+                </label>
+                <input
+                  type="date"
+                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
+                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
+                  className="input-field"
+                  placeholder={t('customers.form.certifiedAt.placeholder')}
                 />
               </div>
             </div>

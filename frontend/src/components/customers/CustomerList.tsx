@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Customer, CustomerSearchParams, CustomerPageResponse } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,6 +31,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     limit: 10,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [certifiedStartDate, setCertifiedStartDate] = useState('');
+  const [certifiedEndDate, setCertifiedEndDate] = useState('');
 
   const loadCustomers = useCallback(async (params: CustomerSearchParams) => {
     try {
@@ -55,17 +57,38 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     loadCustomers(searchParams);
   }, [searchParams, loadCustomers]);
 
+  const isPhoneNumber = (text: string): boolean => {
+    const phoneRegex = /^[\d+s\-()]+$/;
+    return phoneRegex.test(text.trim()) && text.replace(/\D/g, '').length >= 3;
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedSearchTerm = searchTerm.trim();
+
     setSearchParams(prev => ({
       ...prev,
-      q: searchTerm.trim() || undefined,
+      q: !isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
+      phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
+      certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
+      certifiedEndDate: certifiedEndDate ? `${certifiedEndDate}T00:00:00Z` : undefined,
       page: 1,
     }));
   };
 
   const handlePageChange = (newPage: number) => {
     setSearchParams(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleClearDateRange = () => {
+    setCertifiedStartDate('');
+    setCertifiedEndDate('');
+    setSearchParams(prev => ({
+      ...prev,
+      certifiedStartDate: undefined,
+      certifiedEndDate: undefined,
+      page: 1,
+    }));
   };
 
   // Generate page numbers for pagination
@@ -178,18 +201,54 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   </div>
                 </div>
 
+                {/* Certified Date Range Filter */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-gray-700">
+                      {t('customers.certifiedTimeRange')}
+                    </h3>
+                    {(certifiedStartDate || certifiedEndDate) && (
+                      <button
+                        type="button"
+                        onClick={handleClearDateRange}
+                        className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                      >
+                        <X size={14} />
+                        {t('customers.clear')}
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        {t('customers.startDate')}
+                      </label>
+                      <input
+                        type="date"
+                        value={certifiedStartDate}
+                        onChange={(e) => setCertifiedStartDate(e.target.value)}
+                        className="input-field w-full text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        {t('customers.endDate')}
+                      </label>
+                      <input
+                        type="date"
+                        value={certifiedEndDate}
+                        onChange={(e) => setCertifiedEndDate(e.target.value)}
+                        className="input-field w-full text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Search Button */}
                 <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
                   <Search size={18} />
                   {t('customers.search')}
                 </button>
-
-                {/* Additional filters can be added here */}
-                <div className="border-t pt-4">
-                  <p className="text-sm text-surface-500 italic">
-                    More filters coming soon...
-                  </p>
-                </div>
               </form>
             </div>
           </div>
@@ -215,7 +274,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               <button
                 onClick={() => {
                 setSearchTerm('');
-                setSearchParams(prev => ({ ...prev, q: undefined, page: 1 }));
+                setSearchParams(prev => ({ ...prev, q: undefined, phone: undefined, page: 1 }));
               }}
               className="btn-outline"
             >

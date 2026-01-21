@@ -97,6 +97,12 @@ export const customerApi = {
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', params.includeDeleted.toString());
     }
+    if (params.certifiedStartDate) {
+      searchParams.append('certifiedStartDate', params.certifiedStartDate);
+    }
+    if (params.certifiedEndDate) {
+      searchParams.append('certifiedEndDate', params.certifiedEndDate);
+    }
     if (params.page !== undefined) {
       searchParams.append('page', params.page.toString());
     }
