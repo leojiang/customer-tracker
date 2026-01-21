@@ -6,10 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.customers.config.TestSecurityConfig;
+import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.EducationLevel;
-import com.example.customers.model.CertificateType;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
