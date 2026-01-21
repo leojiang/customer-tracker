@@ -332,7 +332,9 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   };
 
   const getLocalizedGender = (gender: string | undefined): string => {
-    if (!gender) return '';
+    if (!gender) {
+      return '';
+    }
     switch (gender.toLowerCase()) {
       case 'male':
         return t('customers.form.gender.male');

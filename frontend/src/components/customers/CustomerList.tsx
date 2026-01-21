@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Phone, Building2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Customer, CustomerSearchParams, CustomerPageResponse } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import StatusBadge from '@/components/ui/StatusBadge';
 import { format } from 'date-fns';
 import { SalesRole } from '@/types/auth';
 
@@ -103,7 +102,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   };
 
   const getLocalizedGender = (gender: string | undefined) => {
-    if (!gender) return '';
+    if (!gender) {
+      return '';
+    }
     switch (gender.toLowerCase()) {
       case 'male':
         return t('customers.form.gender.male');
