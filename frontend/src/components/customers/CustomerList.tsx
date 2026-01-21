@@ -20,15 +20,25 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Load page size from localStorage or use default 10
+  const getInitialPageSize = () => {
+    if (typeof window !== 'undefined') {
+      const savedPageSize = localStorage.getItem('customerListPageSize');
+      return savedPageSize ? parseInt(savedPageSize) : 10;
+    }
+    return 10;
+  };
+
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: 1,
-    limit: 10,
+    limit: getInitialPageSize(),
   });
   const [pageInfo, setPageInfo] = useState({
     total: 0,
     totalPages: 0,
     page: 1,
-    limit: 10,
+    limit: getInitialPageSize(),
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [certifiedStartDate, setCertifiedStartDate] = useState('');
@@ -361,6 +371,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 value={pageInfo.limit}
                 onChange={(e) => {
                   const newLimit = parseInt(e.target.value);
+                  localStorage.setItem('customerListPageSize', newLimit.toString());
                   setSearchParams(prev => ({ ...prev, limit: newLimit, page: 1 }));
                 }}
                 className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
