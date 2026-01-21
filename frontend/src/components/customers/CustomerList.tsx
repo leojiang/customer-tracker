@@ -345,47 +345,46 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       </div>
 
       {/* Enhanced Pagination */}
-      {pageInfo.totalPages > 1 && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Results Info and Page Size Selector */}
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-700">
-              {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="pageSize" className="text-sm text-gray-700">
-                {t('customers.show')}
-              </label>
-              <select
-                id="pageSize"
-                value={pageInfo.limit}
-                onChange={(e) => {
-                  const newLimit = parseInt(e.target.value);
-                  setSearchParams(prev => ({ ...prev, limit: newLimit, page: 1 }));
-                }}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
-            </div>
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Results Info and Page Size Selector */}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-700">
+            {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
           </div>
-
-          {/* Pagination Controls */}
           <div className="flex items-center gap-2">
-            {/* First Page Button */}
-            <button
-              onClick={() => handlePageChange(1)}
-              disabled={pageInfo.page === 1}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              title={t('approvals.firstPage')}
+            <label htmlFor="pageSize" className="text-sm text-gray-700">
+              {t('customers.show')}
+            </label>
+            <select
+              id="pageSize"
+              value={pageInfo.limit}
+              onChange={(e) => {
+                const newLimit = parseInt(e.target.value);
+                setSearchParams(prev => ({ ...prev, limit: newLimit, page: 1 }));
+              }}
+              className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <ChevronLeft size={16} />
-              <ChevronLeft size={16} className="-ml-1" />
-            </button>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
+          </div>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex items-center gap-2">
+          {/* First Page Button */}
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={pageInfo.page === 1}
+            className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            title={t('approvals.firstPage')}
+          >
+            <ChevronLeft size={16} />
+            <ChevronLeft size={16} className="-ml-1" />
+          </button>
 
             {/* Previous Page Button */}
             <button
@@ -439,7 +438,6 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
             </button>
           </div>
         </div>
-      )}
       </div>
       </div>
     </div>
