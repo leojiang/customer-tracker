@@ -60,7 +60,7 @@ public class Customer {
   private String businessRequirements;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "business_type")
+  @Column(name = "certificate_type")
   private CertificateType certificateType;
 
   private Integer age;
