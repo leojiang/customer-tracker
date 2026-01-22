@@ -31,6 +31,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     certificateIssuer?: string;
     customerAgent?: string;
     page?: number;
+    pageSize?: number;
   }
 
   const loadStoredFilters = (): StoredFilters | null => {
@@ -74,13 +75,14 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const initialSelectedStatus = storedFilters?.selectedStatus || '';
   const initialCertificateIssuer = storedFilters?.certificateIssuer || '';
   const initialCustomerAgent = storedFilters?.customerAgent || '';
+  const initialPageSize = storedFilters?.pageSize || 20;
 
   // Initialize search params with stored filters
   const isInitialSearchPhone = isPhoneNumber(initialSearchTerm);
 
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: storedFilters?.page || 1,
-    limit: 20,
+    limit: initialPageSize,
     q: !isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     phone: isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     status: initialSelectedStatus ? initialSelectedStatus as CustomerStatus : undefined,
@@ -95,7 +97,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     total: 0,
     totalPages: 0,
     page: storedFilters?.page || 1,
-    limit: 20,
+    limit: initialPageSize,
   });
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [certifiedStartDate, setCertifiedStartDate] = useState(initialCertifiedStartDate);
@@ -138,9 +140,10 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       certificateIssuer,
       customerAgent,
       page: searchParams.page,
+      pageSize: searchParams.limit,
     };
     saveFiltersToStorage(filters);
-  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page, saveFiltersToStorage, t]);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
 
   useEffect(() => {
     loadCustomers(searchParams);
