@@ -207,6 +207,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
+              {/* Name - with icon */}
               <div>
                 <label className="input-label flex items-center gap-2">
                   <User size={18} className="text-surface-500" />
@@ -229,9 +230,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
+              {/* Phone - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Phone size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Phone size={16} className="text-surface-500" />
                   {t('customers.form.phone')} *
                 </label>
                 <input
@@ -251,9 +253,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
+              {/* Company - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Building2 size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Building2 size={16} className="text-surface-500" />
                   {t('customers.form.company')}
                 </label>
                 <input
@@ -265,9 +268,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 />
               </div>
 
+              {/* Location - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <MapPin size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <MapPin size={16} className="text-surface-500" />
                   {t('customers.form.location')}
                 </label>
                 <div className="flex gap-2">
@@ -297,9 +301,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
+              {/* Price - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <DollarSign size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <DollarSign size={16} className="text-surface-500" />
                   {t('customers.form.price')}
                 </label>
                 <input
@@ -315,6 +320,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
             </div>
 
             <div className="space-y-6">
+              {/* Age */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('customers.form.age')}
@@ -337,6 +343,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
+              {/* Gender */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('customers.form.gender')}
@@ -353,9 +360,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 </select>
               </div>
 
+              {/* Education - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <GraduationCap size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <GraduationCap size={16} className="text-surface-500" />
                   {t('customers.form.education')}
                 </label>
                 <select
@@ -376,9 +384,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 </select>
               </div>
 
+              {/* Certificate Type - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Briefcase size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Briefcase size={16} className="text-surface-500" />
                   {t('customers.form.certificateType')}
                 </label>
                 <select
@@ -399,9 +408,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 </select>
               </div>
 
+              {/* Certified At - with icon */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar size={16} className="inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Calendar size={16} className="text-surface-500" />
                   {t('customers.form.certifiedAt')}
                 </label>
                 <input
