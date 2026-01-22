@@ -186,12 +186,6 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              {t('dashboard.admin.title')}
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {t('dashboard.admin.subtitle')}
-            </p>
           </div>
           <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
             <button
@@ -206,7 +200,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* KPI Cards */}
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title={t('dashboard.metrics.totalCustomers')}
             value={overview?.totalCustomers || 0}

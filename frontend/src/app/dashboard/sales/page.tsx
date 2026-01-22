@@ -168,12 +168,6 @@ export default function SalesDashboard() {
                 {t('dashboard.admin.backToCustomers')}
               </button>
             </div>
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              {t('dashboard.sales.title')}
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {t('dashboard.sales.subtitle')}
-            </p>
           </div>
           <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
             <button

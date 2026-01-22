@@ -61,12 +61,6 @@ function UserManagementPageContent() {
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              {t('userManagement.title')}
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {t('userManagement.subtitle')}
-            </p>
           </div>
           <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
             <button
@@ -75,9 +69,9 @@ function UserManagementPageContent() {
               disabled={isRefreshing}
               className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw 
-                size={16} 
-                className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} 
+              <RefreshCw
+                size={16}
+                className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
               />
               {isRefreshing ? t('nav.refreshing') : t('nav.refresh')}
             </button>

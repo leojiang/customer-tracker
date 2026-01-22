@@ -70,85 +70,91 @@ export default function HomePage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-surface-50">
-        {/* App Bar */}
-        <header className="bg-white shadow-md-1 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-md-2">
-                  <span className="text-white font-bold text-lg">CT</span>
-                </div>
-                <div>
-                  <h1 className="text-headline-5 text-surface-900">{t('app.customerTracker')}</h1>
-                  <p className="text-body-2 text-surface-600">{t('app.professionalCRM')}</p>
-                </div>
+      <div className="min-h-screen bg-surface-50 flex">
+        {/* Left Sidebar */}
+        <aside className="w-64 bg-white shadow-md-2 fixed h-full z-50 flex flex-col">
+          {/* Logo and Brand */}
+          <div className="p-6 border-b border-surface-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-md-2">
+                <span className="text-white font-bold text-lg">CT</span>
               </div>
-              
-              {/* Navigation and User Info */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => handleNavigation('list')}
-                  className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
-                    currentView === 'list' 
-                      ? 'bg-primary-100 text-primary-700 border border-primary-200' 
-                      : 'btn-outline'
-                  }`}
-                >
-                  <Users size={16} />
-                  {t('nav.customers')}
-                </button>
-                
-                {user?.role !== 'CUSTOMER_AGENT' && (
-                  <button
-                    onClick={() => handleNavigation('dashboard')}
-                    className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
-                      currentView === 'dashboard'
-                        ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                        : 'btn-outline'
-                    }`}
-                  >
-                    <BarChart3 size={16} />
-                    {t('nav.dashboard')}
-                  </button>
-                )}
-                
-                {user?.role === 'ADMIN' && (
-                  <button
-                    onClick={() => handleNavigation('user-approvals')}
-                    className={`flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors ${
-                      currentView === 'user-approvals' 
-                        ? 'bg-primary-100 text-primary-700 border border-primary-200' 
-                        : 'btn-outline'
-                    }`}
-                  >
-                    <UserCheck size={16} />
-                    {t('nav.userManagement')}
-                  </button>
-                )}
-
-                {/* Settings button - clickable user phone */}
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="flex items-center gap-2 px-3 py-2 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
-                >
-                  {user?.role === 'ADMIN' ? (
-                    <Shield size={16} className="text-primary-600" />
-                  ) : (
-                    <User size={16} className="text-surface-600" />
-                  )}
-                  <span className="text-sm font-medium text-surface-700">
-                    {user?.phone} {user?.role === 'ADMIN' && t('app.admin')}
-                  </span>
-                  <Settings size={14} className="text-surface-500" />
-                </button>
+              <div>
+                <h1 className="text-headline-5 text-surface-900">{t('app.customerTracker')}</h1>
               </div>
             </div>
           </div>
-        </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+          {/* Navigation Menu */}
+          <nav className="flex-1 p-4 space-y-2">
+            <button
+              onClick={() => handleNavigation('list')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                currentView === 'list'
+                  ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                  : 'text-surface-700 hover:bg-surface-100'
+              }`}
+            >
+              <Users size={20} />
+              <span className="font-medium">{t('nav.customers')}</span>
+            </button>
+
+            {user?.role !== 'CUSTOMER_AGENT' && (
+              <button
+                onClick={() => handleNavigation('dashboard')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  currentView === 'dashboard'
+                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                    : 'text-surface-700 hover:bg-surface-100'
+                }`}
+              >
+                <BarChart3 size={20} />
+                <span className="font-medium">{t('nav.dashboard')}</span>
+              </button>
+            )}
+
+            {user?.role === 'ADMIN' && (
+              <button
+                onClick={() => handleNavigation('user-approvals')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  currentView === 'user-approvals'
+                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                    : 'text-surface-700 hover:bg-surface-100'
+                }`}
+              >
+                <UserCheck size={20} />
+                <span className="font-medium">{t('nav.userManagement')}</span>
+              </button>
+            )}
+          </nav>
+
+          {/* User Info Section at Bottom */}
+          <div className="p-4 border-t border-surface-200">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+            >
+              {user?.role === 'ADMIN' ? (
+                <Shield size={20} className="text-primary-600" />
+              ) : (
+                <User size={20} className="text-surface-600" />
+              )}
+              <div className="flex-1 text-left">
+                <div className="text-sm font-medium text-surface-700">
+                  {user?.phone}
+                </div>
+                {user?.role === 'ADMIN' && (
+                  <div className="text-xs text-surface-500">{t('app.admin')}</div>
+                )}
+              </div>
+              <Settings size={16} className="text-surface-500" />
+            </button>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex-1 ml-64">
+          <main className="p-8">
         {currentView === 'list' && (
           <CustomerList 
             key={refreshTrigger}
