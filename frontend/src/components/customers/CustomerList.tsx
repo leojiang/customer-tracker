@@ -22,7 +22,18 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   // Helper functions for localStorage
   const STORAGE_KEY = 'customerListFilters';
 
-  const loadStoredFilters = () => {
+  interface StoredFilters {
+    searchTerm?: string;
+    certifiedStartDate?: string;
+    certifiedEndDate?: string;
+    selectedCertificateType?: string;
+    selectedStatus?: string;
+    certificateIssuer?: string;
+    customerAgent?: string;
+    page?: number;
+  }
+
+  const loadStoredFilters = (): StoredFilters | null => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -34,7 +45,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     return null;
   };
 
-  const saveFiltersToStorage = (filters: any) => {
+  const saveFiltersToStorage = (filters: StoredFilters) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
     } catch (error) {
