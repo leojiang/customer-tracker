@@ -53,29 +53,57 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }
   }, []);
 
+  // Helper function to check if text is a phone number
+  const isPhoneNumber = (text: string): boolean => {
+    const phoneRegex = /^[\d+s\-()]+$/;
+    return phoneRegex.test(text.trim()) && text.replace(/\D/g, '').length >= 3;
+  };
+
   // Initialize state from localStorage or defaults
   const storedFilters = loadStoredFilters();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize filter values from stored filters
+  const initialSearchTerm = storedFilters?.searchTerm || '';
+  const initialCertifiedStartDate = storedFilters?.certifiedStartDate || '';
+  const initialCertifiedEndDate = storedFilters?.certifiedEndDate || '';
+  const initialSelectedCertificateType = storedFilters?.selectedCertificateType || '';
+  const initialSelectedStatus = storedFilters?.selectedStatus || '';
+  const initialCertificateIssuer = storedFilters?.certificateIssuer || '';
+  const initialCustomerAgent = storedFilters?.customerAgent || '';
+
+  // Initialize search params with stored filters
+  const isInitialSearchPhone = isPhoneNumber(initialSearchTerm);
+
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: storedFilters?.page || 1,
     limit: 20,
+    q: !isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
+    phone: isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
+    status: initialSelectedStatus ? initialSelectedStatus as CustomerStatus : undefined,
+    certificateType: initialSelectedCertificateType ? initialSelectedCertificateType as CertificateType : undefined,
+    certificateIssuer: initialCertificateIssuer.trim() || undefined,
+    customerAgent: initialCustomerAgent.trim() || undefined,
+    certifiedStartDate: initialCertifiedStartDate ? `${initialCertifiedStartDate}T00:00:00Z` : undefined,
+    certifiedEndDate: initialCertifiedEndDate ? `${initialCertifiedEndDate}T00:00:00Z` : undefined,
   });
+
   const [pageInfo, setPageInfo] = useState({
     total: 0,
     totalPages: 0,
     page: storedFilters?.page || 1,
     limit: 20,
   });
-  const [searchTerm, setSearchTerm] = useState(storedFilters?.searchTerm || '');
-  const [certifiedStartDate, setCertifiedStartDate] = useState(storedFilters?.certifiedStartDate || '');
-  const [certifiedEndDate, setCertifiedEndDate] = useState(storedFilters?.certifiedEndDate || '');
-  const [selectedCertificateType, setSelectedCertificateType] = useState(storedFilters?.selectedCertificateType || '');
-  const [selectedStatus, setSelectedStatus] = useState(storedFilters?.selectedStatus || '');
-  const [certificateIssuer, setCertificateIssuer] = useState(storedFilters?.certificateIssuer || '');
-  const [customerAgent, setCustomerAgent] = useState(storedFilters?.customerAgent || '');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+  const [certifiedStartDate, setCertifiedStartDate] = useState(initialCertifiedStartDate);
+  const [certifiedEndDate, setCertifiedEndDate] = useState(initialCertifiedEndDate);
+  const [selectedCertificateType, setSelectedCertificateType] = useState(initialSelectedCertificateType);
+  const [selectedStatus, setSelectedStatus] = useState(initialSelectedStatus);
+  const [certificateIssuer, setCertificateIssuer] = useState(initialCertificateIssuer);
+  const [customerAgent, setCustomerAgent] = useState(initialCustomerAgent);
 
   // Map language to date-fns locale
   const locale = language === 'zh-CN' ? zhCN : enUS;
@@ -117,11 +145,6 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   useEffect(() => {
     loadCustomers(searchParams);
   }, [searchParams, loadCustomers]);
-
-  const isPhoneNumber = (text: string): boolean => {
-    const phoneRegex = /^[\d+s\-()]+$/;
-    return phoneRegex.test(text.trim()) && text.replace(/\D/g, '').length >= 3;
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

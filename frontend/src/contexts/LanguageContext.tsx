@@ -833,7 +833,7 @@ const translations = {
     'customers.form.salesPerson.officer': '文员',
     'customers.form.salesPerson.customerAgent': '业务经理',
     'customers.form.customerAgent': '业务经理',
-    'customers.form.customerAgent.placeholder': '输入代理名称',
+    'customers.form.customerAgent.placeholder': '输入经理名字',
     'customers.detail.statusManagement': '状态管理',
     'customers.detail.updateStatus': '更新状态',
     'customers.detail.updating': '更新中...',
