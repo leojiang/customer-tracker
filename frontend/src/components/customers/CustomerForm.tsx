@@ -25,7 +25,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   const [formData, setFormData] = useState<CreateCustomerRequest>({
     name: '',
     phone: '',
-    company: '',
+    certificateIssuer: '',
     businessRequirements: '',
     certificateType: undefined as CertificateType | undefined,
     age: undefined,
@@ -34,6 +34,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     location: '',
     price: undefined,
     currentStatus: CustomerStatus.CUSTOMER_CALLED,
+    customerAgent: '',
     certifiedAt: undefined,
   });
   const [loading, setLoading] = useState(false);
@@ -44,30 +45,30 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Clear previous errors
     setError(null);
     setFieldErrors({});
-    
+
     // Validate required fields
     const nameValidation = validateName(formData.name);
     const phoneValidation = validatePhoneNumber(formData.phone);
     const ageValidation = validateAge(formData.age);
-    
+
     const newFieldErrors: Record<string, string> = {};
-    
+
     if (!nameValidation.isValid) {
       newFieldErrors.name = nameValidation.message!;
     }
-    
+
     if (!phoneValidation.isValid) {
       newFieldErrors.phone = phoneValidation.message!;
     }
-    
+
     if (!ageValidation.isValid) {
       newFieldErrors.age = ageValidation.message!;
     }
-    
+
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       return;
@@ -76,18 +77,18 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     try {
       setLoading(true);
       setError(null);
-      
+
       const cleanedData: CreateCustomerRequest = {
         ...formData,
         phone: formatPhoneNumber(formData.phone), // Format phone number
-        company: formData.company?.trim() || undefined,
+        certificateIssuer: formData.certificateIssuer?.trim() || undefined,
         businessRequirements: formData.businessRequirements?.trim() || undefined,
         certificateType: formData.certificateType,
         education: formData.education,
         gender: formData.gender?.trim() || undefined,
         location: selectedLocation ? `${selectedLocation.address} (${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)})` : formData.location?.trim() || undefined,
       };
-      
+
       await customerApi.createCustomer(cleanedData);
       onSuccess();
     } catch (err) {
@@ -99,12 +100,12 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
   const handleInputChange = (field: keyof CreateCustomerRequest, value: string | number | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear errors when user starts typing
     if (error) {
       setError(null);
     }
-    
+
     // Clear field-specific errors
     if (fieldErrors[field]) {
       setFieldErrors(prev => {
@@ -117,7 +118,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
   const validateField = (field: keyof CreateCustomerRequest, value: string | number | undefined) => {
     let validation;
-    
+
     switch (field) {
       case 'name':
         validation = validateName(value as string);
@@ -131,7 +132,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
       default:
         return;
     }
-    
+
     if (!validation.isValid) {
       setFieldErrors(prev => ({ ...prev, [field]: validation.message! }));
     } else {
@@ -189,7 +190,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">{t('customers.form.createCustomer')}</h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
@@ -207,10 +208,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              {/* Name - with icon */}
+              {/* Name */}
               <div>
-                <label className="input-label flex items-center gap-2">
-                  <User size={18} className="text-surface-500" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <User size={16} className="text-surface-500" />
                   {t('customers.form.name')} *
                 </label>
                 <input
@@ -230,7 +231,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
-              {/* Phone - with icon */}
+              {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <Phone size={16} className="text-surface-500" />
@@ -253,22 +254,37 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
-              {/* Company - with icon */}
+              {/* Customer Agent */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                  <Building2 size={16} className="text-surface-500" />
-                  {t('customers.form.company')}
+                  <User size={16} className="text-surface-500" />
+                  {t('customers.form.customerAgent')}
                 </label>
                 <input
                   type="text"
-                  value={formData.company}
-                  onChange={(e) => handleInputChange('company', e.target.value)}
+                  value={formData.customerAgent || ''}
+                  onChange={(e) => handleInputChange('customerAgent', e.target.value)}
                   className="input-field"
-                  placeholder={t('customers.form.company')}
+                  placeholder={t('customers.form.customerAgent.placeholder')}
                 />
               </div>
 
-              {/* Location - with icon */}
+              {/* Certificate Issuer */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Building2 size={16} className="text-surface-500" />
+                  {t('customers.form.certificateIssuer')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.certificateIssuer}
+                  onChange={(e) => handleInputChange('certificateIssuer', e.target.value)}
+                  className="input-field"
+                  placeholder={t('customers.form.certificateIssuer')}
+                />
+              </div>
+
+              {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <MapPin size={16} className="text-surface-500" />
@@ -301,7 +317,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
-              {/* Price - with icon */}
+              {/* Price */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <DollarSign size={16} className="text-surface-500" />
@@ -322,7 +338,8 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
             <div className="space-y-6">
               {/* Age */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Calendar size={16} className="text-surface-500" />
                   {t('customers.form.age')}
                 </label>
                 <input
@@ -345,7 +362,8 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
               {/* Gender */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <User size={16} className="text-surface-500" />
                   {t('customers.form.gender')}
                 </label>
                 <select
@@ -358,9 +376,11 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   <option value="female">{t('customers.form.gender.female')}</option>
                   <option value="other">{t('customers.form.gender.other')}</option>
                 </select>
+                {/* Placeholder to maintain alignment with Phone field */}
+                <div className="h-1"></div>
               </div>
 
-              {/* Education - with icon */}
+              {/* Education */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <GraduationCap size={16} className="text-surface-500" />
@@ -382,9 +402,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                     </option>
                   ))}
                 </select>
+                <div className="h-1"></div>
               </div>
 
-              {/* Certificate Type - with icon */}
+              {/* Certificate Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <Briefcase size={16} className="text-surface-500" />
@@ -406,9 +427,11 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                     </option>
                   ))}
                 </select>
+                {/* Placeholder to maintain alignment with Location field */}
+                <div className="h-1"></div>
               </div>
 
-              {/* Certified At - with icon */}
+              {/* Certified At */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <Calendar size={16} className="text-surface-500" />
@@ -439,16 +462,16 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
           </div>
 
           <div className="divider"></div>
-          
+
           <div className="flex flex-col sm:flex-row justify-end gap-4">
-            <button 
+            <button
               type="button"
               onClick={onClose}
               className="btn-secondary flex items-center justify-center gap-3 sm:w-auto"
             >
               {t('customers.form.cancel')}
             </button>
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="btn-primary flex items-center justify-center gap-3 sm:w-auto"

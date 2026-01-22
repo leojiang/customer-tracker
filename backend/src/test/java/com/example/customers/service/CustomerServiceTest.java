@@ -45,7 +45,7 @@ class CustomerServiceTest {
     testCustomer.setId(testCustomerId);
     testCustomer.setName("John Doe");
     testCustomer.setPhone("+1234567890");
-    testCustomer.setCompany("Test Company");
+    testCustomer.setCertificateIssuer("Test Certificate Issuer");
     testCustomer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
     testCustomer.setCreatedAt(ZonedDateTime.now());
     testCustomer.setUpdatedAt(ZonedDateTime.now());
@@ -130,7 +130,7 @@ class CustomerServiceTest {
     Customer updateData = new Customer();
     updateData.setName("Updated Name");
     updateData.setPhone("+1111111111");
-    updateData.setCompany("Updated Company");
+    updateData.setCertificateIssuer("Updated Certificate Issuer");
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerRepository.findByPhoneIncludingDeleted("+1111111111"))
@@ -147,7 +147,7 @@ class CustomerServiceTest {
     verify(customerRepository).save(testCustomer);
     assertEquals("Updated Name", testCustomer.getName());
     assertEquals("+1111111111", testCustomer.getPhone());
-    assertEquals("Updated Company", testCustomer.getCompany());
+    assertEquals("Updated Certificate Issuer", testCustomer.getCertificateIssuer());
   }
 
   @Test

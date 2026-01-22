@@ -71,7 +71,7 @@ class CustomerControllerTest {
     testCustomer.setId(testCustomerId);
     testCustomer.setName("John Doe");
     testCustomer.setPhone("1234567890");
-    testCustomer.setCompany("Test Company");
+    testCustomer.setCertificateIssuer("Test Certificate Issuer");
     testCustomer.setBusinessRequirements("Need CRM solution");
     testCustomer.setCertificateType(CertificateType.ELECTRICIAN);
     testCustomer.setAge(30);
@@ -217,7 +217,7 @@ class CustomerControllerTest {
         new CustomerController.CreateCustomerRequest();
     request.setName("Jane Smith");
     request.setPhone("9876543210");
-    request.setCompany("New Company");
+    request.setCertificateIssuer("New Certificate Issuer");
     request.setBusinessRequirements("Need inventory system");
     request.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
 
@@ -267,7 +267,7 @@ class CustomerControllerTest {
         new CustomerController.UpdateCustomerRequest();
     request.setName("Updated Name");
     request.setPhone("1111111111");
-    request.setCompany("Updated Company");
+    request.setCertificateIssuer("Updated Certificate Issuer");
 
     Customer updatedCustomer = new Customer();
     updatedCustomer.setId(testCustomerId);

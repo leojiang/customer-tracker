@@ -54,7 +54,8 @@ public class Customer {
   @Column(nullable = false, unique = true)
   private String phone;
 
-  private String company;
+  @Column(name = "certificate_issuer")
+  private String certificateIssuer;
 
   @Column(name = "business_requirements")
   private String businessRequirements;
@@ -82,6 +83,9 @@ public class Customer {
 
   @Column(name = "sales_phone")
   private String salesPhone;
+
+  @Column(name = "customer_agent")
+  private String customerAgent;
 
   @Column(name = "certified_at")
   private ZonedDateTime certifiedAt;
@@ -147,12 +151,12 @@ public class Customer {
     this.phone = phone;
   }
 
-  public String getCompany() {
-    return company;
+  public String getCertificateIssuer() {
+    return certificateIssuer;
   }
 
-  public void setCompany(String company) {
-    this.company = company;
+  public void setCertificateIssuer(String certificateIssuer) {
+    this.certificateIssuer = certificateIssuer;
   }
 
   public String getBusinessRequirements() {
@@ -259,6 +263,14 @@ public class Customer {
     this.salesPhone = salesPhone;
   }
 
+  public String getCustomerAgent() {
+    return customerAgent;
+  }
+
+  public void setCustomerAgent(String customerAgent) {
+    this.customerAgent = customerAgent;
+  }
+
   public ZonedDateTime getCertifiedAt() {
     return certifiedAt;
   }
@@ -291,8 +303,8 @@ public class Customer {
         + ", phone='"
         + phone
         + '\''
-        + ", company='"
-        + company
+        + ", certificateIssuer='"
+        + certificateIssuer
         + '\''
         + ", currentStatus="
         + currentStatus

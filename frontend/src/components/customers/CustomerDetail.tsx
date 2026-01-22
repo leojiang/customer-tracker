@@ -30,7 +30,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   const [editForm, setEditForm] = useState<UpdateCustomerRequest>({
     name: '',
     phone: '',
-    company: '',
+    certificateIssuer: '',
     businessRequirements: '',
     certificateType: undefined,
     age: undefined,
@@ -38,6 +38,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     gender: '',
     location: '',
     price: undefined,
+    customerAgent: '',
     certifiedAt: undefined,
   });
   const [statusTransition, setStatusTransition] = useState<StatusTransitionRequest>({
@@ -84,7 +85,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       setEditForm({
         name: data.name,
         phone: data.phone,
-        company: data.company || '',
+        certificateIssuer: data.certificateIssuer || '',
         businessRequirements: data.businessRequirements || '',
         certificateType: data.certificateType,
         age: data.age,
@@ -92,6 +93,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         gender: data.gender || '',
         location: data.location || '',
         price: data.price,
+        customerAgent: data.customerAgent || '',
         certifiedAt: data.certifiedAt,
       });
       // Load valid transitions after customer is loaded
@@ -116,7 +118,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       setEditForm({
         name: customer.name,
         phone: customer.phone,
-        company: customer.company || '',
+        certificateIssuer: customer.certificateIssuer || '',
         businessRequirements: customer.businessRequirements || '',
         certificateType: customer.certificateType,
         age: customer.age,
@@ -124,6 +126,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         gender: customer.gender || '',
         location: customer.location || '',
         price: customer.price,
+        customerAgent: customer.customerAgent || '',
         certifiedAt: customer.certifiedAt,
       });
     }
@@ -133,7 +136,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
   const handleEditFormChange = (field: keyof UpdateCustomerRequest, value: string | number | undefined) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear field-specific errors
     if (fieldErrors[field]) {
       setFieldErrors(prev => {
@@ -146,7 +149,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
   const validateEditField = (field: keyof UpdateCustomerRequest, value: string | number | undefined) => {
     let validation;
-    
+
     switch (field) {
       case 'name':
         validation = validateName(value as string);
@@ -160,7 +163,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       default:
         return;
     }
-    
+
     if (!validation.isValid) {
       setFieldErrors(prev => ({ ...prev, [field]: validation.message! }));
     } else {
@@ -189,44 +192,44 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     if (!customer) {
       return;
     }
-    
+
     // Clear previous errors
     setError(null);
     setFieldErrors({});
-    
+
     // Validate required fields
     const nameValidation = validateName(editForm.name);
     const phoneValidation = validatePhoneNumber(editForm.phone);
     const ageValidation = validateAge(editForm.age);
-    
+
     const newFieldErrors: Record<string, string> = {};
-    
+
     if (!nameValidation.isValid) {
       newFieldErrors.name = nameValidation.message!;
     }
-    
+
     if (!phoneValidation.isValid) {
       newFieldErrors.phone = phoneValidation.message!;
     }
-    
+
     if (!ageValidation.isValid) {
       newFieldErrors.age = ageValidation.message!;
     }
-    
+
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       return;
     }
-    
+
     try {
       setUpdating(true);
-      
+
       // Format phone number before sending
       const cleanedForm = {
         ...editForm,
         phone: formatPhoneNumber(editForm.phone)
       };
-      
+
       const updatedCustomer = await customerApi.updateCustomer(customer.id, cleanedForm);
       setCustomer(updatedCustomer);
       setIsEditing(false);
@@ -241,18 +244,18 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     if (!customer) {
       return;
     }
-    
+
     try {
       setUpdating(true);
       const updatedCustomer = await customerApi.transitionStatus(customer.id, statusTransition);
       // Status updated successfully
-      
+
       // Update customer state immediately
       setCustomer(updatedCustomer);
-      
+
       // Also re-fetch to ensure we have the latest data
       await loadCustomer();
-      
+
       setShowStatusModal(false);
       setStatusTransition({ toStatus: CustomerStatus.CUSTOMER_CALLED, reason: '' });
       // Trigger history refresh
@@ -378,15 +381,11 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <button onClick={onBack} className="btn-secondary flex items-center gap-3 sm:w-auto">
+      <div className="flex items-center">
+        <button onClick={onBack} className="btn-secondary flex items-center gap-3">
           <ArrowLeft size={20} />
           {t('customers.detail.back')}
         </button>
-        <div className="flex-1">
-          <h1 className="text-headline-2 mb-1">{t('customers.detail.customerDetails')}</h1>
-          <p className="text-body-2">{t('customers.detail.customerDetails')}</p>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-stretch">
@@ -416,11 +415,13 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       )}
                     </div>
                   ) : (
-                    <h2 className="text-headline-3 mb-3">{customer.name}</h2>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h2 className="text-headline-3">{customer.name}</h2>
+                      <StatusBadge key={customer.currentStatus} status={customer.currentStatus} />
+                    </div>
                   )}
-                  <StatusBadge key={customer.currentStatus} status={customer.currentStatus} />
                 </div>
-              
+
                 <div className="flex flex-col sm:flex-row gap-3">
                   {isEditing ? (
                     <>
@@ -494,19 +495,19 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
                   <div>
                     <label className="input-label flex items-center gap-2">
-                      <Building2 size={18} className="text-surface-500" />
-                      {t('customers.form.company')}
+                      <User size={18} className="text-surface-500" />
+                      {t('customers.form.customerAgent')}
                     </label>
                     {isEditing ? (
                       <input
                         type="text"
-                        value={editForm.company}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, company: e.target.value }))}
+                        value={editForm.customerAgent}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, customerAgent: e.target.value }))}
                         className="input-field"
-                        placeholder={t('customers.form.company')}
+                        placeholder={t('customers.form.customerAgent.placeholder')}
                       />
                     ) : (
-                      <p className="text-body-1">{customer.company || <span className="text-surface-400 italic">{t('customers.form.company')}</span>}</p>
+                      <p className="text-body-1">{customer.customerAgent || <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}</p>
                     )}
                   </div>
 
@@ -515,7 +516,34 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       <UserCircle size={18} className="text-surface-500" />
                       {t('customers.form.salesPerson')}
                     </label>
-                    <p className="text-body-1">{getSalesPersonDisplayName(customer.salesPhone || '')}</p>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={getSalesPersonDisplayName(customer.salesPhone || '')}
+                        className="input-field"
+                        readOnly
+                      />
+                    ) : (
+                      <p className="text-body-1">{getSalesPersonDisplayName(customer.salesPhone || '')}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <Building2 size={18} className="text-surface-500" />
+                      {t('customers.form.certificateIssuer')}
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editForm.certificateIssuer}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, certificateIssuer: e.target.value }))}
+                        className="input-field"
+                        placeholder={t('customers.form.certificateIssuer')}
+                      />
+                    ) : (
+                      <p className="text-body-1">{customer.certificateIssuer || <span className="text-surface-400 italic">{t('customers.form.certificateIssuer')}</span>}</p>
+                    )}
                   </div>
 
                   <div>
@@ -538,44 +566,6 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
                   <div>
                     <label className="input-label flex items-center gap-2">
-                      <MapPin size={18} className="text-surface-500" />
-                      {t('customers.form.location')}
-                    </label>
-                    {isEditing ? (
-                      <div>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={editForm.location}
-                            onChange={(e) => handleEditFormChange('location', e.target.value)}
-                            className="input-field flex-1"
-                            placeholder={t('customers.form.location')}
-                            readOnly
-                          />
-                          <button
-                            type="button"
-                            onClick={handleOpenMapPicker}
-                            className="btn-outline flex items-center gap-2 px-3"
-                          >
-                            <MapPin size={16} />
-                            {t('map.location')}
-                          </button>
-                        </div>
-                        {selectedLocation && (
-                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                            <strong>{t('map.selectedLocation')}:</strong> {selectedLocation.address}
-                            <br />
-                            <span className="text-xs">{t('map.location')}: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}</span>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-body-1">{customer.location || <span className="text-surface-400 italic">{t('customers.form.location')}</span>}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="input-label flex items-center gap-2">
                       <DollarSign size={18} className="text-surface-500" />
                       {t('customers.form.price')}
                     </label>
@@ -591,8 +581,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       />
                     ) : (
                       <p className="text-body-1">
-                        {customer.price !== undefined && customer.price !== null 
-                          ? `$${customer.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                        {customer.price !== undefined && customer.price !== null
+                          ? `$${customer.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                           : <span className="text-surface-400 italic">{t('customers.form.price')}</span>
                         }
                       </p>
@@ -653,6 +643,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         {customer.education ? getTranslatedEducationLevelName(customer.education, t) : <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}
                       </p>
                     )}
+                  <div className="h-1"></div>
                   </div>
 
                   <div>
@@ -673,6 +664,45 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       </select>
                     ) : (
                       <p className="text-body-1">{getLocalizedGender(customer.gender) || <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}</p>
+                    )}
+                  <div className="h-1"></div>
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <MapPin size={18} className="text-surface-500" />
+                      {t('customers.form.location')}
+                    </label>
+                    {isEditing ? (
+                      <div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editForm.location}
+                            onChange={(e) => handleEditFormChange('location', e.target.value)}
+                            className="input-field flex-1"
+                            placeholder={t('customers.form.location')}
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            onClick={handleOpenMapPicker}
+                            className="btn-outline flex items-center gap-2 px-3"
+                          >
+                            <MapPin size={16} />
+                            {t('map.location')}
+                          </button>
+                        </div>
+                        {selectedLocation && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                            <strong>{t('map.selectedLocation')}:</strong> {selectedLocation.address}
+                            <br />
+                            <span className="text-xs">{t('map.location')}: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-body-1">{customer.location || <span className="text-surface-400 italic">{t('customers.form.location')}</span>}</p>
                     )}
                   </div>
 
@@ -707,6 +737,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         )}
                       </p>
                     )}
+                    <div className="h-1"></div>
                   </div>
 
                   <div>
@@ -739,7 +770,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
             </div>
             <div className="card-content">
               {availableTransitions.length > 0 ? (
-                <button 
+                <button
                   onClick={() => {
                     if (availableTransitions.length > 0) {
                       setStatusTransition({
@@ -758,7 +789,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 <div className="text-center py-6">
                   <div className="text-body-2 text-surface-500 mb-2">{t('customers.detail.noTransitionsAvailable')}</div>
                   <p className="text-caption text-surface-400">
-                    {customer.currentStatus === 'BUSINESS_DONE' 
+                    {customer.currentStatus === 'BUSINESS_DONE'
                       ? t('customers.detail.businessComplete')
                       : t('customers.detail.loadingTransitions')}
                   </p>
@@ -783,7 +814,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 {t('customers.detail.updateStatus')}
               </h3>
             </div>
-            
+
             <div className="card-content space-y-6">
               <div>
                 <label className="input-label">
@@ -819,7 +850,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
             <div className="card-content pt-0">
               <div className="divider mb-6"></div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button 
+                <button
                   onClick={handleStatusTransition}
                   disabled={updating}
                   className="btn-primary flex items-center justify-center gap-3 flex-1"
@@ -827,7 +858,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <ArrowLeft className="rotate-90" size={18} />
                   {updating ? t('customers.detail.updating') : t('customers.detail.updateStatus')}
                 </button>
-                <button 
+                <button
                   onClick={() => setShowStatusModal(false)}
                   className="btn-secondary flex items-center justify-center gap-3 flex-1"
                 >

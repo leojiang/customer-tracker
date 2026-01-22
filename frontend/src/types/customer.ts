@@ -103,7 +103,7 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
-  company?: string;
+  certificateIssuer?: string;
   businessRequirements?: string;
   certificateType?: CertificateType;
   age?: number;
@@ -113,6 +113,7 @@ export interface Customer {
   price?: number;
   currentStatus: CustomerStatus;
   salesPhone?: string;
+  customerAgent?: string;
   certifiedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -132,7 +133,7 @@ export interface StatusHistory {
 export interface CreateCustomerRequest {
   name: string;
   phone: string;
-  company?: string;
+  certificateIssuer?: string;
   businessRequirements?: string;
   certificateType?: CertificateType;
   age?: number;
@@ -141,13 +142,14 @@ export interface CreateCustomerRequest {
   location?: string;
   price?: number;
   currentStatus?: CustomerStatus;
+  customerAgent?: string;
   certifiedAt?: string;
 }
 
 export interface UpdateCustomerRequest {
   name: string;
   phone: string;
-  company?: string;
+  certificateIssuer?: string;
   businessRequirements?: string;
   certificateType?: CertificateType;
   age?: number;
@@ -155,6 +157,7 @@ export interface UpdateCustomerRequest {
   gender?: string;
   location?: string;
   price?: number;
+  customerAgent?: string;
   certifiedAt?: string;
 }
 

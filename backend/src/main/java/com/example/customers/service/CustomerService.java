@@ -115,7 +115,7 @@ public class CustomerService {
     // Update fields (preserve system fields)
     existingCustomer.setName(updatedCustomer.getName());
     existingCustomer.setPhone(updatedCustomer.getPhone());
-    existingCustomer.setCompany(updatedCustomer.getCompany());
+    existingCustomer.setCertificateIssuer(updatedCustomer.getCertificateIssuer());
     existingCustomer.setBusinessRequirements(updatedCustomer.getBusinessRequirements());
     existingCustomer.setCertificateType(updatedCustomer.getCertificateType());
     existingCustomer.setAge(updatedCustomer.getAge());
@@ -124,6 +124,7 @@ public class CustomerService {
     existingCustomer.setLocation(updatedCustomer.getLocation());
     existingCustomer.setPrice(updatedCustomer.getPrice());
     existingCustomer.setCertifiedAt(updatedCustomer.getCertifiedAt());
+    existingCustomer.setCustomerAgent(updatedCustomer.getCustomerAgent());
 
     return customerRepository.save(existingCustomer);
   }

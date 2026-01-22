@@ -126,8 +126,16 @@ public class CustomerController {
       limit = 100; // Max limit as per plan
     }
 
-    // Convert to 0-based page for Spring Data - always sort by certified date DESC
-    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").descending());
+    // Determine sort order based on whether certificate time range is specified
+    Pageable pageable;
+    if ((certifiedStartDate != null && !certifiedStartDate.trim().isEmpty()) ||
+        (certifiedEndDate != null && !certifiedEndDate.trim().isEmpty())) {
+      // When certificate time range is specified, sort by certificate time DESC
+      pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").descending());
+    } else {
+      // Otherwise, sort by latest update time DESC
+      pageable = PageRequest.of(page - 1, limit, Sort.by("updatedAt").descending());
+    }
 
     // Get current user's sales phone for filtering (non-admin users can only see their own
     // customers)
@@ -190,7 +198,7 @@ public class CustomerController {
       Customer customer = new Customer();
       customer.setName(request.getName());
       customer.setPhone(request.getPhone());
-      customer.setCompany(request.getCompany());
+      customer.setCertificateIssuer(request.getCertificateIssuer());
       customer.setBusinessRequirements(request.getBusinessRequirements());
       customer.setCertificateType(request.getCertificateType());
       customer.setAge(request.getAge());
@@ -198,6 +206,7 @@ public class CustomerController {
       customer.setGender(request.getGender());
       customer.setLocation(request.getLocation());
       customer.setPrice(request.getPrice());
+      customer.setCustomerAgent(request.getCustomerAgent());
 
       if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
         try {
@@ -255,7 +264,7 @@ public class CustomerController {
       Customer customer = new Customer();
       customer.setName(request.getName());
       customer.setPhone(request.getPhone());
-      customer.setCompany(request.getCompany());
+      customer.setCertificateIssuer(request.getCertificateIssuer());
       customer.setBusinessRequirements(request.getBusinessRequirements());
       customer.setCertificateType(request.getCertificateType());
       customer.setAge(request.getAge());
@@ -263,6 +272,7 @@ public class CustomerController {
       customer.setGender(request.getGender());
       customer.setLocation(request.getLocation());
       customer.setPrice(request.getPrice());
+      customer.setCustomerAgent(request.getCustomerAgent());
 
       if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
         try {
@@ -505,7 +515,7 @@ public class CustomerController {
     @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
     private String phone;
 
-    private String company;
+    private String certificateIssuer;
     private String businessRequirements;
     private CertificateType certificateType;
     private Integer age;
@@ -515,6 +525,7 @@ public class CustomerController {
     private BigDecimal price;
     private CustomerStatus currentStatus;
     private String certifiedAt;
+    private String customerAgent;
 
     // Getters and setters
     public String getName() {
@@ -533,12 +544,12 @@ public class CustomerController {
       this.phone = phone;
     }
 
-    public String getCompany() {
-      return company;
+    public String getCertificateIssuer() {
+      return certificateIssuer;
     }
 
-    public void setCompany(String company) {
-      this.company = company;
+    public void setCertificateIssuer(String certificateIssuer) {
+      this.certificateIssuer = certificateIssuer;
     }
 
     public String getBusinessRequirements() {
@@ -612,6 +623,14 @@ public class CustomerController {
     public void setCertifiedAt(String certifiedAt) {
       this.certifiedAt = certifiedAt;
     }
+
+    public String getCustomerAgent() {
+      return customerAgent;
+    }
+
+    public void setCustomerAgent(String customerAgent) {
+      this.customerAgent = customerAgent;
+    }
   }
 
   /** Request DTO for updating customer information. */
@@ -623,7 +642,7 @@ public class CustomerController {
     @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
     private String phone;
 
-    private String company;
+    private String certificateIssuer;
     private String businessRequirements;
     private CertificateType certificateType;
     private Integer age;
@@ -632,6 +651,7 @@ public class CustomerController {
     private String location;
     private BigDecimal price;
     private String certifiedAt;
+    private String customerAgent;
 
     // Getters and setters
     public String getName() {
@@ -650,12 +670,12 @@ public class CustomerController {
       this.phone = phone;
     }
 
-    public String getCompany() {
-      return company;
+    public String getCertificateIssuer() {
+      return certificateIssuer;
     }
 
-    public void setCompany(String company) {
-      this.company = company;
+    public void setCertificateIssuer(String certificateIssuer) {
+      this.certificateIssuer = certificateIssuer;
     }
 
     public String getBusinessRequirements() {
@@ -720,6 +740,14 @@ public class CustomerController {
 
     public void setCertifiedAt(String certifiedAt) {
       this.certifiedAt = certifiedAt;
+    }
+
+    public String getCustomerAgent() {
+      return customerAgent;
+    }
+
+    public void setCustomerAgent(String customerAgent) {
+      this.customerAgent = customerAgent;
     }
   }
 
