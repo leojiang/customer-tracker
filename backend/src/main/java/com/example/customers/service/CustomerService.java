@@ -59,7 +59,7 @@ public class CustomerService {
 
     // Set default status if not provided
     if (customer.getCurrentStatus() == null) {
-      customer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
+      customer.setCurrentStatus(CustomerStatus.NEW);
     }
 
     Customer savedCustomer = customerRepository.save(customer);
@@ -189,10 +189,11 @@ public class CustomerService {
       String nameQuery,
       String phoneQuery,
       CustomerStatus status,
-      String company,
+      String certificateIssuer,
       String salesPhone,
       boolean includeDeleted,
       CertificateType certificateType,
+      String customerAgent,
       String certifiedStartDate,
       String certifiedEndDate,
       Pageable pageable) {
@@ -204,10 +205,11 @@ public class CustomerService {
             nameQuery,
             phoneQuery,
             status,
-            company,
+            certificateIssuer,
             salesPhone,
             includeDeleted,
             certificateType,
+            customerAgent,
             certifiedStartDate,
             certifiedEndDate);
 

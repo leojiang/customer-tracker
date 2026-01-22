@@ -186,9 +186,9 @@ public class AnalyticsService {
     long conversions =
         (salesPhone != null)
             ? customerRepository.countConversionsInPeriodBySales(
-                CustomerStatus.BUSINESS_DONE, salesPhone, startDate, ZonedDateTime.now())
+                CustomerStatus.CERTIFIED, salesPhone, startDate, ZonedDateTime.now())
             : customerRepository.countConversionsInPeriod(
-                CustomerStatus.BUSINESS_DONE, startDate, ZonedDateTime.now());
+                CustomerStatus.CERTIFIED, startDate, ZonedDateTime.now());
 
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
@@ -256,9 +256,9 @@ public class AnalyticsService {
     long conversionsToday =
         (salesPhone != null)
             ? customerRepository.countConversionsInPeriodBySales(
-                CustomerStatus.BUSINESS_DONE, salesPhone, startOfDay, now)
+                CustomerStatus.CERTIFIED, salesPhone, startOfDay, now)
             : customerRepository.countConversionsInPeriod(
-                CustomerStatus.BUSINESS_DONE, startOfDay, now);
+                CustomerStatus.CERTIFIED, startOfDay, now);
 
     String lastUpdated = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
@@ -283,9 +283,9 @@ public class AnalyticsService {
     long conversions =
         (salesPhone != null)
             ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-                CustomerStatus.BUSINESS_DONE, salesPhone)
+                CustomerStatus.CERTIFIED, salesPhone)
             : customerRepository.countByCurrentStatusAndDeletedAtIsNull(
-                CustomerStatus.BUSINESS_DONE);
+                CustomerStatus.CERTIFIED);
 
     return BigDecimal.valueOf(conversions)
         .multiply(BigDecimal.valueOf(100))

@@ -308,14 +308,14 @@ export default function SalesDashboard() {
               >
                 {t('dashboard.sales.viewAllCustomers')}
               </button>
-              <button 
-                onClick={() => router.push('/?status=CUSTOMER_CALLED')}
+              <button
+                onClick={() => router.push('/?status=NEW')}
                 className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >
                 {t('dashboard.sales.followUpCalls')}
               </button>
-              <button 
-                onClick={() => router.push('/?status=REPLIED_TO_CUSTOMER')}
+              <button
+                onClick={() => router.push('/?status=NOTIFIED')}
                 className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >
                 {t('dashboard.sales.pendingOrders')}

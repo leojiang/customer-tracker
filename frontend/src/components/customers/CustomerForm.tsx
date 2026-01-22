@@ -33,7 +33,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     gender: '',
     location: '',
     price: undefined,
-    currentStatus: CustomerStatus.CUSTOMER_CALLED,
+    currentStatus: CustomerStatus.NEW,
     customerAgent: '',
     certifiedAt: undefined,
   });

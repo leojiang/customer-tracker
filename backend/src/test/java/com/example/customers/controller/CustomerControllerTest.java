@@ -78,7 +78,7 @@ class CustomerControllerTest {
     testCustomer.setEducation(EducationLevel.BACHELOR);
     testCustomer.setGender("Male");
     testCustomer.setLocation("New York");
-    testCustomer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
+    testCustomer.setCurrentStatus(CustomerStatus.NEW);
     testCustomer.setSalesPhone("+9999999999"); // Match the mock authenticated user's phone
     testCustomer.setCreatedAt(ZonedDateTime.now());
     testCustomer.setUpdatedAt(ZonedDateTime.now());
@@ -98,6 +98,7 @@ class CustomerControllerTest {
             any(),
             any(),
             anyBoolean(),
+            any(),
             any(),
             any(),
             any(),
@@ -129,6 +130,7 @@ class CustomerControllerTest {
             eq(null),
             eq(null),
             eq(null),
+            eq(null),
             any(Pageable.class));
   }
 
@@ -142,10 +144,11 @@ class CustomerControllerTest {
     when(customerService.searchCustomers(
             eq("john"),
             eq("123"),
-            eq(CustomerStatus.CUSTOMER_CALLED),
+            eq(CustomerStatus.NEW),
             eq("test"),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             eq(null),
@@ -158,8 +161,8 @@ class CustomerControllerTest {
             get("/api/customers")
                 .param("q", "john")
                 .param("phone", "123")
-                .param("status", "CUSTOMER_CALLED")
-                .param("company", "test")
+                .param("status", "NEW")
+                .param("certificateIssuer", "test")
                 .param("includeDeleted", "false"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1));
@@ -168,10 +171,11 @@ class CustomerControllerTest {
         .searchCustomers(
             eq("john"),
             eq("123"),
-            eq(CustomerStatus.CUSTOMER_CALLED),
+            eq(CustomerStatus.NEW),
             eq("test"),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             eq(null),
@@ -192,7 +196,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.id").value(testCustomerId.toString()))
         .andExpect(jsonPath("$.name").value("John Doe"))
         .andExpect(jsonPath("$.phone").value("1234567890"))
-        .andExpect(jsonPath("$.currentStatus").value("CUSTOMER_CALLED"));
+        .andExpect(jsonPath("$.currentStatus").value("NEW"));
 
     verify(customerService).getCustomerById(testCustomerId);
   }
@@ -219,7 +223,7 @@ class CustomerControllerTest {
     request.setPhone("9876543210");
     request.setCertificateIssuer("New Certificate Issuer");
     request.setBusinessRequirements("Need inventory system");
-    request.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
+    request.setCurrentStatus(CustomerStatus.NEW);
 
     when(customerService.createCustomer(any(Customer.class), anyString())).thenReturn(testCustomer);
 
@@ -374,16 +378,16 @@ class CustomerControllerTest {
     // Given
     CustomerController.StatusTransitionRequest request =
         new CustomerController.StatusTransitionRequest();
-    request.setToStatus(CustomerStatus.REPLIED_TO_CUSTOMER);
+    request.setToStatus(CustomerStatus.NOTIFIED);
     request.setReason("Customer responded positively");
 
     Customer updatedCustomer = new Customer();
     updatedCustomer.setId(testCustomerId);
-    updatedCustomer.setCurrentStatus(CustomerStatus.REPLIED_TO_CUSTOMER);
+    updatedCustomer.setCurrentStatus(CustomerStatus.NOTIFIED);
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.transitionStatus(
-            testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER, "Customer responded positively"))
+            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively"))
         .thenReturn(updatedCustomer);
 
     // When & Then
@@ -394,11 +398,11 @@ class CustomerControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.currentStatus").value("REPLIED_TO_CUSTOMER"));
+        .andExpect(jsonPath("$.currentStatus").value("NOTIFIED"));
 
     verify(customerService)
         .transitionStatus(
-            testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER, "Customer responded positively");
+            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively");
   }
 
   @Test
@@ -407,12 +411,12 @@ class CustomerControllerTest {
     // Given
     CustomerController.StatusTransitionRequest request =
         new CustomerController.StatusTransitionRequest();
-    request.setToStatus(CustomerStatus.BUSINESS_DONE);
+    request.setToStatus(CustomerStatus.CERTIFIED);
     request.setReason("Invalid transition");
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.transitionStatus(
-            testCustomerId, CustomerStatus.BUSINESS_DONE, "Invalid transition"))
+            testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition"))
         .thenThrow(
             new IllegalArgumentException(
                 "Invalid transition from Customer called to Business done"));
@@ -426,7 +430,7 @@ class CustomerControllerTest {
         .andExpect(status().isBadRequest());
 
     verify(customerService)
-        .transitionStatus(testCustomerId, CustomerStatus.BUSINESS_DONE, "Invalid transition");
+        .transitionStatus(testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition");
   }
 
   @Test
@@ -435,11 +439,11 @@ class CustomerControllerTest {
     // Given
     List<StatusHistory> statusHistory =
         Arrays.asList(
-            createStatusHistory(testCustomer, null, CustomerStatus.CUSTOMER_CALLED, "Initial"),
+            createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"),
             createStatusHistory(
                 testCustomer,
-                CustomerStatus.CUSTOMER_CALLED,
-                CustomerStatus.REPLIED_TO_CUSTOMER,
+                CustomerStatus.NEW,
+                CustomerStatus.NOTIFIED,
                 "Responded"));
 
     Page<StatusHistory> statusHistoryPage = new PageImpl<>(statusHistory);
@@ -454,9 +458,9 @@ class CustomerControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(2))
-        .andExpect(jsonPath("$[0].toStatus").value("CUSTOMER_CALLED"))
-        .andExpect(jsonPath("$[1].fromStatus").value("CUSTOMER_CALLED"))
-        .andExpect(jsonPath("$[1].toStatus").value("REPLIED_TO_CUSTOMER"));
+        .andExpect(jsonPath("$[0].toStatus").value("NEW"))
+        .andExpect(jsonPath("$[1].fromStatus").value("NEW"))
+        .andExpect(jsonPath("$[1].toStatus").value("NOTIFIED"));
 
     verify(customerService).getCustomerStatusHistory(eq(testCustomerId), any(Pageable.class));
   }
@@ -466,7 +470,7 @@ class CustomerControllerTest {
   void shouldGetValidTransitionsSuccessfully() throws Exception {
     // Given
     Set<CustomerStatus> validTransitions =
-        Set.of(CustomerStatus.REPLIED_TO_CUSTOMER, CustomerStatus.LOST);
+        Set.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED);
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.getValidTransitions(testCustomerId)).thenReturn(validTransitions);
@@ -505,7 +509,7 @@ class CustomerControllerTest {
   void shouldValidateTransitionSuccessfully() throws Exception {
     // Given
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerService.isValidTransition(testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER))
+    when(customerService.isValidTransition(testCustomerId, CustomerStatus.NOTIFIED))
         .thenReturn(true);
 
     // When & Then
@@ -514,12 +518,12 @@ class CustomerControllerTest {
             get(
                 "/api/customers/{id}/can-transition-to/{status}",
                 testCustomerId,
-                "REPLIED_TO_CUSTOMER"))
+                "NOTIFIED"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.valid").value(true));
 
-    verify(customerService).isValidTransition(testCustomerId, CustomerStatus.REPLIED_TO_CUSTOMER);
+    verify(customerService).isValidTransition(testCustomerId, CustomerStatus.NOTIFIED);
   }
 
   @Test
@@ -527,18 +531,18 @@ class CustomerControllerTest {
   void shouldReturnInvalidTransitionValidation() throws Exception {
     // Given
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerService.isValidTransition(testCustomerId, CustomerStatus.BUSINESS_DONE))
+    when(customerService.isValidTransition(testCustomerId, CustomerStatus.CERTIFIED))
         .thenReturn(false);
 
     // When & Then
     mockMvc
         .perform(
-            get("/api/customers/{id}/can-transition-to/{status}", testCustomerId, "BUSINESS_DONE"))
+            get("/api/customers/{id}/can-transition-to/{status}", testCustomerId, "CERTIFIED"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.valid").value(false));
 
-    verify(customerService).isValidTransition(testCustomerId, CustomerStatus.BUSINESS_DONE);
+    verify(customerService).isValidTransition(testCustomerId, CustomerStatus.CERTIFIED);
   }
 
   @Test
@@ -548,8 +552,8 @@ class CustomerControllerTest {
     CustomerService.CustomerStatistics stats = new CustomerService.CustomerStatistics();
     stats.setTotalCustomers(10);
     stats.setRecentlyUpdatedCount(5);
-    stats.addStatusCount(CustomerStatus.CUSTOMER_CALLED, 3L);
-    stats.addStatusCount(CustomerStatus.REPLIED_TO_CUSTOMER, 2L);
+    stats.addStatusCount(CustomerStatus.NEW, 3L);
+    stats.addStatusCount(CustomerStatus.NOTIFIED, 2L);
 
     when(customerService.getCustomerStatistics(false)).thenReturn(stats);
 
@@ -605,6 +609,7 @@ class CustomerControllerTest {
             any(),
             any(),
             any(),
+            any(),
             any(Pageable.class)))
         .thenReturn(customerPage);
 
@@ -624,6 +629,7 @@ class CustomerControllerTest {
             any(),
             any(),
             eq(false),
+            eq(null),
             eq(null),
             eq(null),
             eq(null),

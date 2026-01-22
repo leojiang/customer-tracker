@@ -9,31 +9,42 @@ import org.springframework.stereotype.Component;
 /**
  * Validates customer status transitions according to business rules.
  *
- * <p>Business rules from docs/status_transition.md: - CUSTOMER_CALLED -> REPLIED_TO_CUSTOMER or
- * LOST - REPLIED_TO_CUSTOMER -> ORDER_PLACED or LOST - ORDER_PLACED -> PRODUCT_DELIVERED or
- * ORDER_CANCELLED - ORDER_CANCELLED -> ORDER_PLACED or LOST - PRODUCT_DELIVERED -> BUSINESS_DONE -
- * BUSINESS_DONE -> (terminal state, no transitions allowed) - LOST -> CUSTOMER_CALLED (restart
- * flow)
+ * <p>Business rules:
+ * <ul>
+ *   <li>NEW → Can transition to any status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)</li>
+ *   <li>NOTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
+ * CERTIFIED)</li>
+ *   <li>ABORTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
+ * CERTIFIED)</li>
+ *   <li>SUBMITTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
+ * CERTIFIED)</li>
+ *   <li>CERTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
+ * CERTIFIED)</li>
+ * </ul>
+ *
+ * <p>Key rule: Once a customer leaves NEW status, they can never return to NEW.
  */
 @Component
 public class StatusTransitionValidator {
 
+  // All non-NEW statuses - can transition to each other freely
+  private static final Set<CustomerStatus> NON_NEW_STATUSES =
+      EnumSet.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+          CustomerStatus.CERTIFIED);
+
   private static final Map<CustomerStatus, Set<CustomerStatus>> VALID_TRANSITIONS =
       Map.of(
-          CustomerStatus.CUSTOMER_CALLED,
-              EnumSet.of(CustomerStatus.REPLIED_TO_CUSTOMER, CustomerStatus.LOST),
-          CustomerStatus.REPLIED_TO_CUSTOMER,
-              EnumSet.of(CustomerStatus.ORDER_PLACED, CustomerStatus.LOST),
-          CustomerStatus.ORDER_PLACED,
-              EnumSet.of(CustomerStatus.PRODUCT_DELIVERED, CustomerStatus.ORDER_CANCELLED),
-          CustomerStatus.ORDER_CANCELLED,
-              EnumSet.of(CustomerStatus.ORDER_PLACED, CustomerStatus.LOST),
-          CustomerStatus.PRODUCT_DELIVERED, EnumSet.of(CustomerStatus.BUSINESS_DONE),
-          CustomerStatus.BUSINESS_DONE, EnumSet.noneOf(CustomerStatus.class), // Terminal state
-          CustomerStatus.LOST,
-              EnumSet.of(
-                  CustomerStatus.CUSTOMER_CALLED // Restart flow
-                  ));
+          CustomerStatus.NEW,
+              NON_NEW_STATUSES, // NEW can transition to all other statuses
+          CustomerStatus.NOTIFIED,
+              NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.ABORTED,
+              NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.SUBMITTED,
+              NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.CERTIFIED,
+              NON_NEW_STATUSES // Can transition to any non-NEW status
+          );
 
   /**
    * Validates if a status transition is allowed according to business rules.
@@ -89,11 +100,17 @@ public class StatusTransitionValidator {
       return String.format("Customer is already in status: %s", toStatus.getDisplayName());
     }
 
+    // Special error message for trying to return to NEW status
+    if (toStatus == CustomerStatus.NEW && fromStatus != CustomerStatus.NEW) {
+      return String.format(
+          "Cannot transition from %s to NEW. Once a customer leaves NEW status, they cannot return to it.",
+          fromStatus.getDisplayName());
+    }
+
     Set<CustomerStatus> validTransitions = getValidTransitions(fromStatus);
     if (validTransitions.isEmpty()) {
       return String.format(
-          "No status transitions are allowed from %s (terminal state)",
-          fromStatus.getDisplayName());
+          "No status transitions are allowed from %s", fromStatus.getDisplayName());
     }
 
     StringBuilder validOptions = new StringBuilder();

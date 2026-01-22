@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CertificateType } from '@/types/customer';
+import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,23 +18,53 @@ interface CustomerListProps {
 export default function CustomerList({ onCustomerSelect, onCreateCustomer }: CustomerListProps) {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+
+  // Helper functions for localStorage
+  const STORAGE_KEY = 'customerListFilters';
+
+  const loadStoredFilters = () => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading filters from localStorage:', error);
+    }
+    return null;
+  };
+
+  const saveFiltersToStorage = (filters: any) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    } catch (error) {
+      console.error('Error saving filters to localStorage:', error);
+    }
+  };
+
+  // Initialize state from localStorage or defaults
+  const storedFilters = loadStoredFilters();
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
-    page: 1,
-    limit: 10,
+    page: storedFilters?.page || 1,
+    limit: 20,
   });
   const [pageInfo, setPageInfo] = useState({
     total: 0,
     totalPages: 0,
-    page: 1,
-    limit: 10,
+    page: storedFilters?.page || 1,
+    limit: 20,
   });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [certifiedStartDate, setCertifiedStartDate] = useState('');
-  const [certifiedEndDate, setCertifiedEndDate] = useState('');
-  const [selectedCertificateType, setSelectedCertificateType] = useState('');
+  const [searchTerm, setSearchTerm] = useState(storedFilters?.searchTerm || '');
+  const [certifiedStartDate, setCertifiedStartDate] = useState(storedFilters?.certifiedStartDate || '');
+  const [certifiedEndDate, setCertifiedEndDate] = useState(storedFilters?.certifiedEndDate || '');
+  const [selectedCertificateType, setSelectedCertificateType] = useState(storedFilters?.selectedCertificateType || '');
+  const [selectedStatus, setSelectedStatus] = useState(storedFilters?.selectedStatus || '');
+  const [certificateIssuer, setCertificateIssuer] = useState(storedFilters?.certificateIssuer || '');
+  const [customerAgent, setCustomerAgent] = useState(storedFilters?.customerAgent || '');
 
   // Map language to date-fns locale
   const locale = language === 'zh-CN' ? zhCN : enUS;
@@ -58,6 +88,21 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }
   }, [t]);
 
+  // Save all filters to localStorage whenever they change
+  useEffect(() => {
+    const filters = {
+      searchTerm,
+      certifiedStartDate,
+      certifiedEndDate,
+      selectedCertificateType,
+      selectedStatus,
+      certificateIssuer,
+      customerAgent,
+      page: searchParams.page,
+    };
+    saveFiltersToStorage(filters);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page]);
+
   useEffect(() => {
     loadCustomers(searchParams);
   }, [searchParams, loadCustomers]);
@@ -75,7 +120,10 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       ...prev,
       q: !isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
+      status: selectedStatus ? selectedStatus as CustomerStatus : undefined,
       certificateType: selectedCertificateType ? selectedCertificateType as CertificateType : undefined,
+      certificateIssuer: certificateIssuer.trim() || undefined,
+      customerAgent: customerAgent.trim() || undefined,
       certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
       certifiedEndDate: certifiedEndDate ? `${certifiedEndDate}T00:00:00Z` : undefined,
       page: 1,
@@ -84,6 +132,17 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
   const handlePageChange = (newPage: number) => {
     setSearchParams(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchTerm('');
+    setCertifiedStartDate('');
+    setCertifiedEndDate('');
+    setSelectedCertificateType('');
+    setSelectedStatus('');
+    setCertificateIssuer('');
+    setCustomerAgent('');
+    setSearchParams(prev => ({ ...prev, page: 1 }));
   };
 
   const handleClearDateRange = () => {
@@ -226,6 +285,53 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   </select>
                 </div>
 
+                {/* Certificate Issuer Filter */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    {t('customers.form.certificateIssuer')}
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder={t('customers.form.certificateIssuer.placeholder')}
+                    value={certificateIssuer}
+                    onChange={(e) => setCertificateIssuer(e.target.value)}
+                    className="input-field w-full"
+                  />
+                </div>
+
+                {/* Customer Agent Filter */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    {t('customers.form.customerAgent')}
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder={t('customers.form.customerAgent.placeholder')}
+                    value={customerAgent}
+                    onChange={(e) => setCustomerAgent(e.target.value)}
+                    className="input-field w-full"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    {t('customers.searchStatus')}
+                  </h3>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">{t('customers.allStatuses')}</option>
+                    {Object.entries(CustomerStatusTranslationKeys).map(([key]) => (
+                      <option key={key} value={key}>
+                        {t(CustomerStatusTranslationKeys[key as CustomerStatus])}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Certified Date Range Filter */}
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between mb-3">
@@ -269,11 +375,21 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   </div>
                 </div>
 
-                {/* Search Button */}
-                <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-                  <Search size={18} />
-                  {t('customers.search')}
-                </button>
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleClearAllFilters}
+                    className="flex-1 btn-secondary flex items-center justify-center gap-2"
+                  >
+                    <X size={18} />
+                    {t('customers.clearFilters')}
+                  </button>
+                  <button type="submit" className="flex-1 btn-primary flex items-center justify-center gap-2">
+                    <Search size={18} />
+                    {t('customers.search')}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

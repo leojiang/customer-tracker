@@ -7,8 +7,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 @DisplayName("Status Transition Validator Tests")
 class StatusTransitionValidatorTest {
@@ -21,246 +19,205 @@ class StatusTransitionValidatorTest {
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from CUSTOMER_CALLED")
-  void shouldAllowValidTransitionsFromCustomerCalled() {
+  @DisplayName("Should allow all transitions from NEW status")
+  void shouldAllowAllTransitionsFromNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.CUSTOMER_CALLED;
+    CustomerStatus fromStatus = CustomerStatus.NEW;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
+    // When & Then - NEW can transition to all other statuses
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from CUSTOMER_CALLED")
-  void shouldRejectInvalidTransitionsFromCustomerCalled() {
+  @DisplayName("Should reject transition from NEW to NEW")
+  void shouldRejectTransitionFromNewToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.CUSTOMER_CALLED;
+    CustomerStatus fromStatus = CustomerStatus.NEW;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from REPLIED_TO_CUSTOMER")
-  void shouldAllowValidTransitionsFromRepliedToCustomer() {
+  @DisplayName("Should allow transitions from NOTIFIED to non-NEW statuses")
+  void shouldAllowTransitionsFromNotifiedToNonNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.REPLIED_TO_CUSTOMER;
+    CustomerStatus fromStatus = CustomerStatus.NOTIFIED;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
+    // When & Then - Can transition to any non-NEW status
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from REPLIED_TO_CUSTOMER")
-  void shouldRejectInvalidTransitionsFromRepliedToCustomer() {
+  @DisplayName("Should reject transition from NOTIFIED to NEW")
+  void shouldRejectTransitionFromNotifiedToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.REPLIED_TO_CUSTOMER;
+    CustomerStatus fromStatus = CustomerStatus.NOTIFIED;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
+    // When & Then - Cannot return to NEW
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from ORDER_PLACED")
-  void shouldAllowValidTransitionsFromOrderPlaced() {
+  @DisplayName("Should reject transition from NOTIFIED to NOTIFIED")
+  void shouldRejectTransitionFromNotifiedToNotified() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_PLACED;
+    CustomerStatus fromStatus = CustomerStatus.NOTIFIED;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from ORDER_PLACED")
-  void shouldRejectInvalidTransitionsFromOrderPlaced() {
+  @DisplayName("Should allow transitions from ABORTED to non-NEW statuses")
+  void shouldAllowTransitionsFromAbortedToNonNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_PLACED;
+    CustomerStatus fromStatus = CustomerStatus.ABORTED;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
+    // When & Then - Can transition to any non-NEW status
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from ORDER_CANCELLED")
-  void shouldAllowValidTransitionsFromOrderCancelled() {
+  @DisplayName("Should reject transition from ABORTED to NEW")
+  void shouldRejectTransitionFromAbortedToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_CANCELLED;
+    CustomerStatus fromStatus = CustomerStatus.ABORTED;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
+    // When & Then - Cannot return to NEW
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from ORDER_CANCELLED")
-  void shouldRejectInvalidTransitionsFromOrderCancelled() {
+  @DisplayName("Should reject transition from ABORTED to ABORTED")
+  void shouldRejectTransitionFromAbortedToAborted() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_CANCELLED;
+    CustomerStatus fromStatus = CustomerStatus.ABORTED;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from PRODUCT_DELIVERED")
-  void shouldAllowValidTransitionsFromProductDelivered() {
+  @DisplayName("Should allow transitions from SUBMITTED to non-NEW statuses")
+  void shouldAllowTransitionsFromSubmittedToNonNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.PRODUCT_DELIVERED;
+    CustomerStatus fromStatus = CustomerStatus.SUBMITTED;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
+    // When & Then - Can transition to any non-NEW status
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from PRODUCT_DELIVERED")
-  void shouldRejectInvalidTransitionsFromProductDelivered() {
+  @DisplayName("Should reject transition from SUBMITTED to NEW")
+  void shouldRejectTransitionFromSubmittedToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.PRODUCT_DELIVERED;
+    CustomerStatus fromStatus = CustomerStatus.SUBMITTED;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
+    // When & Then - Cannot return to NEW
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
   }
 
   @Test
-  @DisplayName("Should reject all transitions from BUSINESS_DONE (terminal state)")
-  void shouldRejectAllTransitionsFromBusinessDone() {
+  @DisplayName("Should reject transition from SUBMITTED to SUBMITTED")
+  void shouldRejectTransitionFromSubmittedToSubmitted() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.BUSINESS_DONE;
+    CustomerStatus fromStatus = CustomerStatus.SUBMITTED;
 
-    // When & Then - Test all possible transitions are rejected
-    for (CustomerStatus toStatus : CustomerStatus.values()) {
-      assertFalse(
-          validator.isValidTransition(fromStatus, toStatus),
-          String.format("Transition from %s to %s should be invalid", fromStatus, toStatus));
-    }
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
   }
 
   @Test
-  @DisplayName("Should allow valid transitions from LOST")
-  void shouldAllowValidTransitionsFromLost() {
+  @DisplayName("Should allow transitions from CERTIFIED to non-NEW statuses")
+  void shouldAllowTransitionsFromCertifiedToNonNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.LOST;
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED;
 
-    // When & Then
-    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CUSTOMER_CALLED));
+    // When & Then - Can transition to any non-NEW status
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
   }
 
   @Test
-  @DisplayName("Should reject invalid transitions from LOST")
-  void shouldRejectInvalidTransitionsFromLost() {
+  @DisplayName("Should reject transition from CERTIFIED to NEW")
+  void shouldRejectTransitionFromCertifiedToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.LOST;
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED;
 
-    // When & Then
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_PLACED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.ORDER_CANCELLED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.PRODUCT_DELIVERED));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.BUSINESS_DONE));
-    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.LOST));
-  }
-
-  @ParameterizedTest
-  @EnumSource(CustomerStatus.class)
-  @DisplayName("Should reject same status transitions for all statuses")
-  void shouldRejectSameStatusTransitions(CustomerStatus status) {
-    // When & Then
-    assertFalse(
-        validator.isValidTransition(status, status),
-        String.format("Same status transition from %s to %s should be invalid", status, status));
+    // When & Then - Cannot return to NEW
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
   }
 
   @Test
-  @DisplayName("Should handle null from status")
-  void shouldHandleNullFromStatus() {
-    // When & Then
-    assertFalse(validator.isValidTransition(null, CustomerStatus.CUSTOMER_CALLED));
+  @DisplayName("Should reject transition from CERTIFIED to CERTIFIED")
+  void shouldRejectTransitionFromCertifiedToCertified() {
+    // Given
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED;
+
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should handle null to status")
-  void shouldHandleNullToStatus() {
-    // When & Then
-    assertFalse(validator.isValidTransition(CustomerStatus.CUSTOMER_CALLED, null));
-  }
+  @DisplayName("Should reject null status transitions")
+  void shouldRejectNullStatusTransitions() {
+    // Given
+    CustomerStatus validStatus = CustomerStatus.NEW;
 
-  @Test
-  @DisplayName("Should handle both null statuses")
-  void shouldHandleBothNullStatuses() {
     // When & Then
+    assertFalse(validator.isValidTransition(null, validStatus));
+    assertFalse(validator.isValidTransition(validStatus, null));
     assertFalse(validator.isValidTransition(null, null));
   }
 
   @Test
-  @DisplayName("Should return correct valid transitions for CUSTOMER_CALLED")
-  void shouldReturnCorrectValidTransitionsForCustomerCalled() {
+  @DisplayName("Should return all valid transitions from NEW")
+  void shouldReturnAllValidTransitionsFromNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.CUSTOMER_CALLED;
+    CustomerStatus fromStatus = CustomerStatus.NEW;
 
     // When
     Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
 
-    // Then
-    assertEquals(2, validTransitions.size());
-    assertTrue(validTransitions.contains(CustomerStatus.REPLIED_TO_CUSTOMER));
-    assertTrue(validTransitions.contains(CustomerStatus.LOST));
+    // Then - Should include all non-NEW statuses
+    assertEquals(4, validTransitions.size());
+    assertTrue(validTransitions.contains(CustomerStatus.NOTIFIED));
+    assertTrue(validTransitions.contains(CustomerStatus.ABORTED));
+    assertTrue(validTransitions.contains(CustomerStatus.SUBMITTED));
+    assertTrue(validTransitions.contains(CustomerStatus.CERTIFIED));
   }
 
   @Test
-  @DisplayName("Should return correct valid transitions for ORDER_CANCELLED")
-  void shouldReturnCorrectValidTransitionsForOrderCancelled() {
+  @DisplayName("Should return all valid transitions from non-NEW statuses")
+  void shouldReturnAllValidTransitionsFromNonNewStatuses() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_CANCELLED;
+    CustomerStatus[] nonNewStatuses = {
+      CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+      CustomerStatus.CERTIFIED
+    };
 
-    // When
-    Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
-
-    // Then
-    assertEquals(2, validTransitions.size());
-    assertTrue(validTransitions.contains(CustomerStatus.ORDER_PLACED));
-    assertTrue(validTransitions.contains(CustomerStatus.LOST));
+    // When & Then - All non-NEW statuses should have same valid transitions
+    for (CustomerStatus fromStatus : nonNewStatuses) {
+      Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
+      assertEquals(4, validTransitions.size());
+      assertFalse(validTransitions.contains(CustomerStatus.NEW));
+    }
   }
 
   @Test
-  @DisplayName("Should return empty set for BUSINESS_DONE terminal state")
-  void shouldReturnEmptySetForBusinessDoneTerminalState() {
-    // Given
-    CustomerStatus fromStatus = CustomerStatus.BUSINESS_DONE;
-
-    // When
-    Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
-
-    // Then
-    assertTrue(validTransitions.isEmpty());
-  }
-
-  @Test
-  @DisplayName("Should return empty set for null from status")
-  void shouldReturnEmptySetForNullFromStatus() {
+  @DisplayName("Should return empty set for null status")
+  void shouldReturnEmptySetForNullStatus() {
     // When
     Set<CustomerStatus> validTransitions = validator.getValidTransitions(null);
 
@@ -269,70 +226,63 @@ class StatusTransitionValidatorTest {
   }
 
   @Test
-  @DisplayName("Should return meaningful error message for invalid transition")
-  void shouldReturnMeaningfulErrorMessageForInvalidTransition() {
+  @DisplayName("Should provide correct error message for invalid transition to NEW")
+  void shouldProvideCorrectErrorMessageForInvalidTransitionToNew() {
     // Given
-    CustomerStatus fromStatus = CustomerStatus.BUSINESS_DONE;
-    CustomerStatus toStatus = CustomerStatus.CUSTOMER_CALLED;
+    CustomerStatus fromStatus = CustomerStatus.NOTIFIED;
+    CustomerStatus toStatus = CustomerStatus.NEW;
 
     // When
     String errorMessage = validator.getTransitionErrorMessage(fromStatus, toStatus);
 
     // Then
-    assertNotNull(errorMessage);
-    assertTrue(errorMessage.contains("Business done"));
-    assertTrue(errorMessage.contains("terminal state"));
+    assertTrue(errorMessage.contains("Cannot transition"));
+    assertTrue(errorMessage.contains("NEW"));
+    assertTrue(errorMessage.contains("cannot return to it"));
   }
 
   @Test
-  @DisplayName("Should return meaningful error message for same status transition")
-  void shouldReturnMeaningfulErrorMessageForSameStatusTransition() {
+  @DisplayName("Should provide correct error message for same status transition")
+  void shouldProvideCorrectErrorMessageForSameStatusTransition() {
     // Given
-    CustomerStatus status = CustomerStatus.ORDER_PLACED;
+    CustomerStatus status = CustomerStatus.NEW;
 
     // When
     String errorMessage = validator.getTransitionErrorMessage(status, status);
 
     // Then
-    assertNotNull(errorMessage);
     assertTrue(errorMessage.contains("already in status"));
-    assertTrue(errorMessage.contains("Order placed"));
+    assertTrue(errorMessage.contains("NEW"));
   }
 
   @Test
-  @DisplayName("Should return meaningful error message for backward transition")
-  void shouldReturnMeaningfulErrorMessageForBackwardTransition() {
-    // Given
-    CustomerStatus fromStatus = CustomerStatus.ORDER_PLACED;
-    CustomerStatus toStatus = CustomerStatus.CUSTOMER_CALLED;
-
+  @DisplayName("Should provide correct error message for null statuses")
+  void shouldProvideCorrectErrorMessageForNullStatuses() {
     // When
-    String errorMessage = validator.getTransitionErrorMessage(fromStatus, toStatus);
+    String errorMessage = validator.getTransitionErrorMessage(null, null);
 
     // Then
-    assertNotNull(errorMessage);
-    assertTrue(errorMessage.contains("Cannot transition from"));
-    assertTrue(errorMessage.contains("Order placed"));
-    assertTrue(errorMessage.contains("Customer called"));
-    assertTrue(errorMessage.contains("Valid transitions are"));
+    assertTrue(errorMessage.contains("must be specified"));
   }
 
   @Test
-  @DisplayName("Should return error message for null statuses")
-  void shouldReturnErrorMessageForNullStatuses() {
-    // When & Then
-    String errorMessage1 =
-        validator.getTransitionErrorMessage(null, CustomerStatus.CUSTOMER_CALLED);
-    assertNotNull(errorMessage1);
-    assertTrue(errorMessage1.contains("must be specified"));
+  @DisplayName("Should allow transitions between all non-NEW statuses")
+  void shouldAllowTransitionsBetweenAllNonNewStatuses() {
+    // Given
+    CustomerStatus[] nonNewStatuses = {
+      CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+      CustomerStatus.CERTIFIED
+    };
 
-    String errorMessage2 =
-        validator.getTransitionErrorMessage(CustomerStatus.CUSTOMER_CALLED, null);
-    assertNotNull(errorMessage2);
-    assertTrue(errorMessage2.contains("must be specified"));
-
-    String errorMessage3 = validator.getTransitionErrorMessage(null, null);
-    assertNotNull(errorMessage3);
-    assertTrue(errorMessage3.contains("must be specified"));
+    // When & Then - All non-NEW statuses can transition to each other
+    for (CustomerStatus fromStatus : nonNewStatuses) {
+      for (CustomerStatus toStatus : nonNewStatuses) {
+        if (!fromStatus.equals(toStatus)) {
+          assertTrue(
+              validator.isValidTransition(fromStatus, toStatus),
+              String.format("Should allow transition from %s to %s", fromStatus, toStatus));
+        }
+      }
+    }
   }
 }

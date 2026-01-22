@@ -42,7 +42,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     certifiedAt: undefined,
   });
   const [statusTransition, setStatusTransition] = useState<StatusTransitionRequest>({
-    toStatus: CustomerStatus.CUSTOMER_CALLED,
+    toStatus: CustomerStatus.NEW,
     reason: '',
   });
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -257,7 +257,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       await loadCustomer();
 
       setShowStatusModal(false);
-      setStatusTransition({ toStatus: CustomerStatus.CUSTOMER_CALLED, reason: '' });
+      setStatusTransition({ toStatus: CustomerStatus.NEW, reason: '' });
       // Trigger history refresh
       setHistoryRefreshTrigger(prev => prev + 1);
     } catch (err) {
@@ -789,7 +789,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                 <div className="text-center py-6">
                   <div className="text-body-2 text-surface-500 mb-2">{t('customers.detail.noTransitionsAvailable')}</div>
                   <p className="text-caption text-surface-400">
-                    {customer.currentStatus === 'BUSINESS_DONE'
+                    {customer.currentStatus === 'CERTIFIED'
                       ? t('customers.detail.businessComplete')
                       : t('customers.detail.loadingTransitions')}
                   </p>

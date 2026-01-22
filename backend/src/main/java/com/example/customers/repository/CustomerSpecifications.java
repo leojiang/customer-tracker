@@ -100,10 +100,11 @@ public class CustomerSpecifications {
       String nameQuery,
       String phoneQuery,
       CustomerStatus status,
-      String company,
+      String certificateIssuer,
       String salesPhone,
       boolean includeDeleted,
       CertificateType certificateType,
+      String customerAgent,
       String certifiedStartDate,
       String certifiedEndDate) {
 
@@ -128,12 +129,12 @@ public class CustomerSpecifications {
         predicates.add(criteriaBuilder.equal(root.get("currentStatus"), status));
       }
 
-      // Company search
-      if (company != null && !company.trim().isEmpty()) {
+      // Certificate issuer search
+      if (certificateIssuer != null && !certificateIssuer.trim().isEmpty()) {
         predicates.add(
             criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("company")),
-                "%" + company.toLowerCase().trim() + "%"));
+                criteriaBuilder.lower(root.get("certificateIssuer")),
+                "%" + certificateIssuer.toLowerCase().trim() + "%"));
       }
 
       // Sales phone filter
@@ -144,6 +145,14 @@ public class CustomerSpecifications {
       // Certificate type filter
       if (certificateType != null) {
         predicates.add(criteriaBuilder.equal(root.get("certificateType"), certificateType));
+      }
+
+      // Customer agent filter
+      if (customerAgent != null && !customerAgent.trim().isEmpty()) {
+        predicates.add(
+            criteriaBuilder.like(
+                criteriaBuilder.lower(root.get("customerAgent")),
+                "%" + customerAgent.toLowerCase().trim() + "%"));
       }
 
       // Certified date range filter

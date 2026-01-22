@@ -91,8 +91,11 @@ export const customerApi = {
     if (params.status) {
       searchParams.append('status', params.status);
     }
-    if (params.company) {
-      searchParams.append('company', params.company);
+    if (params.certificateIssuer) {
+      searchParams.append('certificateIssuer', params.certificateIssuer);
+    }
+    if (params.customerAgent) {
+      searchParams.append('customerAgent', params.customerAgent);
     }
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', params.includeDeleted.toString());

@@ -96,9 +96,12 @@ public class CustomerController {
           String phone,
       @Parameter(description = "Filter by customer status") @RequestParam(required = false)
           CustomerStatus status,
-      @Parameter(description = "Search by company name (case-insensitive)")
+      @Parameter(description = "Search by certificate issuer name (case-insensitive)")
           @RequestParam(required = false)
-          String company,
+          String certificateIssuer,
+      @Parameter(description = "Search by customer agent name (case-insensitive)")
+          @RequestParam(required = false)
+          String customerAgent,
       @Parameter(description = "Include soft-deleted customers in results")
           @RequestParam(defaultValue = "false")
           boolean includeDeleted,
@@ -156,10 +159,11 @@ public class CustomerController {
             q,
             phone,
             status,
-            company,
+            certificateIssuer,
             filterBySalesPhone,
             includeDeleted,
             certificateTypeEnum,
+            customerAgent,
             certifiedStartDate,
             certifiedEndDate,
             pageable);
@@ -348,7 +352,7 @@ public class CustomerController {
         @ApiResponse(responseCode = "400", description = "Invalid status transition")
       })
   @PostMapping("/{id}/status-transition")
-  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<Customer> transitionStatus(
       @Parameter(description = "Customer ID", required = true) @PathVariable UUID id,
       @Parameter(description = "Status transition details", required = true) @Valid @RequestBody

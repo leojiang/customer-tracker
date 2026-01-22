@@ -3,16 +3,32 @@ package com.example.customers.model;
 /**
  * Enumeration representing customer status values in the system.
  *
- * <p>Defines the various states a customer can be in during the sales process.
+ * <p>Defines the various states a customer can be in during the certification process.
+ *
+ * <p>Status transition rules:
+ * <ul>
+ *   <li>NEW - Initial status for new customers, can transition to any status</li>
+ *   <li>NOTIFIED - Customer has been notified for review, cannot return to NEW</li>
+ *   <li>ABORTED - Customer abandoned the process, cannot return to NEW</li>
+ *   <li>SUBMITTED - Customer has submitted documents, cannot return to NEW</li>
+ *   <li>CERTIFIED - Certificate has been issued, cannot return to NEW</li>
+ * </ul>
+ *
+ * <p>Transition Rules:
+ * <ul>
+ *   <li>NEW → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (all allowed)</li>
+ *   <li>NOTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
+ *   <li>ABORTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
+ *   <li>SUBMITTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
+ *   <li>CERTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
+ * </ul>
  */
 public enum CustomerStatus {
-  CUSTOMER_CALLED("Customer called"),
-  REPLIED_TO_CUSTOMER("Replied to customer"),
-  ORDER_PLACED("Order placed"),
-  ORDER_CANCELLED("Order cancelled"),
-  PRODUCT_DELIVERED("Product delivered"),
-  BUSINESS_DONE("Business done"),
-  LOST("Lost");
+  NEW("New"),
+  NOTIFIED("Notified"),
+  ABORTED("Aborted"),
+  SUBMITTED("Submitted"),
+  CERTIFIED("Certified");
 
   private final String displayName;
 

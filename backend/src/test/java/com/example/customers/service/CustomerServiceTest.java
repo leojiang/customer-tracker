@@ -46,7 +46,7 @@ class CustomerServiceTest {
     testCustomer.setName("John Doe");
     testCustomer.setPhone("+1234567890");
     testCustomer.setCertificateIssuer("Test Certificate Issuer");
-    testCustomer.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
+    testCustomer.setCurrentStatus(CustomerStatus.NEW);
     testCustomer.setCreatedAt(ZonedDateTime.now());
     testCustomer.setUpdatedAt(ZonedDateTime.now());
   }
@@ -68,7 +68,7 @@ class CustomerServiceTest {
 
     // Then
     assertNotNull(result);
-    assertEquals(CustomerStatus.CUSTOMER_CALLED, newCustomer.getCurrentStatus());
+    assertEquals(CustomerStatus.NEW, newCustomer.getCurrentStatus());
     verify(customerRepository).findByPhoneIncludingDeleted("+9876543210");
     verify(customerRepository).save(newCustomer);
     verify(statusHistoryRepository).save(any(StatusHistory.class));
@@ -199,11 +199,11 @@ class CustomerServiceTest {
   @DisplayName("Should transition status successfully with valid transition")
   void shouldTransitionStatusSuccessfullyWithValidTransition() {
     // Given
-    CustomerStatus toStatus = CustomerStatus.REPLIED_TO_CUSTOMER;
+    CustomerStatus toStatus = CustomerStatus.NOTIFIED;
     String reason = "Customer responded positively";
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus))
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
         .thenReturn(true);
     when(customerRepository.save(testCustomer)).thenReturn(testCustomer);
 
@@ -214,7 +214,7 @@ class CustomerServiceTest {
     assertNotNull(result);
     assertEquals(toStatus, testCustomer.getCurrentStatus());
     verify(customerRepository).findById(testCustomerId);
-    verify(transitionValidator).isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus);
+    verify(transitionValidator).isValidTransition(CustomerStatus.NEW, toStatus);
     verify(customerRepository).save(testCustomer);
     verify(statusHistoryRepository).save(any(StatusHistory.class));
   }
@@ -223,14 +223,14 @@ class CustomerServiceTest {
   @DisplayName("Should throw exception for invalid status transition")
   void shouldThrowExceptionForInvalidStatusTransition() {
     // Given
-    CustomerStatus toStatus = CustomerStatus.BUSINESS_DONE;
+    CustomerStatus toStatus = CustomerStatus.CERTIFIED;
     String reason = "Invalid transition";
     String errorMessage = "Invalid transition from Customer called to Business done";
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus))
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
         .thenReturn(false);
-    when(transitionValidator.getTransitionErrorMessage(CustomerStatus.CUSTOMER_CALLED, toStatus))
+    when(transitionValidator.getTransitionErrorMessage(CustomerStatus.NEW, toStatus))
         .thenReturn(errorMessage);
 
     // When & Then
@@ -241,7 +241,7 @@ class CustomerServiceTest {
 
     assertEquals(errorMessage, exception.getMessage());
     verify(customerRepository).findById(testCustomerId);
-    verify(transitionValidator).isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus);
+    verify(transitionValidator).isValidTransition(CustomerStatus.NEW, toStatus);
     verify(customerRepository, never()).save(any());
     verify(statusHistoryRepository, never()).save(any());
   }
@@ -250,7 +250,7 @@ class CustomerServiceTest {
   @DisplayName("Should throw exception when transitioning status of non-existent customer")
   void shouldThrowExceptionWhenTransitioningStatusOfNonExistentCustomer() {
     // Given
-    CustomerStatus toStatus = CustomerStatus.REPLIED_TO_CUSTOMER;
+    CustomerStatus toStatus = CustomerStatus.NOTIFIED;
     String reason = "Test reason";
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.empty());
@@ -272,11 +272,11 @@ class CustomerServiceTest {
     // Given
     List<StatusHistory> statusHistoryList =
         Arrays.asList(
-            createStatusHistory(testCustomer, null, CustomerStatus.CUSTOMER_CALLED, "Initial"),
+            createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"),
             createStatusHistory(
                 testCustomer,
-                CustomerStatus.CUSTOMER_CALLED,
-                CustomerStatus.REPLIED_TO_CUSTOMER,
+                CustomerStatus.NEW,
+                CustomerStatus.NOTIFIED,
                 "Responded"));
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
@@ -299,7 +299,7 @@ class CustomerServiceTest {
     // Given
     List<StatusHistory> statusHistoryList =
         Arrays.asList(
-            createStatusHistory(testCustomer, null, CustomerStatus.CUSTOMER_CALLED, "Initial"));
+            createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"));
     Page<StatusHistory> statusHistoryPage = new PageImpl<>(statusHistoryList);
     Pageable pageable = Pageable.ofSize(10);
 
@@ -376,10 +376,10 @@ class CustomerServiceTest {
   void shouldGetValidTransitionsSuccessfully() {
     // Given
     Set<CustomerStatus> expectedTransitions =
-        Set.of(CustomerStatus.REPLIED_TO_CUSTOMER, CustomerStatus.LOST);
+        Set.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED);
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.getValidTransitions(CustomerStatus.CUSTOMER_CALLED))
+    when(transitionValidator.getValidTransitions(CustomerStatus.NEW))
         .thenReturn(expectedTransitions);
 
     // When
@@ -389,17 +389,17 @@ class CustomerServiceTest {
     assertNotNull(result);
     assertEquals(expectedTransitions, result);
     verify(customerRepository).findById(testCustomerId);
-    verify(transitionValidator).getValidTransitions(CustomerStatus.CUSTOMER_CALLED);
+    verify(transitionValidator).getValidTransitions(CustomerStatus.NEW);
   }
 
   @Test
   @DisplayName("Should validate transition successfully")
   void shouldValidateTransitionSuccessfully() {
     // Given
-    CustomerStatus toStatus = CustomerStatus.REPLIED_TO_CUSTOMER;
+    CustomerStatus toStatus = CustomerStatus.NOTIFIED;
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus))
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
         .thenReturn(true);
 
     // When
@@ -408,7 +408,7 @@ class CustomerServiceTest {
     // Then
     assertTrue(result);
     verify(customerRepository).findById(testCustomerId);
-    verify(transitionValidator).isValidTransition(CustomerStatus.CUSTOMER_CALLED, toStatus);
+    verify(transitionValidator).isValidTransition(CustomerStatus.NEW, toStatus);
   }
 
   @Test

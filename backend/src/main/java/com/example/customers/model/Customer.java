@@ -79,7 +79,7 @@ public class Customer {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "current_status", nullable = false)
-  private CustomerStatus currentStatus = CustomerStatus.CUSTOMER_CALLED;
+  private CustomerStatus currentStatus = CustomerStatus.NEW;
 
   @Column(name = "sales_phone")
   private String salesPhone;

@@ -1,11 +1,9 @@
 export enum CustomerStatus {
-  CUSTOMER_CALLED = 'CUSTOMER_CALLED',
-  REPLIED_TO_CUSTOMER = 'REPLIED_TO_CUSTOMER',
-  ORDER_PLACED = 'ORDER_PLACED',
-  ORDER_CANCELLED = 'ORDER_CANCELLED',
-  PRODUCT_DELIVERED = 'PRODUCT_DELIVERED',
-  BUSINESS_DONE = 'BUSINESS_DONE',
-  LOST = 'LOST'
+  NEW = 'NEW',
+  NOTIFIED = 'NOTIFIED',
+  ABORTED = 'ABORTED',
+  SUBMITTED = 'SUBMITTED',
+  CERTIFIED = 'CERTIFIED'
 }
 
 export enum EducationLevel {
@@ -47,24 +45,20 @@ export const CertificateTypeTranslationKeys: Record<CertificateType, string> = {
 };
 
 export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {
-  [CustomerStatus.CUSTOMER_CALLED]: 'Customer called',
-  [CustomerStatus.REPLIED_TO_CUSTOMER]: 'Replied to customer',
-  [CustomerStatus.ORDER_PLACED]: 'Order placed',
-  [CustomerStatus.ORDER_CANCELLED]: 'Order cancelled',
-  [CustomerStatus.PRODUCT_DELIVERED]: 'Product delivered',
-  [CustomerStatus.BUSINESS_DONE]: 'Business done',
-  [CustomerStatus.LOST]: 'Lost'
+  [CustomerStatus.NEW]: 'New',
+  [CustomerStatus.NOTIFIED]: 'Notified',
+  [CustomerStatus.ABORTED]: 'Aborted',
+  [CustomerStatus.SUBMITTED]: 'Submitted',
+  [CustomerStatus.CERTIFIED]: 'Certified'
 };
 
 // Status translation keys mapping for use with translation function
 export const CustomerStatusTranslationKeys: Record<CustomerStatus, string> = {
-  [CustomerStatus.CUSTOMER_CALLED]: 'status.customerCalled',
-  [CustomerStatus.REPLIED_TO_CUSTOMER]: 'status.repliedToCustomer',
-  [CustomerStatus.ORDER_PLACED]: 'status.orderPlaced',
-  [CustomerStatus.ORDER_CANCELLED]: 'status.orderCancelled',
-  [CustomerStatus.PRODUCT_DELIVERED]: 'status.productDelivered',
-  [CustomerStatus.BUSINESS_DONE]: 'status.businessDone',
-  [CustomerStatus.LOST]: 'status.lost',
+  [CustomerStatus.NEW]: 'status.new',
+  [CustomerStatus.NOTIFIED]: 'status.notified',
+  [CustomerStatus.ABORTED]: 'status.aborted',
+  [CustomerStatus.SUBMITTED]: 'status.submitted',
+  [CustomerStatus.CERTIFIED]: 'status.certified',
 };
 
 // Education level translation keys mapping for use with translation function
@@ -178,9 +172,10 @@ export interface CustomerSearchParams {
   q?: string;
   phone?: string;
   status?: CustomerStatus;
-  company?: string;
+  certificateIssuer?: string;
   includeDeleted?: boolean;
   certificateType?: CertificateType;
+  customerAgent?: string;
   certifiedStartDate?: string;
   certifiedEndDate?: string;
   page?: number;

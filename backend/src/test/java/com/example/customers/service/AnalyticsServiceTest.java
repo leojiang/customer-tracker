@@ -57,7 +57,7 @@ class AnalyticsServiceTest {
     // Given
     when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
-    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE))
+    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
 
     // When
@@ -73,7 +73,7 @@ class AnalyticsServiceTest {
     verify(customerRepository).countTotalActiveCustomers();
     verify(customerRepository, times(3)).countNewCustomersInPeriod(any(), any());
     verify(customerRepository, times(2))
-        .countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE);
+        .countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
   }
 
   @Test
@@ -84,7 +84,7 @@ class AnalyticsServiceTest {
     when(customerRepository.countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any()))
         .thenReturn(10L);
     when(customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.BUSINESS_DONE, testSalesPhone))
+            CustomerStatus.CERTIFIED, testSalesPhone))
         .thenReturn(8L);
 
     // When
@@ -102,7 +102,7 @@ class AnalyticsServiceTest {
         .countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any());
     verify(customerRepository, times(2))
         .countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.BUSINESS_DONE, testSalesPhone);
+            CustomerStatus.CERTIFIED, testSalesPhone);
   }
 
   @Test
@@ -110,9 +110,9 @@ class AnalyticsServiceTest {
   void shouldGetStatusDistributionForAdmin() {
     // Given
     List<Object[]> mockResults = new ArrayList<>();
-    mockResults.add(new Object[] {CustomerStatus.CUSTOMER_CALLED, 30L});
-    mockResults.add(new Object[] {CustomerStatus.REPLIED_TO_CUSTOMER, 20L});
-    mockResults.add(new Object[] {CustomerStatus.BUSINESS_DONE, 15L});
+    mockResults.add(new Object[] {CustomerStatus.NEW, 30L});
+    mockResults.add(new Object[] {CustomerStatus.NOTIFIED, 20L});
+    mockResults.add(new Object[] {CustomerStatus.CERTIFIED, 15L});
 
     when(customerRepository.countCustomersByStatus()).thenReturn(mockResults);
 
@@ -134,8 +134,8 @@ class AnalyticsServiceTest {
   void shouldGetStatusDistributionForSalesUser() {
     // Given
     List<Object[]> mockResults = new ArrayList<>();
-    mockResults.add(new Object[] {CustomerStatus.CUSTOMER_CALLED, 15L});
-    mockResults.add(new Object[] {CustomerStatus.BUSINESS_DONE, 8L});
+    mockResults.add(new Object[] {CustomerStatus.NEW, 15L});
+    mockResults.add(new Object[] {CustomerStatus.CERTIFIED, 8L});
 
     when(customerRepository.countCustomersByStatusForSales(testSalesPhone)).thenReturn(mockResults);
 
@@ -161,7 +161,7 @@ class AnalyticsServiceTest {
 
     when(customerRepository.getCustomerTrendsByDate(any(), any())).thenReturn(mockResults);
     when(customerRepository.countCustomersCreatedBefore(any())).thenReturn(50L);
-    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE))
+    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(10L);
 
     // When
@@ -189,7 +189,7 @@ class AnalyticsServiceTest {
     when(customerRepository.countCustomersCreatedBeforeForSales(eq(testSalesPhone), any()))
         .thenReturn(25L);
     when(customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.BUSINESS_DONE, testSalesPhone))
+            CustomerStatus.CERTIFIED, testSalesPhone))
         .thenReturn(5L);
 
     // When
@@ -211,14 +211,14 @@ class AnalyticsServiceTest {
     when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
     when(customerRepository.countConversionsInPeriod(
-            eq(CustomerStatus.BUSINESS_DONE), any(), any()))
+            eq(CustomerStatus.CERTIFIED), any(), any()))
         .thenReturn(15L);
-    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE))
+    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
 
     List<Object[]> statusResults = new ArrayList<>();
-    statusResults.add(new Object[] {CustomerStatus.CUSTOMER_CALLED, 30L});
-    statusResults.add(new Object[] {CustomerStatus.BUSINESS_DONE, 15L});
+    statusResults.add(new Object[] {CustomerStatus.NEW, 30L});
+    statusResults.add(new Object[] {CustomerStatus.CERTIFIED, 15L});
     when(customerRepository.countCustomersByStatus()).thenReturn(statusResults);
 
     // When
@@ -235,7 +235,7 @@ class AnalyticsServiceTest {
     verify(customerRepository).countTotalActiveCustomers();
     verify(customerRepository).countNewCustomersInPeriod(any(), any());
     verify(customerRepository)
-        .countConversionsInPeriod(eq(CustomerStatus.BUSINESS_DONE), any(), any());
+        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
   }
 
   @Test
@@ -246,15 +246,15 @@ class AnalyticsServiceTest {
     when(customerRepository.countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any()))
         .thenReturn(10L);
     when(customerRepository.countConversionsInPeriodBySales(
-            eq(CustomerStatus.BUSINESS_DONE), eq(testSalesPhone), any(), any()))
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), any(), any()))
         .thenReturn(8L);
     when(customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.BUSINESS_DONE, testSalesPhone))
+            CustomerStatus.CERTIFIED, testSalesPhone))
         .thenReturn(8L);
 
     List<Object[]> statusResults = new ArrayList<>();
-    statusResults.add(new Object[] {CustomerStatus.CUSTOMER_CALLED, 20L});
-    statusResults.add(new Object[] {CustomerStatus.BUSINESS_DONE, 8L});
+    statusResults.add(new Object[] {CustomerStatus.NEW, 20L});
+    statusResults.add(new Object[] {CustomerStatus.CERTIFIED, 8L});
     when(customerRepository.countCustomersByStatusForSales(testSalesPhone))
         .thenReturn(statusResults);
 
@@ -273,7 +273,7 @@ class AnalyticsServiceTest {
     verify(customerRepository).countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any());
     verify(customerRepository)
         .countConversionsInPeriodBySales(
-            eq(CustomerStatus.BUSINESS_DONE), eq(testSalesPhone), any(), any());
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), any(), any());
   }
 
   @Test
@@ -312,7 +312,7 @@ class AnalyticsServiceTest {
     ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
     when(customerRepository.countNewCustomersInPeriod(eq(startOfDay), any())).thenReturn(5L);
     when(customerRepository.countConversionsInPeriod(
-            eq(CustomerStatus.BUSINESS_DONE), eq(startOfDay), any()))
+            eq(CustomerStatus.CERTIFIED), eq(startOfDay), any()))
         .thenReturn(2L);
 
     // When
@@ -327,7 +327,7 @@ class AnalyticsServiceTest {
 
     verify(customerRepository, times(2)).countNewCustomersInPeriod(eq(startOfDay), any());
     verify(customerRepository)
-        .countConversionsInPeriod(eq(CustomerStatus.BUSINESS_DONE), eq(startOfDay), any());
+        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), eq(startOfDay), any());
   }
 
   @Test
@@ -339,7 +339,7 @@ class AnalyticsServiceTest {
             eq(testSalesPhone), eq(startOfDay), any()))
         .thenReturn(3L);
     when(customerRepository.countConversionsInPeriodBySales(
-            eq(CustomerStatus.BUSINESS_DONE), eq(testSalesPhone), eq(startOfDay), any()))
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), eq(startOfDay), any()))
         .thenReturn(1L);
 
     // When
@@ -356,7 +356,7 @@ class AnalyticsServiceTest {
         .countNewCustomersInPeriodBySales(eq(testSalesPhone), eq(startOfDay), any());
     verify(customerRepository)
         .countConversionsInPeriodBySales(
-            eq(CustomerStatus.BUSINESS_DONE), eq(testSalesPhone), eq(startOfDay), any());
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), eq(startOfDay), any());
   }
 
   @Test
@@ -437,7 +437,7 @@ class AnalyticsServiceTest {
     // Given
     when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
-    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.BUSINESS_DONE))
+    when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
 
     // When

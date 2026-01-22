@@ -131,6 +131,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setToken(null);
     authApi.logout();
+    // Clear customer list filters from localStorage
+    try {
+      localStorage.removeItem('customerListFilters');
+    } catch (error) {
+      console.error('Error clearing filters from localStorage:', error);
+    }
   };
 
   const value: AuthContextType = {

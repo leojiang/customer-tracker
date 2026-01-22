@@ -148,7 +148,11 @@ export default function StatusHistory({ customerId, refreshTrigger }: StatusHist
                     <div className="bg-surface-50 border border-surface-200 rounded-lg p-3 mt-3">
                       <div className="flex items-start gap-2">
                         <MessageSquare size={16} className="text-surface-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-body-2 text-surface-700">{item.reason}</span>
+                        <span className="text-body-2 text-surface-700">
+                          {item.reason === 'Initial customer creation'
+                            ? t('customers.detail.initialCreation')
+                            : item.reason}
+                        </span>
                       </div>
                     </div>
                   )}
