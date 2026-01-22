@@ -7,14 +7,17 @@ import java.util.regex.Pattern;
 /**
  * Custom validator for phone number format validation.
  *
- * <p>Validates phone numbers according to international standards: - Must start with + followed by
- * country code (1-3 digits) - Followed by 7-15 digits total - Examples: +1234567890, +8612345678901
+ * <p>Validates phone numbers by checking if they contain only digits, spaces, dashes, dots,
+ * parentheses, or plus sign. Must contain at least 3 digits to be valid.
  */
 public class PhoneNumberValidator implements ConstraintValidator<PhoneNumber, String> {
 
-  // International phone number pattern
-  // +[country code][number] where country code is 1-3 digits and total digits are 7-15
-  private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+[1-9]\\d{6,14}$");
+  // Pattern to match phone numbers with digits, spaces, dashes, dots, parentheses, plus
+  // Must contain at least 3 digits
+  private static final Pattern PHONE_PATTERN = Pattern.compile("^[\\d\\s\\-.()+]+$");
+
+  // Pattern to count digits (at least 3 required)
+  private static final Pattern DIGIT_PATTERN = Pattern.compile("\\d");
 
   @Override
   public void initialize(PhoneNumber constraintAnnotation) {
@@ -30,7 +33,14 @@ public class PhoneNumberValidator implements ConstraintValidator<PhoneNumber, St
     // Remove any whitespace
     String cleanPhone = phone.trim();
 
-    // Check if it matches the international phone pattern
-    return PHONE_PATTERN.matcher(cleanPhone).matches();
+    // Check if it contains only valid characters (digits, spaces, dashes, dots, parentheses, plus)
+    if (!PHONE_PATTERN.matcher(cleanPhone).matches()) {
+      return false;
+    }
+
+    // Count digits - must have at least 3
+    long digitCount = DIGIT_PATTERN.matcher(cleanPhone).results().count();
+
+    return digitCount >= 3;
   }
 }
