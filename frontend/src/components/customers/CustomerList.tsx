@@ -252,7 +252,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   return (
     <div className="flex flex-col h-full">
       {/* Fixed Top Bar: Search & Filters */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4 flex-shrink-0">
+      <div className="px-8 py-4 flex-shrink-0">
         <form onSubmit={handleSearch}>
           {/* Row 1: Search Input + Status + Certificate Type + Clear Button */}
           <div className="flex gap-3 mb-3 items-end">
@@ -418,7 +418,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       )}
 
       {/* Scrollable Customer List */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col px-8">
         {loading ? (
           <div className="card-elevated">
             <div className="card-content text-center py-12">
@@ -450,65 +450,98 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
             </div>
           </div>
         ) : (
-          <div className="card-elevated">
-            <div className="card-header">
-              <div className="flex justify-between items-center">
-                <h2 className="text-headline-6">
-                  {t('customers.found')} {pageInfo.total} {pageInfo.total === 1 ? t('customers.customersFound') : t('customers.customersFoundPlural')}
-                </h2>
-                <div className="text-body-2">
-                  {t('customers.pageInfo', { page: pageInfo.page, total: pageInfo.totalPages })}
-                </div>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="divide-y divide-surface-100">
-                {customers.map((customer) => (
-              <div
-                key={customer.id}
-                onClick={() => handleCustomerClick(customer)}
-                className="list-item-interactive group"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Customer Name on the left */}
-                    <h3 className="text-headline-6 group-hover:text-primary-600 transition-colors flex-shrink-0">
-                      {customer.name}
-                    </h3>
-
-                    {/* All other fields on the right */}
-                    <div className="flex flex-wrap items-center gap-4 text-body-2 justify-end">
-                      <div className="flex items-center gap-1.5">
-                        <Phone size={16} className="text-surface-500" />
-                        <span>{t('customers.form.phone')}: {customer.phone}</span>
-                      </div>
-                      {customer.age && (
+          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg flex flex-col h-full">
+            <div className="overflow-y-auto flex-1">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.name')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.phone')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.age')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.gender')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.certificateType')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.certificateIssuer')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.certifiedAt')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customer.salesPerson')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customer.currentStatus')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {customers.map((customer) => (
+                    <tr
+                      key={customer.id}
+                      onClick={() => handleCustomerClick(customer)}
+                      className="hover:bg-gray-50 cursor-pointer"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center gap-1.5">
-                          <span>{t('customers.form.age')}: {customer.age}</span>
+                          <Phone size={14} className="text-gray-400" />
+                          <span>{customer.phone}</span>
                         </div>
-                      )}
-                      {customer.gender && (
-                        <div className="flex items-center gap-1.5">
-                          <span>{t('customers.form.gender')}: {getLocalizedGender(customer.gender)}</span>
-                        </div>
-                      )}
-                      {customer.certificateType && (
-                        <div className="flex items-center gap-1.5">
-                          <span>{t('customers.form.certificateType')}: {t(CertificateTypeTranslationKeys[customer.certificateType])}</span>
-                        </div>
-                      )}
-                      {customer.certifiedAt && (
-                        <div className="flex-shrink-0 text-surface-600 flex items-center gap-1.5">
-                          <Calendar size={16} className="text-surface-500" />
-                          <span>{t('customers.form.certifiedAt')}: {format(new Date(customer.certifiedAt), 'PPP', { locale })}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-              </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.age || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.gender ? getLocalizedGender(customer.gender) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.certificateType ? t(CertificateTypeTranslationKeys[customer.certificateType]) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                        {customer.certificateIssuer || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.certifiedAt ? (
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={14} className="text-gray-400" />
+                            <span>{format(new Date(customer.certifiedAt), 'PPP', { locale })}</span>
+                          </div>
+                        ) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.customerAgent || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          customer.currentStatus === 'CERTIFIED'
+                            ? 'bg-green-100 text-green-800'
+                            : customer.currentStatus === 'SUBMITTED'
+                            ? 'bg-blue-100 text-blue-800'
+                            : customer.currentStatus === 'NOTIFIED'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : customer.currentStatus === 'ABORTED'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {customer.currentStatus ? t(CustomerStatusTranslationKeys[customer.currentStatus]) : '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -516,7 +549,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
       {/* Fixed Pagination at Bottom */}
       {!loading && customers.length > 0 && (
-        <div className="px-8 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+        <div className="px-8 py-4 flex-shrink-0">
           {/* Results Info and Page Size Selector */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-4">
