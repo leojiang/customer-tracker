@@ -45,13 +45,13 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     return null;
   };
 
-  const saveFiltersToStorage = (filters: StoredFilters) => {
+  const saveFiltersToStorage = useCallback((filters: StoredFilters) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
     } catch (error) {
       console.error('Error saving filters to localStorage:', error);
     }
-  };
+  }, []);
 
   // Initialize state from localStorage or defaults
   const storedFilters = loadStoredFilters();
@@ -112,7 +112,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       page: searchParams.page,
     };
     saveFiltersToStorage(filters);
-  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page]);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page, saveFiltersToStorage, t]);
 
   useEffect(() => {
     loadCustomers(searchParams);
