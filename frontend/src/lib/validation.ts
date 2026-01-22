@@ -2,9 +2,8 @@
  * Validation utilities for form inputs
  */
 
-// International phone number pattern
-// +[country code][number] where country code is 1-3 digits and total digits are 7-15
-const PHONE_PATTERN = /^\+[1-9]\d{6,14}$/;
+// Phone number pattern - digits only
+const PHONE_PATTERN = /^\d+$/;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -25,11 +24,11 @@ export function validatePhoneNumber(phone: string): ValidationResult {
   }
 
   const cleanPhone = phone.trim();
-  
+
   if (!PHONE_PATTERN.test(cleanPhone)) {
     return {
       isValid: false,
-      message: 'Phone number must be in international format (+1234567890)'
+      message: 'Phone number must contain only digits'
     };
   }
 
@@ -45,15 +44,8 @@ export function validatePhoneNumber(phone: string): ValidationResult {
  */
 export function formatPhoneNumber(phone: string): string {
   if (!phone) {return '';}
-  
-  const cleanPhone = phone.trim();
-  
-  // If it doesn't start with +, add it
-  if (!cleanPhone.startsWith('+')) {
-    return '+' + cleanPhone;
-  }
-  
-  return cleanPhone;
+
+  return phone.trim();
 }
 
 /**

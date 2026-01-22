@@ -70,7 +70,7 @@ class CustomerControllerTest {
     testCustomer = new Customer();
     testCustomer.setId(testCustomerId);
     testCustomer.setName("John Doe");
-    testCustomer.setPhone("+1234567890");
+    testCustomer.setPhone("1234567890");
     testCustomer.setCompany("Test Company");
     testCustomer.setBusinessRequirements("Need CRM solution");
     testCustomer.setCertificateType(CertificateType.ELECTRICIAN);
@@ -116,7 +116,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.limit").value(5))
         .andExpect(jsonPath("$.totalPages").value(1))
         .andExpect(jsonPath("$.items[0].name").value("John Doe"))
-        .andExpect(jsonPath("$.items[0].phone").value("+1234567890"));
+        .andExpect(jsonPath("$.items[0].phone").value("1234567890"));
 
     verify(customerService)
         .searchCustomers(
@@ -191,7 +191,7 @@ class CustomerControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(testCustomerId.toString()))
         .andExpect(jsonPath("$.name").value("John Doe"))
-        .andExpect(jsonPath("$.phone").value("+1234567890"))
+        .andExpect(jsonPath("$.phone").value("1234567890"))
         .andExpect(jsonPath("$.currentStatus").value("CUSTOMER_CALLED"));
 
     verify(customerService).getCustomerById(testCustomerId);
@@ -216,7 +216,7 @@ class CustomerControllerTest {
     CustomerController.CreateCustomerRequest request =
         new CustomerController.CreateCustomerRequest();
     request.setName("Jane Smith");
-    request.setPhone("+9876543210");
+    request.setPhone("9876543210");
     request.setCompany("New Company");
     request.setBusinessRequirements("Need inventory system");
     request.setCurrentStatus(CustomerStatus.CUSTOMER_CALLED);
@@ -243,10 +243,10 @@ class CustomerControllerTest {
     CustomerController.CreateCustomerRequest request =
         new CustomerController.CreateCustomerRequest();
     request.setName("Jane Smith");
-    request.setPhone("+1234567890");
+    request.setPhone("1234567890");
 
     when(customerService.createCustomer(any(Customer.class), anyString()))
-        .thenThrow(new IllegalArgumentException("Customer with phone +1234567890 already exists"));
+        .thenThrow(new IllegalArgumentException("Customer with phone 1234567890 already exists"));
 
     // When & Then
     mockMvc
@@ -266,13 +266,13 @@ class CustomerControllerTest {
     CustomerController.UpdateCustomerRequest request =
         new CustomerController.UpdateCustomerRequest();
     request.setName("Updated Name");
-    request.setPhone("+1111111111");
+    request.setPhone("1111111111");
     request.setCompany("Updated Company");
 
     Customer updatedCustomer = new Customer();
     updatedCustomer.setId(testCustomerId);
     updatedCustomer.setName("Updated Name");
-    updatedCustomer.setPhone("+1111111111");
+    updatedCustomer.setPhone("1111111111");
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.updateCustomer(eq(testCustomerId), any(Customer.class)))
@@ -287,7 +287,7 @@ class CustomerControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.name").value("Updated Name"))
-        .andExpect(jsonPath("$.phone").value("+1111111111"));
+        .andExpect(jsonPath("$.phone").value("1111111111"));
 
     verify(customerService).updateCustomer(eq(testCustomerId), any(Customer.class));
   }
@@ -299,7 +299,7 @@ class CustomerControllerTest {
     CustomerController.UpdateCustomerRequest request =
         new CustomerController.UpdateCustomerRequest();
     request.setName("Updated Name");
-    request.setPhone("+1234567890"); // Add valid phone number to pass validation
+    request.setPhone("1234567890"); // Add valid phone number to pass validation
 
     when(customerService.getCustomerById(testCustomerId))
         .thenReturn(Optional.empty()); // This will trigger the 404
