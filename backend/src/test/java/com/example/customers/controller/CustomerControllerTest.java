@@ -554,8 +554,8 @@ class CustomerControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.totalCustomers").value(10))
         .andExpect(jsonPath("$.recentlyUpdatedCount").value(5))
-        .andExpect(jsonPath("$.statusCounts.CUSTOMER_CALLED").value(3))
-        .andExpect(jsonPath("$.statusCounts.REPLIED_TO_CUSTOMER").value(2));
+        .andExpect(jsonPath("$.statusCounts.NEW").value(3))
+        .andExpect(jsonPath("$.statusCounts.NOTIFIED").value(2));
 
     verify(customerService).getCustomerStatistics(false);
   }

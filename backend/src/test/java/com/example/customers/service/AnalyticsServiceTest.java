@@ -122,9 +122,9 @@ class AnalyticsServiceTest {
     // Then
     assertNotNull(response);
     assertEquals(65L, response.getTotalCustomers());
-    assertEquals(30L, response.getStatusCounts().get("CUSTOMER_CALLED"));
-    assertEquals(20L, response.getStatusCounts().get("REPLIED_TO_CUSTOMER"));
-    assertEquals(15L, response.getStatusCounts().get("BUSINESS_DONE"));
+    assertEquals(30L, response.getStatusCounts().get("NEW"));
+    assertEquals(20L, response.getStatusCounts().get("NOTIFIED"));
+    assertEquals(15L, response.getStatusCounts().get("CERTIFIED"));
 
     verify(customerRepository).countCustomersByStatus();
   }
@@ -145,8 +145,8 @@ class AnalyticsServiceTest {
     // Then
     assertNotNull(response);
     assertEquals(23L, response.getTotalCustomers());
-    assertEquals(15L, response.getStatusCounts().get("CUSTOMER_CALLED"));
-    assertEquals(8L, response.getStatusCounts().get("BUSINESS_DONE"));
+    assertEquals(15L, response.getStatusCounts().get("NEW"));
+    assertEquals(8L, response.getStatusCounts().get("CERTIFIED"));
 
     verify(customerRepository).countCustomersByStatusForSales(testSalesPhone);
   }

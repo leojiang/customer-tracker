@@ -254,7 +254,7 @@ class StatusTransitionValidatorTest {
 
     // Then
     assertTrue(errorMessage.contains("already in status"));
-    assertTrue(errorMessage.contains("NEW"));
+    assertTrue(errorMessage.contains("New"));
   }
 
   @Test
