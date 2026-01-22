@@ -22,6 +22,7 @@ export default function HomePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
@@ -72,16 +73,29 @@ export default function HomePage() {
     <AuthGuard>
       <div className="min-h-screen bg-surface-50 flex">
         {/* Left Sidebar */}
-        <aside className="w-64 bg-white shadow-md-2 fixed h-full z-50 flex flex-col">
+        <aside
+          className={`bg-white shadow-md-2 fixed h-full z-50 flex flex-col transition-all duration-300 ease-in-out ${
+            isSidebarCollapsed ? 'w-20' : 'w-64'
+          }`}
+        >
+          {/* Edge click button */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="absolute right-0 top-0 h-full w-2 transform translate-x-full bg-transparent hover:bg-gray-200 transition-colors cursor-col-resize"
+            aria-label="Toggle sidebar"
+          />
+
           {/* Logo and Brand */}
-          <div className="p-6 border-b border-surface-200">
-            <div className="flex items-center gap-3">
+          <div className={`p-6 border-b border-surface-200 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+            <div className={`flex items-center ${isSidebarCollapsed ? '' : 'gap-3'}`}>
               <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-md-2">
                 <span className="text-white font-bold text-lg">CT</span>
               </div>
-              <div>
-                <h1 className="text-headline-5 text-surface-900">{t('app.customerTracker')}</h1>
-              </div>
+              {!isSidebarCollapsed && (
+                <div>
+                  <h1 className="text-headline-5 text-surface-900">{t('app.customerTracker')}</h1>
+                </div>
+              )}
             </div>
           </div>
 
@@ -89,41 +103,47 @@ export default function HomePage() {
           <nav className="flex-1 p-4 space-y-2">
             <button
               onClick={() => handleNavigation('list')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full flex items-center rounded-lg transition-colors ${
+                isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+              } ${
                 currentView === 'list'
                   ? 'bg-primary-100 text-primary-700 border border-primary-200'
                   : 'text-surface-700 hover:bg-surface-100'
               }`}
             >
               <Users size={20} />
-              <span className="font-medium">{t('nav.customers')}</span>
+              {!isSidebarCollapsed && <span className="font-medium">{t('nav.customers')}</span>}
             </button>
 
             {user?.role !== 'CUSTOMER_AGENT' && (
               <button
                 onClick={() => handleNavigation('dashboard')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center rounded-lg transition-colors ${
+                  isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+                } ${
                   currentView === 'dashboard'
                     ? 'bg-primary-100 text-primary-700 border border-primary-200'
                     : 'text-surface-700 hover:bg-surface-100'
                 }`}
               >
                 <BarChart3 size={20} />
-                <span className="font-medium">{t('nav.dashboard')}</span>
+                {!isSidebarCollapsed && <span className="font-medium">{t('nav.dashboard')}</span>}
               </button>
             )}
 
             {user?.role === 'ADMIN' && (
               <button
                 onClick={() => handleNavigation('user-approvals')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center rounded-lg transition-colors ${
+                  isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+                } ${
                   currentView === 'user-approvals'
                     ? 'bg-primary-100 text-primary-700 border border-primary-200'
                     : 'text-surface-700 hover:bg-surface-100'
                 }`}
               >
                 <UserCheck size={20} />
-                <span className="font-medium">{t('nav.userManagement')}</span>
+                {!isSidebarCollapsed && <span className="font-medium">{t('nav.userManagement')}</span>}
               </button>
             )}
           </nav>
@@ -132,66 +152,81 @@ export default function HomePage() {
           <div className="p-4 border-t border-surface-200">
             <button
               onClick={() => setShowSettings(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+              className={`w-full flex items-center bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors ${
+                isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+              }`}
             >
               {user?.role === 'ADMIN' ? (
                 <Shield size={20} className="text-primary-600" />
               ) : (
                 <User size={20} className="text-surface-600" />
               )}
-              <div className="flex-1 text-left">
-                <div className="text-sm font-medium text-surface-700">
-                  {user?.phone}
-                </div>
-                {user?.role === 'ADMIN' && (
-                  <div className="text-xs text-surface-500">{t('app.admin')}</div>
-                )}
-              </div>
-              <Settings size={16} className="text-surface-500" />
+              {!isSidebarCollapsed && (
+                <>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-medium text-surface-700">
+                      {user?.phone}
+                    </div>
+                    {user?.role === 'ADMIN' && (
+                      <div className="text-xs text-surface-500">{t('app.admin')}</div>
+                    )}
+                  </div>
+                  <Settings size={16} className="text-surface-500" />
+                </>
+              )}
             </button>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 ml-64">
-          <main className="p-8">
-        {currentView === 'list' && (
-          <CustomerList 
-            key={refreshTrigger}
-            onCustomerSelect={handleCustomerSelect}
-            onCreateCustomer={handleCreateCustomer}
-          />
-        )}
+        <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'} h-screen overflow-hidden`}>
+          <main className="h-full overflow-hidden">
+            {currentView === 'list' && (
+              <div className="h-full flex flex-col">
+                <CustomerList
+                  key={refreshTrigger}
+                  onCustomerSelect={handleCustomerSelect}
+                  onCreateCustomer={handleCreateCustomer}
+                />
+              </div>
+            )}
 
-        {currentView === 'detail' && selectedCustomer && (
-          <CustomerDetail 
-            customerId={selectedCustomer.id}
-            onBack={handleBack}
-          />
-        )}
+            {currentView === 'detail' && selectedCustomer && (
+              <div className="h-full overflow-y-auto">
+                <CustomerDetail
+                  customerId={selectedCustomer.id}
+                  onBack={handleBack}
+                />
+              </div>
+            )}
 
-        {currentView === 'create' && (
-          <CustomerForm 
-            onClose={handleFormClose}
-            onSuccess={handleFormSuccess}
-          />
-        )}
+            {currentView === 'create' && (
+              <CustomerForm
+                onClose={handleFormClose}
+                onSuccess={handleFormSuccess}
+              />
+            )}
 
-        {currentView === 'dashboard' && user?.role === 'ADMIN' && (
-          <AdminDashboard />
-        )}
+            {currentView === 'dashboard' && user?.role === 'ADMIN' && (
+              <div className="h-full overflow-y-auto">
+                <AdminDashboard />
+              </div>
+            )}
 
-        {currentView === 'dashboard' && user?.role !== 'ADMIN' && (
-          <div>
-            {/* Import and render Sales Dashboard component without navigation */}
-            <SalesDashboardInline onNavigateToCustomers={() => handleNavigation('list')} />
-          </div>
-        )}
+            {currentView === 'dashboard' && user?.role !== 'ADMIN' && (
+              <div className="h-full overflow-y-auto">
+                {/* Import and render Sales Dashboard component without navigation */}
+                <SalesDashboardInline onNavigateToCustomers={() => handleNavigation('list')} />
+              </div>
+            )}
 
-        {currentView === 'user-approvals' && (
-          <UserManagementPage />
-        )}
-      </main>
+            {currentView === 'user-approvals' && (
+              <div className="h-full overflow-y-auto">
+                <UserManagementPage />
+              </div>
+            )}
+          </main>
+        </div>
       
       {/* Settings Modal */}
       <SettingsModal

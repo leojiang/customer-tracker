@@ -20,6 +20,8 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   const [users, setUsers] = useState<UserApprovalDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [_error, setError] = useState<string | null>(null);
+  const [activeCount, setActiveCount] = useState(0);
+  const [disabledCount, setDisabledCount] = useState(0);
   const [userStatusTab, setUserStatusTab] = useState<'active' | 'disabled'>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -46,10 +48,18 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
       setLoading(true);
       setError(null);
 
-      const usersData = await userApprovalApi.getApprovedUsersByEnabledStatus(statusEnabled, page, size);
+      // Fetch both the user list and counts for both statuses
+      const [usersData, activeData, disabledData] = await Promise.all([
+        userApprovalApi.getApprovedUsersByEnabledStatus(statusEnabled, page, size),
+        userApprovalApi.getApprovedUsersByEnabledStatus(true, 1, 1), // Just to get count
+        userApprovalApi.getApprovedUsersByEnabledStatus(false, 1, 1) // Just to get count
+      ]);
+
       setUsers(usersData.items);
       setTotalPages(usersData.totalPages);
       setTotalUsers(usersData.total);
+      setActiveCount(activeData.total);
+      setDisabledCount(disabledData.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -77,7 +87,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   }, [isActive, userStatusTab, pageSize, fetchUsers]);
 
   useEffect(() => {
-    if (isActive && currentPage > 1) {
+    if (isActive) {
       fetchUsers(userStatusTab === 'active', currentPage, pageSize);
     }
   }, [currentPage, isActive, userStatusTab, pageSize, fetchUsers]);
@@ -165,174 +175,208 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   }
 
   return (
-    <div>
-      {/* Sub-tab Navigation */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setUserStatusTab('active')}
-            className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              userStatusTab === 'active'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-white text-gray-500 hover:text-gray-700'
-            } border border-gray-300`}
-          >
+    <div className="flex flex-col h-full">
+      {/* Statistics Cards */}
+      <div className="flex-shrink-0 mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+          <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
             <CheckCircle size={16} />
-            <span className="ml-2">{t('userManagement.active')}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setUserStatusTab('disabled')}
-            className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              userStatusTab === 'disabled'
-                ? 'bg-red-100 text-red-700'
-                : 'bg-white text-gray-500 hover:text-gray-700'
-            } border border-gray-300`}
-          >
+            {t('userManagement.activeUsers')}
+          </dt>
+          <dd className="mt-1 text-3xl font-semibold text-green-600">{activeCount}</dd>
+        </div>
+        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+          <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
             <XCircle size={16} />
-            <span className="ml-2">{t('userManagement.disabled')}</span>
-          </button>
+            {t('userManagement.disabledUsers')}
+          </dt>
+          <dd className="mt-1 text-3xl font-semibold text-red-600">{disabledCount}</dd>
         </div>
+        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+          <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
+            <Users size={16} />
+            {t('userManagement.activeRate')}
+          </dt>
+          <dd className="mt-1 text-3xl font-semibold text-indigo-600">
+            {activeCount + disabledCount > 0 ? ((activeCount / (activeCount + disabledCount)) * 100).toFixed(1) : '0.0'}%
+          </dd>
+        </div>
+      </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+      {/* Sub-tab Navigation */}
+      <div className="flex-shrink-0">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setUserStatusTab('active')}
+              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                userStatusTab === 'active'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-white text-gray-500 hover:text-gray-700'
+              } border border-gray-300`}
+            >
+              <CheckCircle size={16} />
+              <span className="ml-2">{t('userManagement.active')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserStatusTab('disabled')}
+              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                userStatusTab === 'disabled'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-white text-gray-500 hover:text-gray-700'
+              } border border-gray-300`}
+            >
+              <XCircle size={16} />
+              <span className="ml-2">{t('userManagement.disabled')}</span>
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder={`${t('approvals.phone')}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder={`${t('approvals.phone')}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Users Table */}
-      <div className="mt-8 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.phone')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('register.role')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('userManagement.accountStatus')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.requestDate')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.daysWaiting')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
-                </td>
-              </tr>
-            ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr key={user.phone} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <UserCheck className="h-6 w-6 text-indigo-600" />
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.phone}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {user.role ? getTranslatedRoleName(user.role, t) : '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.isEnabled
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.isEnabled ? (
-                        <>
-                          <CheckCircle size={12} className="mr-1" />
-                          {t('userManagement.enabled')}
-                        </>
-                      ) : (
-                        <>
-                          <XCircle size={12} className="mr-1" />
-                          {t('userManagement.disabled')}
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.daysWaiting} {t('approvals.days')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {user.isEnabled ? (
-                        <button
-                          type="button"
-                          onClick={() => openModal('disable', user.phone)}
-                          disabled={actionLoading === user.phone}
-                          className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                          title={t('userManagement.disableUser')}
-                        >
-                          <XCircle size={18} />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => openModal('enable', user.phone)}
-                          disabled={actionLoading === user.phone}
-                          className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                          title={t('userManagement.enableUser')}
-                        >
-                          <CheckCircle size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+      {/* Scrollable Users Table */}
+      <div className="flex-1 mt-8 min-h-0 overflow-hidden flex flex-col">
+        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200 flex flex-col h-full">
+          <div className="overflow-y-auto flex-1">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.phone')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('register.role')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('userManagement.accountStatus')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.requestDate')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.daysWaiting')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.actions')}
+                  </th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="text-center py-12">
-                  <Users className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm
-                      ? `${t('approvals.noUsersFoundMatching')} "${searchTerm}"`
-                      : `${t('approvals.noUsersWithStatus')} "${userStatusTab === 'active' ? t('userManagement.active') : t('userManagement.disabled')}" ${t('approvals.users')}`
-                    }
-                  </p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
+                    </td>
+                  </tr>
+                ) : filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <tr key={user.phone} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              <UserCheck className="h-6 w-6 text-indigo-600" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{user.phone}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {user.role ? getTranslatedRoleName(user.role, t) : '-'}
+                        </span>
+                      </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.isEnabled
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.isEnabled ? (
+                          <>
+                            <CheckCircle size={12} className="mr-1" />
+                            {t('userManagement.enabled')}
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={12} className="mr-1" />
+                            {t('userManagement.disabled')}
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.daysWaiting} {t('approvals.days')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        {user.isEnabled ? (
+                          <button
+                            type="button"
+                            onClick={() => openModal('disable', user.phone)}
+                            disabled={actionLoading === user.phone}
+                            className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
+                            title={t('userManagement.disableUser')}
+                          >
+                            <XCircle size={18} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openModal('enable', user.phone)}
+                            disabled={actionLoading === user.phone}
+                            className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                            title={t('userManagement.enableUser')}
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-12">
+                      <Users className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {searchTerm
+                          ? `${t('approvals.noUsersFoundMatching')} "${searchTerm}"`
+                          : `${t('approvals.noUsersWithStatus')} "${userStatusTab === 'active' ? t('userManagement.active') : t('userManagement.disabled')}" ${t('approvals.users')}`
+                        }
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Fixed at bottom */}
+      <div className="flex-shrink-0 pb-6">
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-700">
@@ -422,6 +466,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
             </button>
           </div>
         )}
+      </div>
       </div>
 
       {/* Modal */}

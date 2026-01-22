@@ -181,6 +181,7 @@ const translations = {
     'customers.searchFilter': 'Search & Filter',
     'customers.searchPlaceholder': 'Search by name or phone...',
     'customers.search': 'Search',
+    'customers.all': 'All',
     'customers.searchStatus': 'Status',
     'customers.allStatuses': 'All Statuses',
     'customers.clearFilters': 'Clear',
@@ -584,6 +585,9 @@ const translations = {
     'userManagement.userApprovals': 'User Approvals',
     'userManagement.allUsersDescription': 'View and manage all user accounts',
     'userManagement.active': 'ACTIVE',
+    'userManagement.activeUsers': 'Active Users',
+    'userManagement.disabledUsers': 'Disabled Users',
+    'userManagement.activeRate': 'Active Rate',
 
     // Customer Detail
     'detail.customerDetails': 'Customer Details',
@@ -774,6 +778,7 @@ const translations = {
     'customers.searchFilter': '搜索和筛选',
     'customers.searchPlaceholder': '按姓名或电话搜索...',
     'customers.search': '搜索',
+    'customers.all': '全部',
     'customers.searchStatus': '状态',
     'customers.allStatuses': '所有状态',
     'customers.clearFilters': '清除',
@@ -1178,6 +1183,9 @@ const translations = {
     'userManagement.userApprovals': '用户审批',
     'userManagement.allUsersDescription': '查看和管理所有用户账户',
     'userManagement.active': '活跃',
+    'userManagement.activeUsers': '活跃用户',
+    'userManagement.disabledUsers': '已禁用用户',
+    'userManagement.activeRate': '活跃率',
 
     // Customer Detail
     'detail.customerDetails': '客户详情',

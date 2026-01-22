@@ -3,10 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
 import { UserManagementRefreshProvider } from '@/contexts/UserManagementRefreshContext';
 import { useRouter } from 'next/navigation';
-import { RefreshCw } from 'lucide-react';
 import AllUsersTab from '@/components/user-management/AllUsersTab';
 import UserApprovalsTab from '@/components/user-management/UserApprovalsTab';
 import CustomerDeleteRequestsTab from '@/components/user-management/CustomerDeleteRequestsTab';
@@ -18,7 +16,6 @@ import CustomerDeleteRequestsTab from '@/components/user-management/CustomerDele
 function UserManagementPageContent() {
   const { user, token } = useAuth();
   const { t } = useLanguage();
-  const { refreshAllUsers, refreshUserApprovals, refreshDeleteRequests, isRefreshing } = useUserManagementRefresh();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all-users' | 'approvals' | 'delete-requests'>('all-users');
 
@@ -34,16 +31,6 @@ function UserManagementPageContent() {
     }
   }, [user, token, router]);
 
-  const handleRefresh = () => {
-    if (activeTab === 'all-users') {
-      refreshAllUsers();
-    } else if (activeTab === 'approvals') {
-      refreshUserApprovals();
-    } else if (activeTab === 'delete-requests') {
-      refreshDeleteRequests();
-    }
-  };
-
   if (!user || !token || user.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -56,30 +43,10 @@ function UserManagementPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 overflow-y-scroll">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="min-w-0 flex-1">
-          </div>
-          <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
-            <button
-              type="button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw
-                size={16}
-                className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
-              />
-              {isRefreshing ? t('nav.refreshing') : t('nav.refresh')}
-            </button>
-          </div>
-        </div>
-
+    <div className="flex flex-col bg-gray-50 h-full">
+      <div className="px-4 sm:px-6 lg:px-8">
         {/* Tab Navigation */}
-        <div className="mt-8 border-b border-gray-200">
+        <div className="mt-8 border-b border-gray-200 flex-shrink-0">
           <nav className="-mb-px flex space-x-8">
             <button
               type="button"
@@ -116,8 +83,10 @@ function UserManagementPageContent() {
             </button>
           </nav>
         </div>
+      </div>
 
-        {/* Tab Content */}
+      {/* Tab Content - Takes full height */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <AllUsersTab isActive={activeTab === 'all-users'} />
         <UserApprovalsTab isActive={activeTab === 'approvals'} />
         <CustomerDeleteRequestsTab isActive={activeTab === 'delete-requests'} />

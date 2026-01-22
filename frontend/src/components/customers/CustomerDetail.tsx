@@ -379,7 +379,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   }
 
   return (
-    <div className="space-y-8">
+    <div className="px-8 py-6 space-y-8">
       {/* Header */}
       <div className="flex items-center">
         <button onClick={onBack} className="btn-secondary flex items-center gap-3">
@@ -392,60 +392,32 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         <div className="lg:col-span-2 flex">
           <div className="card-elevated flex-1 flex flex-col" id="customer-info-card">
             <div className="card-header flex-shrink-0">
-              <h2 className="text-headline-5">{t('customers.detail.customerDetails')}</h2>
-            </div>
-            <div className="card-content flex-grow">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
-                <div className="flex-1">
-                  {isEditing ? (
-                    <div>
-                      <label className='input-label'>{t('customers.form.name')}</label>
-                      <input
-                        type="text"
-                        value={editForm.name}
-                        onChange={(e) => handleEditFormChange('name', e.target.value)}
-                        onBlur={(e) => validateEditField('name', e.target.value)}
-                        className={`input-field text-headline-4 font-medium ${fieldErrors.name ? 'border-red-500' : ''}`}
-                      />
-                      {fieldErrors.name && (
-                        <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
-                          <AlertCircle size={14} />
-                          <span>{fieldErrors.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 mb-3">
-                      <h2 className="text-headline-3">{customer.name}</h2>
-                      <StatusBadge key={customer.currentStatus} status={customer.currentStatus} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex justify-between items-center">
+                <h2 className="text-headline-5">{t('customers.detail.customerDetails')}</h2>
+                <div className="flex gap-3">
                   {isEditing ? (
                     <>
                       <button
                         onClick={handleSave}
                         disabled={updating}
-                        className="btn-primary flex items-center justify-center gap-3"
+                        className="btn-primary flex items-center justify-center gap-2 text-sm px-4 py-2"
                       >
-                        <Save size={18} />
+                        <Save size={16} />
                         {updating ? t('customers.form.updating') : t('customers.form.update')}
                       </button>
                       <button
                         onClick={handleCancelEdit}
-                        className="btn-secondary flex items-center justify-center gap-3"
+                        className="btn-secondary flex items-center justify-center gap-2 text-sm px-4 py-2"
                       >
-                        <X size={18} />
+                        <X size={16} />
                         {t('customers.form.cancel')}
                       </button>
                     </>
                   ) : (
                     <>
                       {canEdit() && (
-                        <button onClick={handleEdit} className="btn-outline flex items-center justify-center gap-3">
-                          <Edit size={18} />
+                        <button onClick={handleEdit} className="btn-outline flex items-center justify-center gap-2 text-sm px-4 py-2">
+                          <Edit size={16} />
                           {t('customers.detail.edit')}
                         </button>
                       )}
@@ -453,15 +425,42 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                         <button
                           onClick={() => setShowDeleteRequestModal(true)}
                           disabled={isDeleting}
-                          className="btn-outline flex items-center justify-center gap-3 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                          className="btn-outline flex items-center justify-center gap-2 text-sm px-4 py-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                           {t('deleteRequests.requestDeletion')}
                         </button>
                       )}
                     </>
                   )}
                 </div>
+              </div>
+            </div>
+            <div className="card-content flex-grow">
+              <div className="mb-8">
+                {isEditing ? (
+                  <div>
+                    <label className='input-label'>{t('customers.form.name')}</label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => handleEditFormChange('name', e.target.value)}
+                      onBlur={(e) => validateEditField('name', e.target.value)}
+                      className={`input-field text-headline-4 font-medium ${fieldErrors.name ? 'border-red-500' : ''}`}
+                    />
+                    {fieldErrors.name && (
+                      <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                        <AlertCircle size={14} />
+                        <span>{fieldErrors.name}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-headline-3">{customer.name}</h2>
+                    <StatusBadge key={customer.currentStatus} status={customer.currentStatus} />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

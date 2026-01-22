@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { RefreshCw } from 'lucide-react';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
@@ -66,19 +65,14 @@ export default function AdminDashboard() {
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchDashboardData = useCallback(async (isRefresh = false) => {
+  const fetchDashboardData = useCallback(async () => {
     if (!token) {
       return;
     }
 
     try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
 
       // Fetch all dashboard data in parallel
@@ -128,7 +122,6 @@ export default function AdminDashboard() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [token]);
 
@@ -145,10 +138,6 @@ export default function AdminDashboard() {
 
     fetchDashboardData();
   }, [user, token, router, fetchDashboardData]);
-
-  const handleRefresh = () => {
-    fetchDashboardData(true);
-  };
 
   if (loading) {
     return (
@@ -181,24 +170,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="px-8 py-6 space-y-8">
       <div>
-        {/* Header */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="min-w-0 flex-1">
-          </div>
-          <div className="mt-4 flex gap-3 md:ml-4 md:mt-0">
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? t('nav.refreshing') : t('nav.refresh')}
-            </button>
-          </div>
-        </div>
-
         {/* KPI Cards */}
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard

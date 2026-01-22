@@ -113,7 +113,7 @@ export default function CustomerDeleteRequestsTab({
   }, [isActive, pageSize, fetchRequests, selectedStatus]);
 
   useEffect(() => {
-    if (isActive && currentPage > 1) {
+    if (isActive) {
       fetchRequests(currentPage, pageSize);
     }
   }, [currentPage, isActive, pageSize, fetchRequests]);
@@ -245,10 +245,10 @@ export default function CustomerDeleteRequestsTab({
   }
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {/* Statistics Cards */}
       {statistics && (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex-shrink-0 mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
             <dt className="text-sm font-medium text-gray-500 truncate">{t('deleteRequests.pending')}</dt>
             <dd className="mt-1 text-3xl font-semibold text-yellow-600">{statistics.pendingCount}</dd>
@@ -271,7 +271,7 @@ export default function CustomerDeleteRequestsTab({
       )}
 
       {/* Status Filters and Search */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="flex-shrink-0 mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex gap-2">
           {Object.values(DeleteRequestStatus).map((status) => (
             <button
@@ -325,137 +325,142 @@ export default function CustomerDeleteRequestsTab({
       </div>
 
       {/* Requests Table */}
-      <div className="mt-8 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('customers.name')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('customers.phone')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('deleteRequests.requestedBy')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('deleteRequests.reason')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('deleteRequests.requestedAt')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-12 text-center"
-                >
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">
-                    {t('deleteRequests.loadingRequests')}
-                  </p>
-                </td>
-              </tr>
-            ) : filteredRequests.length > 0 ? (
-              filteredRequests.map((request) => (
-                <tr
-                  key={request.id}
-                  className="hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <User className="h-6 w-6 text-indigo-600" />
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {request.customerName}
-                        </div>
-                        {request.rejectionReason && (
-                          <div className="text-sm text-red-600">
-                            {t('deleteRequests.rejectionReason')}: {request.rejectionReason}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {request.customerPhone}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {request.requestedBy}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                    {request.reason}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(request.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openApproveModal(request.id)}
-                        disabled={
-                          actionLoading === request.id ||
-                          request.requestStatus !== 'PENDING'
-                        }
-                        className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                        title={t('deleteRequests.approve')}
-                      >
-                        <CheckCircle size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openRejectModal(request.id)}
-                        disabled={
-                          actionLoading === request.id ||
-                          request.requestStatus !== 'PENDING'
-                        }
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        title={t('deleteRequests.reject')}
-                      >
-                        <XCircle size={18} />
-                      </button>
-                    </div>
-                  </td>
+      <div className="flex-1 mt-8 min-h-0 overflow-hidden flex flex-col">
+        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200 flex flex-col h-full">
+          <div className="overflow-y-auto flex-1">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('customers.name')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('customers.phone')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('deleteRequests.requestedBy')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('deleteRequests.reason')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('deleteRequests.requestedAt')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.actions')}
+                  </th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="text-center py-12"
-                >
-                  <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    {t('deleteRequests.noRequestsFound')}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm
-                      ? `${t('deleteRequests.noRequestsMatching')} "${searchTerm}"`
-                      : selectedStatus === DeleteRequestStatus.PENDING
-                      ? t('deleteRequests.noPendingRequests')
-                      : selectedStatus === DeleteRequestStatus.APPROVED
-                      ? t('deleteRequests.noApprovedRequests')
-                      : t('deleteRequests.noRejectedRequests')}
-                  </p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center"
+                    >
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">
+                        {t('deleteRequests.loadingRequests')}
+                      </p>
+                    </td>
+                  </tr>
+                ) : filteredRequests.length > 0 ? (
+                  filteredRequests.map((request) => (
+                    <tr
+                      key={request.id}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              <User className="h-6 w-6 text-indigo-600" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {request.customerName}
+                            </div>
+                            {request.rejectionReason && (
+                              <div className="text-sm text-red-600">
+                                {t('deleteRequests.rejectionReason')}: {request.rejectionReason}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {request.customerPhone}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {request.requestedBy}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        {request.reason}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(request.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openApproveModal(request.id)}
+                            disabled={
+                              actionLoading === request.id ||
+                              request.requestStatus !== 'PENDING'
+                            }
+                            className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                            title={t('deleteRequests.approve')}
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openRejectModal(request.id)}
+                            disabled={
+                              actionLoading === request.id ||
+                              request.requestStatus !== 'PENDING'
+                            }
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                            title={t('deleteRequests.reject')}
+                          >
+                            <XCircle size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="text-center py-12"
+                    >
+                      <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">
+                        {t('deleteRequests.noRequestsFound')}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {searchTerm
+                          ? `${t('deleteRequests.noRequestsMatching')} "${searchTerm}"`
+                          : selectedStatus === DeleteRequestStatus.PENDING
+                          ? t('deleteRequests.noPendingRequests')
+                          : selectedStatus === DeleteRequestStatus.APPROVED
+                          ? t('deleteRequests.noApprovedRequests')
+                          : t('deleteRequests.noRejectedRequests')}
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
+      <div className="flex-shrink-0 pb-6">
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-700">
@@ -558,6 +563,7 @@ export default function CustomerDeleteRequestsTab({
             </button>
           </div>
         )}
+      </div>
       </div>
 
       {/* Reject Modal */}

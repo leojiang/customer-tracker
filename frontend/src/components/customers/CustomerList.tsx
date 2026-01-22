@@ -167,30 +167,22 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }));
   };
 
-  const handlePageChange = (newPage: number) => {
-    setSearchParams(prev => ({ ...prev, page: newPage }));
-  };
-
   const handleClearAllFilters = () => {
     setSearchTerm('');
-    setCertifiedStartDate('');
-    setCertifiedEndDate('');
-    setSelectedCertificateType('');
     setSelectedStatus('');
+    setSelectedCertificateType('');
     setCertificateIssuer('');
     setCustomerAgent('');
-    setSearchParams(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleClearDateRange = () => {
     setCertifiedStartDate('');
     setCertifiedEndDate('');
-    setSearchParams(prev => ({
-      ...prev,
-      certifiedStartDate: undefined,
-      certifiedEndDate: undefined,
+    setSearchParams({
       page: 1,
-    }));
+      limit: searchParams.limit,
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setSearchParams(prev => ({ ...prev, page: newPage }));
   };
 
   // Generate page numbers for pagination
@@ -258,223 +250,220 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-headline-2 mb-2">{t('customers.management')}</h1>
-          <p className="text-body-2">{t('customers.manageTrack')}</p>
-        </div>
-        {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
-          <button
-            onClick={onCreateCustomer}
-            className="btn-primary flex items-center justify-center gap-3 sm:w-auto"
-          >
-            <Plus size={20} />
-            {t('customers.addCustomer')}
-          </button>
-        )}
-      </div>
-
-      {/* Main Content: Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Column: Search & Filter */}
-        <div className="lg:col-span-1">
-          <div className="card-elevated sticky top-24">
-            <div className="card-header">
-              <h2 className="text-headline-6">{t('customers.searchFilter')}</h2>
-            </div>
-            <div className="card-content">
-              <form onSubmit={handleSearch} className="space-y-4">
-                {/* Search Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('customers.search')}
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400" size={18} />
-                    <input
-                      type="text"
-                      placeholder={t('customers.searchPlaceholder')}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="input-field pl-10"
-                    />
-                  </div>
-                </div>
-
-                {/* Certificate Type Filter */}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    {t('customers.form.certificateType')}
-                  </h3>
-                  <select
-                    value={selectedCertificateType}
-                    onChange={(e) => setSelectedCertificateType(e.target.value)}
-                    className="input-field w-full"
-                  >
-                    <option value="">{t('customers.form.selectCertificateType')}</option>
-                    {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
-                      <option key={key} value={key}>
-                        {t(CertificateTypeTranslationKeys[key as CertificateType])}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Certificate Issuer Filter */}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    {t('customers.form.certificateIssuer')}
-                  </h3>
+    <div className="flex flex-col h-full">
+      {/* Fixed Top Bar: Search & Filters */}
+      <div className="bg-white border-b border-gray-200 px-8 py-4 flex-shrink-0">
+        <form onSubmit={handleSearch}>
+          {/* Row 1: Search Input + Status + Certificate Type + Clear Button */}
+          <div className="flex gap-3 mb-3 items-end">
+            <div className="grid grid-cols-12 gap-3 flex-1">
+              {/* Search Input - 5 columns (same as certificate issuer) */}
+              <div className="col-span-5">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.name')} / {t('customers.phone')}</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400" size={18} />
                   <input
                     type="text"
-                    placeholder={t('customers.form.certificateIssuer.placeholder')}
-                    value={certificateIssuer}
-                    onChange={(e) => setCertificateIssuer(e.target.value)}
-                    className="input-field w-full"
+                    placeholder={t('customers.searchPlaceholder')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input-field w-full pl-10"
                   />
                 </div>
+              </div>
 
-                {/* Customer Agent Filter */}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    {t('customers.form.customerAgent')}
-                  </h3>
-                  <input
-                    type="text"
-                    placeholder={t('customers.form.customerAgent.placeholder')}
-                    value={customerAgent}
-                    onChange={(e) => setCustomerAgent(e.target.value)}
-                    className="input-field w-full"
-                  />
-                </div>
+              {/* Status Filter - 2 columns */}
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.searchStatus')}</label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="input-field w-full text-sm"
+                >
+                  <option value="">{t('customers.all')}</option>
+                  {Object.values(CustomerStatus).map((status) => (
+                    <option key={status} value={status}>
+                      {t(CustomerStatusTranslationKeys[status])}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Status Filter */}
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    {t('customers.searchStatus')}
-                  </h3>
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="input-field w-full"
-                  >
-                    <option value="">{t('customers.allStatuses')}</option>
-                    {Object.entries(CustomerStatusTranslationKeys).map(([key]) => (
-                      <option key={key} value={key}>
-                        {t(CustomerStatusTranslationKeys[key as CustomerStatus])}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Certified Date Range Filter */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium text-gray-700">
-                      {t('customers.certifiedTimeRange')}
-                    </h3>
-                    {(certifiedStartDate || certifiedEndDate) && (
-                      <button
-                        type="button"
-                        onClick={handleClearDateRange}
-                        className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                      >
-                        <X size={14} />
-                        {t('customers.clear')}
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        {t('customers.startDate')}
-                      </label>
-                      <input
-                        type="date"
-                        value={certifiedStartDate}
-                        onChange={(e) => setCertifiedStartDate(e.target.value)}
-                        className="input-field w-full text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        {t('customers.endDate')}
-                      </label>
-                      <input
-                        type="date"
-                        value={certifiedEndDate}
-                        onChange={(e) => setCertifiedEndDate(e.target.value)}
-                        className="input-field w-full text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleClearAllFilters}
-                    className="flex-1 btn-secondary flex items-center justify-center gap-2"
-                  >
-                    <X size={18} />
-                    {t('customers.clearFilters')}
-                  </button>
-                  <button type="submit" className="flex-1 btn-primary flex items-center justify-center gap-2">
-                    <Search size={18} />
-                    {t('customers.search')}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Customer List */}
-        <div className="lg:col-span-3">
-        <div className="card-elevated">{loading ? (
-          <div className="card-content text-center py-12">
-            <div className="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
-            <div className="text-body-1 text-surface-600">{t('customers.loadingCustomers')}</div>
-          </div>
-        ) : customers.length === 0 ? (
-          <div className="card-content text-center py-12">
-            <div className="w-16 h-16 bg-surface-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Phone size={24} className="text-surface-400" />
-            </div>
-            <div className="text-headline-6 mb-2">{t('customers.noCustomersFound')}</div>
-            <p className="text-body-2 mb-6">
-              {searchTerm ? t('customers.adjustSearch') : t('customers.getStartedFirst')}
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => {
-                setSearchTerm('');
-                setSearchParams(prev => ({ ...prev, q: undefined, phone: undefined, page: 1 }));
-              }}
-              className="btn-outline"
-            >
-              {t('customers.clearSearch')}
-            </button>
-          )}
-        </div>
-
-      ) : (
-        <>
-          <div className="card-header">
-            <div className="flex justify-between items-center">
-              <h2 className="text-headline-6">
-                {t('customers.found')} {pageInfo.total} {pageInfo.total === 1 ? t('customers.customersFound') : t('customers.customersFoundPlural')}
-              </h2>
-              <div className="text-body-2">
-                {t('customers.pageInfo', { page: pageInfo.page, total: pageInfo.totalPages })}
+              {/* Certificate Type Filter - 2 columns */}
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateType')}</label>
+                <select
+                  value={selectedCertificateType}
+                  onChange={(e) => setSelectedCertificateType(e.target.value)}
+                  className="input-field w-full text-sm"
+                >
+                  <option value="">{t('customers.all')}</option>
+                  {Object.values(CertificateType).map((type) => (
+                    <option key={type} value={type}>
+                      {t(CertificateTypeTranslationKeys[type])}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
+
+            {/* Clear Button - at the end of row 1 - wider */}
+            <button
+              type="button"
+              onClick={handleClearAllFilters}
+              className="btn-secondary flex items-center gap-2 px-8 py-2 flex-shrink-0 min-w-[120px]"
+            >
+              <X size={16} />
+              <span>{t('customers.clear')}</span>
+            </button>
           </div>
-          <div className="divide-y divide-surface-100">
-            {customers.map((customer) => (
+
+          {/* Row 2: Certificate Issuer + Customer Agent + Start Date + End Date + Search Button */}
+          <div className="flex gap-3 items-end">
+            <div className="grid grid-cols-12 gap-3 flex-1">
+              {/* Certificate Issuer - 5 columns (expanded) */}
+              <div className="col-span-5">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateIssuer')}</label>
+                <input
+                  type="text"
+                  value={certificateIssuer}
+                  onChange={(e) => setCertificateIssuer(e.target.value)}
+                  placeholder={t('customers.form.certificateIssuer.placeholder')}
+                  className="input-field w-full text-sm"
+                />
+              </div>
+
+              {/* Customer Agent - 2 columns (conditional for Admin/Officer) */}
+              {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
+                <div className="col-span-2">
+                  <label className="block text-xs text-gray-600 mb-1">{t('customers.form.customerAgent')}</label>
+                  <input
+                    type="text"
+                    value={customerAgent}
+                    onChange={(e) => setCustomerAgent(e.target.value)}
+                    placeholder={t('customers.form.customerAgent.placeholder')}
+                    className="input-field w-full text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Start Date - 2 columns */}
+              <div className="col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-gray-600">{t('customers.startDate')}</label>
+                  {certifiedStartDate && (
+                    <button
+                      type="button"
+                      onClick={() => setCertifiedStartDate('')}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Clear start date"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="date"
+                  value={certifiedStartDate}
+                  onChange={(e) => setCertifiedStartDate(e.target.value)}
+                  className="input-field w-full text-sm"
+                />
+              </div>
+
+              {/* End Date - 2 columns */}
+              <div className="col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-gray-600">{t('customers.endDate')}</label>
+                  {certifiedEndDate && (
+                    <button
+                      type="button"
+                      onClick={() => setCertifiedEndDate('')}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Clear end date"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="date"
+                  value={certifiedEndDate}
+                  onChange={(e) => setCertifiedEndDate(e.target.value)}
+                  className="input-field w-full text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Search Button - at the end of row 2 - wider */}
+            <button
+              type="submit"
+              className="btn-primary flex items-center gap-2 px-8 py-2 flex-shrink-0 min-w-[120px]"
+            >
+              <Search size={16} />
+              <span>{t('customers.search')}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Floating Add Customer Button - Above Pagination at Bottom Right */}
+      {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
+        <button
+          onClick={onCreateCustomer}
+          className="fixed bottom-24 right-8 w-14 h-14 bg-primary-500 hover:bg-primary-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-xl z-50"
+          aria-label={t('customers.addCustomer')}
+        >
+          <Plus size={24} strokeWidth={2.5} />
+        </button>
+      )}
+
+      {/* Scrollable Customer List */}
+      <div className="flex-1 overflow-y-auto px-8 py-6">
+        {loading ? (
+          <div className="card-elevated">
+            <div className="card-content text-center py-12">
+              <div className="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
+              <div className="text-body-1 text-surface-600">{t('customers.loadingCustomers')}</div>
+            </div>
+          </div>
+        ) : customers.length === 0 ? (
+          <div className="card-elevated">
+            <div className="card-content text-center py-12">
+              <div className="w-16 h-16 bg-surface-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Phone size={24} className="text-surface-400" />
+              </div>
+              <div className="text-headline-6 mb-2">{t('customers.noCustomersFound')}</div>
+              <p className="text-body-2 mb-6">
+                {searchTerm ? t('customers.adjustSearch') : t('customers.getStartedFirst')}
+              </p>
+              {searchTerm && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSearchParams(prev => ({ ...prev, q: undefined, phone: undefined, page: 1 }));
+                  }}
+                  className="btn-outline"
+                >
+                  {t('customers.clearSearch')}
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="card-elevated">
+            <div className="card-header">
+              <div className="flex justify-between items-center">
+                <h2 className="text-headline-6">
+                  {t('customers.found')} {pageInfo.total} {pageInfo.total === 1 ? t('customers.customersFound') : t('customers.customersFoundPlural')}
+                </h2>
+                <div className="text-body-2">
+                  {t('customers.pageInfo', { page: pageInfo.page, total: pageInfo.totalPages })}
+                </div>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="divide-y divide-surface-100">
+                {customers.map((customer) => (
               <div
                 key={customer.id}
                 onClick={() => handleCustomerClick(customer)}
@@ -519,108 +508,110 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </div>
               </div>
             ))}
+              </div>
+            </div>
           </div>
-
-        </>
-      )}
+        )}
       </div>
 
-      {/* Enhanced Pagination */}
-      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Results Info and Page Size Selector */}
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-700">
-            {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
-          </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="pageSize" className="text-sm text-gray-700">
-              {t('customers.show')}
-            </label>
-            <select
-              id="pageSize"
-              value={pageInfo.limit}
-              onChange={(e) => {
-                const newLimit = parseInt(e.target.value);
-                setSearchParams(prev => ({ ...prev, limit: newLimit, page: 1 }));
-              }}
-              className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-            <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
-          </div>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex items-center gap-2">
-          {/* First Page Button */}
-          <button
-            onClick={() => handlePageChange(1)}
-            disabled={pageInfo.page === 1}
-            className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            title={t('approvals.firstPage')}
-          >
-            <ChevronLeft size={16} />
-            <ChevronLeft size={16} className="-ml-1" />
-          </button>
-
-            {/* Previous Page Button */}
-            <button
-              onClick={() => handlePageChange(pageInfo.page - 1)}
-              disabled={pageInfo.page === 1}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('approvals.previousPage')}
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {getPageNumbers().map((pageNum, index) => (
-                <button
-                  key={`${pageNum}-${index}`}
-                  onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
-                  disabled={typeof pageNum !== 'number'}
-                  className={`px-3 py-2 text-sm font-medium rounded-md ${
-                    pageNum === pageInfo.page
-                      ? 'bg-indigo-600 text-white border border-indigo-600'
-                      : typeof pageNum === 'number'
-                      ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      : 'text-gray-400 bg-white border border-transparent cursor-default'
-                  }`}
+      {/* Fixed Pagination at Bottom */}
+      {!loading && customers.length > 0 && (
+        <div className="px-8 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+          {/* Results Info and Page Size Selector */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-700">
+                {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="pageSize" className="text-sm text-gray-700">
+                  {t('customers.show')}
+                </label>
+                <select
+                  id="pageSize"
+                  value={pageInfo.limit}
+                  onChange={(e) => {
+                    const newLimit = parseInt(e.target.value);
+                    setSearchParams(prev => ({ ...prev, limit: newLimit, page: 1 }));
+                  }}
+                  className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  {pageNum}
-                </button>
-              ))}
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
+              </div>
             </div>
 
-            {/* Next Page Button */}
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-2">
+            {/* First Page Button */}
             <button
-              onClick={() => handlePageChange(pageInfo.page + 1)}
-              disabled={pageInfo.page === pageInfo.totalPages}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('approvals.nextPage')}
+              onClick={() => handlePageChange(1)}
+              disabled={pageInfo.page === 1}
+              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              title={t('approvals.firstPage')}
             >
-              <ChevronRight size={16} />
+              <ChevronLeft size={16} />
+              <ChevronLeft size={16} className="-ml-1" />
             </button>
 
-            {/* Last Page Button */}
-            <button
-              onClick={() => handlePageChange(pageInfo.totalPages)}
-              disabled={pageInfo.page === pageInfo.totalPages}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              title={t('approvals.lastPage')}
-            >
-              <ChevronRight size={16} />
-              <ChevronRight size={16} className="-ml-1" />
-            </button>
+              {/* Previous Page Button */}
+              <button
+                onClick={() => handlePageChange(pageInfo.page - 1)}
+                disabled={pageInfo.page === 1}
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('approvals.previousPage')}
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((pageNum, index) => (
+                  <button
+                    key={`${pageNum}-${index}`}
+                    onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
+                    disabled={typeof pageNum !== 'number'}
+                    className={`px-3 py-2 text-sm font-medium rounded-md ${
+                      pageNum === pageInfo.page
+                        ? 'bg-indigo-600 text-white border border-indigo-600'
+                        : typeof pageNum === 'number'
+                        ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        : 'text-gray-400 bg-white border border-transparent cursor-default'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next Page Button */}
+              <button
+                onClick={() => handlePageChange(pageInfo.page + 1)}
+                disabled={pageInfo.page === pageInfo.totalPages}
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('approvals.nextPage')}
+              >
+                <ChevronRight size={16} />
+              </button>
+
+              {/* Last Page Button */}
+              <button
+                onClick={() => handlePageChange(pageInfo.totalPages)}
+                disabled={pageInfo.page === pageInfo.totalPages}
+                className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                title={t('approvals.lastPage')}
+              >
+                <ChevronRight size={16} />
+                <ChevronRight size={16} className="-ml-1" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -89,7 +89,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
   }, [isActive, selectedStatus, pageSize, fetchData]);
 
   useEffect(() => {
-    if (isActive && currentPage > 1) {
+    if (isActive) {
       fetchData(selectedStatus, currentPage, pageSize);
     }
   }, [currentPage, isActive, selectedStatus, pageSize, fetchData]);
@@ -219,10 +219,10 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
   }
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {/* Statistics Cards */}
       {statistics && (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex-shrink-0 mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
             <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.pending')}</dt>
             <dd className="mt-1 text-3xl font-semibold text-yellow-600">{statistics.pendingCount}</dd>
@@ -245,7 +245,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
       )}
 
       {/* Status Filters and Search */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="flex-shrink-0 mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex gap-2">
           {Object.values(ApprovalStatus).map((status) => (
             <button
@@ -288,178 +288,183 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
       </div>
 
       {/* Users Table */}
-      <div className="mt-8 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.phone')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('register.role')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.status')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('userManagement.accountStatus')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.requestDate')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.daysWaiting')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('approvals.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
-                </td>
-              </tr>
-            ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr key={user.phone} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <UserCheck className="h-6 w-6 text-indigo-600" />
+      <div className="flex-1 mt-8 min-h-0 overflow-hidden flex flex-col">
+        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg transition-opacity duration-200 flex flex-col h-full">
+          <div className="overflow-y-auto flex-1">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.phone')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('register.role')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.status')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('userManagement.accountStatus')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.requestDate')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.daysWaiting')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('approvals.actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
+                    </td>
+                  </tr>
+                ) : filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <tr key={user.phone} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              <UserCheck className="h-6 w-6 text-indigo-600" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{user.phone}</div>
+                            {user.rejectionReason && (
+                              <div className="text-sm text-red-600">{t('approvals.rejectionReason')}: {user.rejectionReason}</div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.phone}</div>
-                        {user.rejectionReason && (
-                          <div className="text-sm text-red-600">{t('approvals.rejectionReason')}: {user.rejectionReason}</div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {user.role ? getTranslatedRoleName(user.role, t) : '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(user.approvalStatus)}`}>
-                      {getStatusIcon(user.approvalStatus)}
-                      <span className="ml-1">{getTranslatedApprovalStatusName(user.approvalStatus, t)}</span>
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.isEnabled
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.isEnabled ? (
-                        <>
-                          <CheckCircle size={12} className="mr-1" />
-                          {t('userManagement.enabled')}
-                        </>
-                      ) : (
-                        <>
-                          <XCircle size={12} className="mr-1" />
-                          {t('userManagement.disabled')}
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.daysWaiting} {t('approvals.days')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {user.approvalStatus === ApprovalStatus.PENDING && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => openModal('approve', user.phone)}
-                            disabled={actionLoading === user.phone}
-                            className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                            title={t('approvals.approveUser')}
-                          >
-                            <CheckCircle size={18} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openModal('reject', user.phone)}
-                            disabled={actionLoading === user.phone}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                            title={t('approvals.rejectUser')}
-                          >
-                            <XCircle size={18} />
-                          </button>
-                        </>
-                      )}
-                      {user.approvalStatus === ApprovalStatus.APPROVED && (
-                        <>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {user.role ? getTranslatedRoleName(user.role, t) : '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(user.approvalStatus)}`}>
+                          {getStatusIcon(user.approvalStatus)}
+                          <span className="ml-1">{getTranslatedApprovalStatusName(user.approvalStatus, t)}</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.isEnabled
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
                           {user.isEnabled ? (
-                            <button
-                              type="button"
-                              onClick={() => openModal('disable', user.phone)}
-                              disabled={actionLoading === user.phone}
-                              className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                              title={t('userManagement.disableUser')}
-                            >
-                              <XCircle size={18} />
-                            </button>
+                            <>
+                              <CheckCircle size={12} className="mr-1" />
+                              {t('userManagement.enabled')}
+                            </>
                           ) : (
+                            <>
+                              <XCircle size={12} className="mr-1" />
+                              {t('userManagement.disabled')}
+                            </>
+                          )}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.daysWaiting} {t('approvals.days')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          {user.approvalStatus === ApprovalStatus.PENDING && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openModal('approve', user.phone)}
+                                disabled={actionLoading === user.phone}
+                                className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                                title={t('approvals.approveUser')}
+                              >
+                                <CheckCircle size={18} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openModal('reject', user.phone)}
+                                disabled={actionLoading === user.phone}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                title={t('approvals.rejectUser')}
+                              >
+                                <XCircle size={18} />
+                              </button>
+                            </>
+                          )}
+                          {user.approvalStatus === ApprovalStatus.APPROVED && (
+                            <>
+                              {user.isEnabled ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openModal('disable', user.phone)}
+                                  disabled={actionLoading === user.phone}
+                                  className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
+                                  title={t('userManagement.disableUser')}
+                                >
+                                  <XCircle size={18} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => openModal('enable', user.phone)}
+                                  disabled={actionLoading === user.phone}
+                                  className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                                  title={t('userManagement.enableUser')}
+                                >
+                                  <CheckCircle size={18} />
+                                </button>
+                              )}
+                            </>
+                          )}
+                          {user.approvalStatus !== ApprovalStatus.PENDING && (
                             <button
                               type="button"
-                              onClick={() => openModal('enable', user.phone)}
+                              onClick={() => openModal('reset', user.phone)}
                               disabled={actionLoading === user.phone}
-                              className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                              title={t('userManagement.enableUser')}
+                              className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                              title={t('approvals.resetToPending')}
                             >
-                              <CheckCircle size={18} />
+                              <Clock size={18} />
                             </button>
                           )}
-                        </>
-                      )}
-                      {user.approvalStatus !== ApprovalStatus.PENDING && (
-                        <button
-                          type="button"
-                          onClick={() => openModal('reset', user.phone)}
-                          disabled={actionLoading === user.phone}
-                          className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
-                          title={t('approvals.resetToPending')}
-                        >
-                          <Clock size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center py-12">
-                  <Users className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm
-                      ? `${t('approvals.noUsersFoundMatching')} "${searchTerm}"`
-                      : `${t('approvals.noUsersWithStatus')} "${getTranslatedApprovalStatusName(selectedStatus, t)}"`
-                    }
-                  </p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12">
+                      <Users className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {searchTerm
+                          ? `${t('approvals.noUsersFoundMatching')} "${searchTerm}"`
+                          : `${t('approvals.noUsersWithStatus')} "${getTranslatedApprovalStatusName(selectedStatus, t)}"`
+                        }
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
+      <div className="flex-shrink-0 pb-6">
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-700">
@@ -549,6 +554,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
             </button>
           </div>
         )}
+      </div>
       </div>
 
       {/* Modal */}
