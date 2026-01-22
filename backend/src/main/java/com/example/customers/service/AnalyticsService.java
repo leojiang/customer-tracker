@@ -284,8 +284,7 @@ public class AnalyticsService {
         (salesPhone != null)
             ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
                 CustomerStatus.CERTIFIED, salesPhone)
-            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(
-                CustomerStatus.CERTIFIED);
+            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
 
     return BigDecimal.valueOf(conversions)
         .multiply(BigDecimal.valueOf(100))

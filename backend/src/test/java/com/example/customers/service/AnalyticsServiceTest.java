@@ -210,8 +210,7 @@ class AnalyticsServiceTest {
     // Given
     when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
-    when(customerRepository.countConversionsInPeriod(
-            eq(CustomerStatus.CERTIFIED), any(), any()))
+    when(customerRepository.countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any()))
         .thenReturn(15L);
     when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
@@ -234,8 +233,7 @@ class AnalyticsServiceTest {
 
     verify(customerRepository).countTotalActiveCustomers();
     verify(customerRepository).countNewCustomersInPeriod(any(), any());
-    verify(customerRepository)
-        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
+    verify(customerRepository).countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
   }
 
   @Test

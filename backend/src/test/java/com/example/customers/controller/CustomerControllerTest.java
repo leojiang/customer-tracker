@@ -401,8 +401,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.currentStatus").value("NOTIFIED"));
 
     verify(customerService)
-        .transitionStatus(
-            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively");
+        .transitionStatus(testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively");
   }
 
   @Test
@@ -441,10 +440,7 @@ class CustomerControllerTest {
         Arrays.asList(
             createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"),
             createStatusHistory(
-                testCustomer,
-                CustomerStatus.NEW,
-                CustomerStatus.NOTIFIED,
-                "Responded"));
+                testCustomer, CustomerStatus.NEW, CustomerStatus.NOTIFIED, "Responded"));
 
     Page<StatusHistory> statusHistoryPage = new PageImpl<>(statusHistory);
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
@@ -469,8 +465,7 @@ class CustomerControllerTest {
   @DisplayName("Should get valid transitions successfully")
   void shouldGetValidTransitionsSuccessfully() throws Exception {
     // Given
-    Set<CustomerStatus> validTransitions =
-        Set.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED);
+    Set<CustomerStatus> validTransitions = Set.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED);
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.getValidTransitions(testCustomerId)).thenReturn(validTransitions);
@@ -514,11 +509,7 @@ class CustomerControllerTest {
 
     // When & Then
     mockMvc
-        .perform(
-            get(
-                "/api/customers/{id}/can-transition-to/{status}",
-                testCustomerId,
-                "NOTIFIED"))
+        .perform(get("/api/customers/{id}/can-transition-to/{status}", testCustomerId, "NOTIFIED"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.valid").value(true));
@@ -536,8 +527,7 @@ class CustomerControllerTest {
 
     // When & Then
     mockMvc
-        .perform(
-            get("/api/customers/{id}/can-transition-to/{status}", testCustomerId, "CERTIFIED"))
+        .perform(get("/api/customers/{id}/can-transition-to/{status}", testCustomerId, "CERTIFIED"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.valid").value(false));

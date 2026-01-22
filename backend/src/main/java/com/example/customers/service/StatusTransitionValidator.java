@@ -10,16 +10,13 @@ import org.springframework.stereotype.Component;
  * Validates customer status transitions according to business rules.
  *
  * <p>Business rules:
+ *
  * <ul>
- *   <li>NEW → Can transition to any status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)</li>
- *   <li>NOTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
- * CERTIFIED)</li>
- *   <li>ABORTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
- * CERTIFIED)</li>
- *   <li>SUBMITTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
- * CERTIFIED)</li>
- *   <li>CERTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
- * CERTIFIED)</li>
+ *   <li>NEW → Can transition to any status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)
+ *   <li>NOTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)
+ *   <li>ABORTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)
+ *   <li>SUBMITTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)
+ *   <li>CERTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED)
  * </ul>
  *
  * <p>Key rule: Once a customer leaves NEW status, they can never return to NEW.
@@ -29,21 +26,19 @@ public class StatusTransitionValidator {
 
   // All non-NEW statuses - can transition to each other freely
   private static final Set<CustomerStatus> NON_NEW_STATUSES =
-      EnumSet.of(CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+      EnumSet.of(
+          CustomerStatus.NOTIFIED,
+          CustomerStatus.ABORTED,
+          CustomerStatus.SUBMITTED,
           CustomerStatus.CERTIFIED);
 
   private static final Map<CustomerStatus, Set<CustomerStatus>> VALID_TRANSITIONS =
       Map.of(
-          CustomerStatus.NEW,
-              NON_NEW_STATUSES, // NEW can transition to all other statuses
-          CustomerStatus.NOTIFIED,
-              NON_NEW_STATUSES, // Can transition to any non-NEW status
-          CustomerStatus.ABORTED,
-              NON_NEW_STATUSES, // Can transition to any non-NEW status
-          CustomerStatus.SUBMITTED,
-              NON_NEW_STATUSES, // Can transition to any non-NEW status
-          CustomerStatus.CERTIFIED,
-              NON_NEW_STATUSES // Can transition to any non-NEW status
+          CustomerStatus.NEW, NON_NEW_STATUSES, // NEW can transition to all other statuses
+          CustomerStatus.NOTIFIED, NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.ABORTED, NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.SUBMITTED, NON_NEW_STATUSES, // Can transition to any non-NEW status
+          CustomerStatus.CERTIFIED, NON_NEW_STATUSES // Can transition to any non-NEW status
           );
 
   /**

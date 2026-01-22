@@ -6,21 +6,23 @@ package com.example.customers.model;
  * <p>Defines the various states a customer can be in during the certification process.
  *
  * <p>Status transition rules:
+ *
  * <ul>
- *   <li>NEW - Initial status for new customers, can transition to any status</li>
- *   <li>NOTIFIED - Customer has been notified for review, cannot return to NEW</li>
- *   <li>ABORTED - Customer abandoned the process, cannot return to NEW</li>
- *   <li>SUBMITTED - Customer has submitted documents, cannot return to NEW</li>
- *   <li>CERTIFIED - Certificate has been issued, cannot return to NEW</li>
+ *   <li>NEW - Initial status for new customers, can transition to any status
+ *   <li>NOTIFIED - Customer has been notified for review, cannot return to NEW
+ *   <li>ABORTED - Customer abandoned the process, cannot return to NEW
+ *   <li>SUBMITTED - Customer has submitted documents, cannot return to NEW
+ *   <li>CERTIFIED - Certificate has been issued, cannot return to NEW
  * </ul>
  *
  * <p>Transition Rules:
+ *
  * <ul>
- *   <li>NEW → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (all allowed)</li>
- *   <li>NOTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
- *   <li>ABORTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
- *   <li>SUBMITTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
- *   <li>CERTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)</li>
+ *   <li>NEW → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (all allowed)
+ *   <li>NOTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)
+ *   <li>ABORTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)
+ *   <li>SUBMITTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)
+ *   <li>CERTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED (not NEW)
  * </ul>
  */
 public enum CustomerStatus {

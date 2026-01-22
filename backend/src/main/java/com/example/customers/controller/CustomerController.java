@@ -131,8 +131,8 @@ public class CustomerController {
 
     // Determine sort order based on whether certificate time range is specified
     Pageable pageable;
-    if ((certifiedStartDate != null && !certifiedStartDate.trim().isEmpty()) ||
-        (certifiedEndDate != null && !certifiedEndDate.trim().isEmpty())) {
+    if ((certifiedStartDate != null && !certifiedStartDate.trim().isEmpty())
+        || (certifiedEndDate != null && !certifiedEndDate.trim().isEmpty())) {
       // When certificate time range is specified, sort by certificate time DESC
       pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").descending());
     } else {

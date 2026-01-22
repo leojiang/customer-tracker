@@ -203,7 +203,9 @@ class StatusTransitionValidatorTest {
   void shouldReturnAllValidTransitionsFromNonNewStatuses() {
     // Given
     CustomerStatus[] nonNewStatuses = {
-      CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+      CustomerStatus.NOTIFIED,
+      CustomerStatus.ABORTED,
+      CustomerStatus.SUBMITTED,
       CustomerStatus.CERTIFIED
     };
 
@@ -270,7 +272,9 @@ class StatusTransitionValidatorTest {
   void shouldAllowTransitionsBetweenAllNonNewStatuses() {
     // Given
     CustomerStatus[] nonNewStatuses = {
-      CustomerStatus.NOTIFIED, CustomerStatus.ABORTED, CustomerStatus.SUBMITTED,
+      CustomerStatus.NOTIFIED,
+      CustomerStatus.ABORTED,
+      CustomerStatus.SUBMITTED,
       CustomerStatus.CERTIFIED
     };
 

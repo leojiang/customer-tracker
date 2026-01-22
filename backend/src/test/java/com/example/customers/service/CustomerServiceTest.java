@@ -203,8 +203,7 @@ class CustomerServiceTest {
     String reason = "Customer responded positively";
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
-        .thenReturn(true);
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus)).thenReturn(true);
     when(customerRepository.save(testCustomer)).thenReturn(testCustomer);
 
     // When
@@ -228,8 +227,7 @@ class CustomerServiceTest {
     String errorMessage = "Invalid transition from Customer called to Business done";
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
-        .thenReturn(false);
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus)).thenReturn(false);
     when(transitionValidator.getTransitionErrorMessage(CustomerStatus.NEW, toStatus))
         .thenReturn(errorMessage);
 
@@ -274,10 +272,7 @@ class CustomerServiceTest {
         Arrays.asList(
             createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"),
             createStatusHistory(
-                testCustomer,
-                CustomerStatus.NEW,
-                CustomerStatus.NOTIFIED,
-                "Responded"));
+                testCustomer, CustomerStatus.NEW, CustomerStatus.NOTIFIED, "Responded"));
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(statusHistoryRepository.findByCustomerOrderByChangedAtDesc(testCustomer))
@@ -298,8 +293,7 @@ class CustomerServiceTest {
   void shouldGetPaginatedStatusHistorySuccessfully() {
     // Given
     List<StatusHistory> statusHistoryList =
-        Arrays.asList(
-            createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"));
+        Arrays.asList(createStatusHistory(testCustomer, null, CustomerStatus.NEW, "Initial"));
     Page<StatusHistory> statusHistoryPage = new PageImpl<>(statusHistoryList);
     Pageable pageable = Pageable.ofSize(10);
 
@@ -399,8 +393,7 @@ class CustomerServiceTest {
     CustomerStatus toStatus = CustomerStatus.NOTIFIED;
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus))
-        .thenReturn(true);
+    when(transitionValidator.isValidTransition(CustomerStatus.NEW, toStatus)).thenReturn(true);
 
     // When
     boolean result = customerService.isValidTransition(testCustomerId, toStatus);
