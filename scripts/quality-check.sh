@@ -35,16 +35,16 @@ echo "🔧 Backend Quality Checks..."
 cd backend
 
 echo "  🎨 Code formatting..."
-mvn spotless:apply -q
+./mvnw spotless:apply -q
 
 echo "  📏 Format verification..."
-mvn spotless:check -q
+./mvnw spotless:check -q
 
 echo "  🏗️ Compilation..."
-mvn clean compile -q
+./mvnw clean compile -q
 
 echo "  🧪 Unit tests..."
-mvn test -q
+./mvnw test -q
 
 echo "  ✅ Backend checks passed!"
 cd ..
