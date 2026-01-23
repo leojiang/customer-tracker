@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Users, 
-  BarChart3, 
-  RefreshCw, 
-  Menu, 
+import {
+  ArrowLeft,
+  Users,
+  BarChart3,
+  RefreshCw,
+  Menu,
   X,
   Settings
 } from 'lucide-react';
@@ -77,7 +77,7 @@ export default function DashboardLayout({
               <X className="h-6 w-6 text-white" />
             </button>
           </div>
-          
+
           <div className="flex flex-shrink-0 items-center px-4 py-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -86,7 +86,7 @@ export default function DashboardLayout({
               <span className="text-lg font-semibold">{t('nav.dashboard')}</span>
             </div>
           </div>
-          
+
           <div className="mt-5 flex-1 h-0 overflow-y-auto">
             <nav className="px-2 space-y-1">
               {navigation.map((item) => (
@@ -103,7 +103,7 @@ export default function DashboardLayout({
                   {item.name}
                 </button>
               ))}
-              
+
             </nav>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function DashboardLayout({
                 >
                   <Menu className="h-6 w-6" />
                 </button>
-                
+
                 <div className="flex items-center gap-4 ml-4 md:ml-0">
                   {showBackButton && (
                     <button
@@ -205,7 +205,7 @@ export default function DashboardLayout({
               <div className="flex items-center gap-3">
                 {/* Language Switcher */}
                 <LanguageSwitcher />
-                
+
                 {onRefresh && (
                   <button
                     onClick={onRefresh}
@@ -216,7 +216,7 @@ export default function DashboardLayout({
                     <span className="hidden sm:inline">{refreshing ? t('nav.refreshing') : t('nav.refresh')}</span>
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => router.push('/')}
                   className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
@@ -224,7 +224,7 @@ export default function DashboardLayout({
                   <Users size={16} className="mr-1" />
                   <span className="hidden sm:inline">{t('nav.customers')}</span>
                 </button>
-                
+
                 {actions}
               </div>
             </div>
@@ -240,9 +240,9 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
-      
+
       {/* Settings Modal */}
-      <SettingsModal 
+      <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onLogout={logout}

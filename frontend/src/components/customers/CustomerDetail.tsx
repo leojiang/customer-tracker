@@ -348,11 +348,12 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       setIsDeleting(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
+      setIsDeleting(false);
+
       // Check if it's a duplicate request error
       if (errorMessage.includes('pending delete request already exists')) {
         // Close the delete request modal first
         setShowDeleteRequestModal(false);
-        setIsDeleting(false);
         // Show alert modal with the duplicate request message
         setAlertModal({
           isOpen: true,
@@ -361,8 +362,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
           type: 'warning',
         });
       } else {
-        // For other errors, the DeleteRequestModal will show them inline
-        setIsDeleting(false);
+        // Re-throw the error so the DeleteRequestModal can display it
+        throw err;
       }
     }
   };
