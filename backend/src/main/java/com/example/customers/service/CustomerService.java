@@ -103,12 +103,6 @@ public class CustomerService {
     return customerRepository.findByIdIncludingDeleted(id);
   }
 
-  /** Get customer by phone (active only). */
-  @Transactional(readOnly = true)
-  public Optional<Customer> getCustomerByPhone(String phone) {
-    return customerRepository.findByPhone(phone);
-  }
-
   /** Update customer information. */
   public Customer updateCustomer(UUID id, Customer updatedCustomer) {
     Customer existingCustomer =
@@ -248,19 +242,6 @@ public class CustomerService {
             certifiedEndDate);
 
     return customerRepository.findAll(spec, pageable);
-  }
-
-  /** Get all customers for a specific sales person with pagination. */
-  @Transactional(readOnly = true)
-  public Page<Customer> getCustomersBySales(String salesPhone, Pageable pageable) {
-    Specification<Customer> spec = CustomerSpecifications.hasSalesPhone(salesPhone);
-    return customerRepository.findAll(spec, pageable);
-  }
-
-  /** Get all customers with pagination (active only). */
-  @Transactional(readOnly = true)
-  public Page<Customer> getAllCustomers(Pageable pageable) {
-    return customerRepository.findAll(pageable);
   }
 
   /** Soft delete customer. */

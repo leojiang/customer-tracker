@@ -60,28 +60,6 @@ class UserApprovalServiceTest {
   }
 
   @Test
-  @DisplayName("Should get pending approvals successfully")
-  void shouldGetPendingApprovalsSuccessfully() {
-    // Given
-    List<Sales> pendingUsers = Arrays.asList(testUser);
-    Page<Sales> expectedPage = new PageImpl<>(pendingUsers);
-    when(salesRepository.findByApprovalStatusOrderByCreatedAtDesc(
-            eq(ApprovalStatus.PENDING), any(Pageable.class)))
-        .thenReturn(expectedPage);
-
-    // When
-    Page<Sales> result = userApprovalService.getPendingApprovals(Pageable.unpaged());
-
-    // Then
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
-    assertEquals(testUser, result.getContent().get(0));
-
-    verify(salesRepository)
-        .findByApprovalStatusOrderByCreatedAtDesc(eq(ApprovalStatus.PENDING), any(Pageable.class));
-  }
-
-  @Test
   @DisplayName("Should get users by approval status successfully")
   void shouldGetUsersByApprovalStatusSuccessfully() {
     // Given
@@ -506,17 +484,21 @@ class UserApprovalServiceTest {
     assertNotNull(temporaryPassword);
     assertTrue(temporaryPassword.length() >= 12);
     assertTrue(
-        temporaryPassword.matches(".*[A-Z].*"), "Password should contain at least one uppercase letter");
+        temporaryPassword.matches(".*[A-Z].*"),
+        "Password should contain at least one uppercase letter");
     assertTrue(
-        temporaryPassword.matches(".*[a-z].*"), "Password should contain at least one lowercase letter");
-    assertTrue(temporaryPassword.matches(".*[0-9].*"), "Password should contain at least one digit");
+        temporaryPassword.matches(".*[a-z].*"),
+        "Password should contain at least one lowercase letter");
+    assertTrue(
+        temporaryPassword.matches(".*[0-9].*"), "Password should contain at least one digit");
     assertTrue(
         temporaryPassword.matches(".*[!@#$%^&*].*"),
         "Password should contain at least one special character");
 
     verify(salesRepository).findByPhone(testUserPhone);
     verify(passwordEncoder).encode(temporaryPassword);
-    verify(salesRepository).save(argThat(sales -> sales.getPassword().equals("$2a$10$hashedpassword")));
+    verify(salesRepository)
+        .save(argThat(sales -> sales.getPassword().equals("$2a$10$hashedpassword")));
   }
 
   @Test

@@ -87,17 +87,6 @@ export enum CertificateIssuer {
   OTHER = 'OTHER'
 }
 
-export function getCertificateIssuerDisplayName(issuer: CertificateIssuer, t: (key: string) => string): string {
-  // Convert MARKET_SUPERVISION_ADMINISTRATION to marketSupervisionAdministration
-  const camelCase = issuer
-    .toLowerCase()
-    .split('_')
-    .map((word, index) => index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-  const translationKey = `certificateIssuer.${camelCase}`;
-  return t(translationKey);
-}
-
 export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
   [EducationLevel.ELEMENTARY]: 'Elementary School',
   [EducationLevel.MIDDLE_SCHOOL]: 'Middle School',
@@ -177,14 +166,6 @@ export const CertificateIssuerTranslationKeys: Record<CertificateIssuer, string>
   [CertificateIssuer.HOUSING_CONSTRUCTION_BUREAU]: 'certificateIssuer.housingConstructionBureau',
   [CertificateIssuer.EMERGENCY_MANAGEMENT_DEPARTMENT]: 'certificateIssuer.emergencyManagementDepartment',
   [CertificateIssuer.OTHER]: 'certificateIssuer.other'
-};
-
-export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {
-  [CustomerStatus.NEW]: 'New',
-  [CustomerStatus.NOTIFIED]: 'Notified',
-  [CustomerStatus.ABORTED]: 'Aborted',
-  [CustomerStatus.SUBMITTED]: 'Submitted',
-  [CustomerStatus.CERTIFIED]: 'Certified'
 };
 
 // Status translation keys mapping for use with translation function

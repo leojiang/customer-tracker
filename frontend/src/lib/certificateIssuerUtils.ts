@@ -36,27 +36,6 @@ export function mapCertificateIssuerToDisplay(value: string | undefined | null):
 }
 
 /**
- * Gets the display name for a certificate issuer value
- * Ensures consistent display across the application
- */
-export function getCertificateIssuerDisplayName(value: string | undefined | null): string {
-  if (!value || value.trim() === '') {
-    return CertificateIssuer.OTHER;
-  }
-
-  const mappedValue = mapCertificateIssuerToDisplay(value);
-  return mappedValue;
-}
-
-/**
- * Validates if a certificate issuer value matches one of the predefined options
- */
-export function isValidCertificateIssuer(value: string): boolean {
-  const mappedValue = mapCertificateIssuerToDisplay(value);
-  return Object.values(CertificateIssuer).includes(mappedValue);
-}
-
-/**
  * Gets all available certificate issuer options for dropdowns
  */
 export function getCertificateIssuerOptions(): Array<{

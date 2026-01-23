@@ -9,7 +9,6 @@ import com.example.customers.repository.UserApprovalHistoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,18 +45,6 @@ public class UserApprovalService {
 
   /**
    * Get pending user approvals with pagination.
-   *
-   * @param pageable pagination parameters
-   * @return page of users awaiting approval
-   */
-  @Transactional(readOnly = true)
-  public Page<Sales> getPendingApprovals(Pageable pageable) {
-    return salesRepository.findByApprovalStatusOrderByCreatedAtDesc(
-        ApprovalStatus.PENDING, pageable);
-  }
-
-  /**
-   * Get users by approval status with pagination.
    *
    * @param status the approval status to filter by
    * @param pageable pagination parameters
@@ -299,7 +286,8 @@ public class UserApprovalService {
             .findByPhone(userPhone)
             .orElseThrow(() -> new EntityNotFoundException("User not found: " + userPhone));
 
-    // Generate a secure temporary password (12 characters with mixed case, numbers, and special chars)
+    // Generate a secure temporary password (12 characters with mixed case, numbers, and special
+    // chars)
     String temporaryPassword = generateSecurePassword();
 
     // Hash and set the new password
