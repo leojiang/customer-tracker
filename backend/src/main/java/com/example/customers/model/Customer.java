@@ -64,7 +64,6 @@ public class Customer {
   @Column(name = "business_requirements")
   private String businessRequirements;
 
-  @Enumerated(EnumType.STRING)
   @Column(name = "certificate_type")
   private CertificateType certificateType;
 

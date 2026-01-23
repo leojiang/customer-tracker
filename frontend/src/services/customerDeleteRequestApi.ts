@@ -19,7 +19,7 @@ export const customerDeleteRequestApi = {
     token: string,
     request: CreateDeleteRequestRequest
   ): Promise<CustomerDeleteRequest> {
-    const response = await fetch(`${API_BASE_URL}/api/customer-delete-requests`, {
+    const response = await fetch(`${API_BASE_URL}/customer-delete-requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export const customerDeleteRequestApi = {
     });
 
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/pending?${params}`,
+      `${API_BASE_URL}/customer-delete-requests/pending?${params}`,
       {
         method: 'GET',
         headers: {
@@ -101,7 +101,7 @@ export const customerDeleteRequestApi = {
     });
 
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests?${params}`,
+      `${API_BASE_URL}/customer-delete-requests?${params}`,
       {
         method: 'GET',
         headers: {
@@ -130,7 +130,7 @@ export const customerDeleteRequestApi = {
    */
   async approveDeleteRequest(token: string, requestId: string, reason?: string): Promise<void> {
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/${requestId}/approve`,
+      `${API_BASE_URL}/customer-delete-requests/${requestId}/approve`,
       {
         method: 'PATCH',
         headers: {
@@ -155,7 +155,7 @@ export const customerDeleteRequestApi = {
     request: RejectDeleteRequestRequest
   ): Promise<void> {
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/${requestId}/reject`,
+      `${API_BASE_URL}/customer-delete-requests/${requestId}/reject`,
       {
         method: 'PATCH',
         headers: {
@@ -176,7 +176,7 @@ export const customerDeleteRequestApi = {
    */
   async getDeleteRequest(token: string, requestId: string): Promise<CustomerDeleteRequest> {
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/${requestId}`,
+      `${API_BASE_URL}/customer-delete-requests/${requestId}`,
       {
         method: 'GET',
         headers: {
@@ -197,7 +197,7 @@ export const customerDeleteRequestApi = {
    */
   async countPendingRequests(token: string): Promise<number> {
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/pending/count`,
+      `${API_BASE_URL}/customer-delete-requests/pending/count`,
       {
         method: 'GET',
         headers: {
@@ -219,7 +219,7 @@ export const customerDeleteRequestApi = {
    */
   async getStatistics(token: string): Promise<DeleteRequestStatistics> {
     const response = await fetch(
-      `${API_BASE_URL}/api/customer-delete-requests/statistics`,
+      `${API_BASE_URL}/customer-delete-requests/statistics`,
       {
         method: 'GET',
         headers: {

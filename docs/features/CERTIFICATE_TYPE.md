@@ -1,0 +1,43 @@
+# Certificate type list
+
+
+
+### Description
+This is the  full certificate type list. Please repalce the existing type list in the code with this new one.
+
+
+### Certificate type list
+Q1指挥
+Q2流动式
+Q2桥式
+Q2门式
+Q2塔式
+Q2升降机
+N1叉车
+G1工业锅炉
+G3锅炉水处理
+R1快开门式压力容器
+R2移动式压力容器
+P气瓶充装
+A特种设备安全管理
+N2观光车
+T电梯作业
+建筑电工
+建筑焊工
+建筑架子工
+建筑起重机械操作类
+建筑起重信号司索工
+建筑物料提升机司机
+建筑吊篮安装拆卸工
+低压电工作业
+焊接与热切割作业
+高压电工作业
+高处安装，维护，拆除作业
+登高架设作业
+制冷与空调作业
+煤矿安全作业
+金属非金属矿山安全作业
+石油天然气安全作业
+危险化学品安全作业
+冶金（有色）生产安全作业
+烟花爆竹安全作业

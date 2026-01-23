@@ -5,6 +5,7 @@ import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'luc
 import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { getCertificateIssuerOptions, mapCertificateIssuerToDisplay } from '@/lib/certificateIssuerUtils';
+import { getCertificateTypeDisplayName } from '@/lib/certificateTypeUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -87,7 +88,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     q: !isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     phone: isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     status: initialSelectedStatus ? initialSelectedStatus as CustomerStatus : undefined,
-    certificateType: initialSelectedCertificateType ? initialSelectedCertificateType as CertificateType : undefined,
+    certificateType: initialSelectedCertificateType,
     certificateIssuer: initialCertificateIssuer.trim() || undefined,
     customerAgent: initialCustomerAgent.trim() || undefined,
     certifiedStartDate: initialCertifiedStartDate ? `${initialCertifiedStartDate}T00:00:00Z` : undefined,
@@ -159,7 +160,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       q: !isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       status: selectedStatus ? selectedStatus as CustomerStatus : undefined,
-      certificateType: selectedCertificateType ? selectedCertificateType as CertificateType : undefined,
+      certificateType: selectedCertificateType,
       certificateIssuer: certificateIssuer.trim() || undefined,
       customerAgent: customerAgent.trim() || undefined,
       certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
@@ -513,7 +514,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                         {customer.gender ? getLocalizedGender(customer.gender) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {customer.certificateType ? t(CertificateTypeTranslationKeys[customer.certificateType]) : '-'}
+                        {customer.certificateType ? getCertificateTypeDisplayName(customer.certificateType as CertificateType, t) : '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
                         {customer.certificateIssuer ? t(CertificateIssuerTranslationKeys[mapCertificateIssuerToDisplay(customer.certificateIssuer)]) : '-'}

@@ -73,7 +73,7 @@ class CustomerControllerTest {
     testCustomer.setPhone("1234567890");
     testCustomer.setCertificateIssuer("Test Certificate Issuer");
     testCustomer.setBusinessRequirements("Need CRM solution");
-    testCustomer.setCertificateType(CertificateType.ELECTRICIAN);
+    testCustomer.setCertificateType(CertificateType.LOW_VOLTAGE_ELECTRICIAN);
     testCustomer.setAge(30);
     testCustomer.setEducation(EducationLevel.BACHELOR);
     testCustomer.setGender("Male");

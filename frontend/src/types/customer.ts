@@ -20,9 +20,64 @@ export enum EducationLevel {
 }
 
 export enum CertificateType {
-  ELECTRICIAN = 'ELECTRICIAN',
-  WELDER = 'WELDER',
-  EXCAVATOR = 'EXCAVATOR'
+  // Crane & Machinery Types (起重机械)
+  Q1_COMMAND = 'Q1_COMMAND',
+  Q2_MOBILE_CRANE = 'Q2_MOBILE_CRANE',
+  Q2_BRIDGE_CRANE = 'Q2_BRIDGE_CRANE',
+  Q2_GANTRY_CRANE = 'Q2_GANTRY_CRANE',
+  Q2_TOWER_CRANE = 'Q2_TOWER_CRANE',
+  Q2_HOIST = 'Q2_HOIST',
+
+  // Forklift & Industrial Vehicles
+  N1_FORKLIFT = 'N1_FORKLIFT',
+  N2_SIGHTSEEING_CAR = 'N2_SIGHTSEEING_CAR',
+
+  // Boiler & Pressure Vessels (锅炉压力容器)
+  G1_INDUSTRIAL_BOILER = 'G1_INDUSTRIAL_BOILER',
+  G3_BOILER_WATER_TREATMENT = 'G3_BOILER_WATER_TREATMENT',
+  R1_QUICK_OPEN_PRESSURE_VESSEL = 'R1_QUICK_OPEN_PRESSURE_VESSEL',
+  R2_MOBILE_PRESSURE_VESSEL = 'R2_MOBILE_PRESSURE_VESSEL',
+  P_GAS_FILLING = 'P_GAS_FILLING',
+
+  // Safety Management
+  A_SPECIAL_EQUIPMENT_SAFETY = 'A_SPECIAL_EQUIPMENT_SAFETY',
+
+  // Elevator Operations
+  T_ELEVATOR_OPERATION = 'T_ELEVATOR_OPERATION',
+
+  // Construction Trades (建筑施工)
+  CONSTRUCTION_ELECTRICIAN = 'CONSTRUCTION_ELECTRICIAN',
+  CONSTRUCTION_WELDER = 'CONSTRUCTION_WELDER',
+  CONSTRUCTION_SCAFFOLDER = 'CONSTRUCTION_SCAFFOLDER',
+  CONSTRUCTION_LIFTING_EQUIPMENT = 'CONSTRUCTION_LIFTING_EQUIPMENT',
+  CONSTRUCTION_SIGNALMAN = 'CONSTRUCTION_SIGNALMAN',
+  CONSTRUCTION_MATERIAL_HOIST_DRIVER = 'CONSTRUCTION_MATERIAL_HOIST_DRIVER',
+  CONSTRUCTION_GONDOLA_INSTALLER = 'CONSTRUCTION_GONDOLA_INSTALLER',
+
+  // Electrical Operations (电工作业)
+  LOW_VOLTAGE_ELECTRICIAN = 'LOW_VOLTAGE_ELECTRICIAN',
+  WELDING_THERMAL_CUTTING = 'WELDING_THERMAL_CUTTING',
+  HIGH_VOLTAGE_ELECTRICIAN = 'HIGH_VOLTAGE_ELECTRICIAN',
+
+  // High-Altitude Work (高处作业)
+  HIGH_ALTITUDE_INSTALLATION = 'HIGH_ALTITUDE_INSTALLATION',
+  HIGH_ALTITUDE_SCAFFOLDING = 'HIGH_ALTITUDE_SCAFFOLDING',
+
+  // Specialized Operations
+  REFRIGERATION_AIR_CONDITIONING = 'REFRIGERATION_AIR_CONDITIONING',
+
+  // Mining & Industry Safety (矿山安全作业)
+  COAL_MINE_SAFETY = 'COAL_MINE_SAFETY',
+  METAL_NONMETAL_MINE_SAFETY = 'METAL_NONMETAL_MINE_SAFETY',
+
+  // Petroleum & Chemical Safety (石油化工安全)
+  OIL_GAS_SAFETY = 'OIL_GAS_SAFETY',
+  HAZARDOUS_CHEMICALS_SAFETY = 'HAZARDOUS_CHEMICALS_SAFETY',
+  METALLURGY_SAFETY = 'METALLURGY_SAFETY',
+  FIREWORKS_SAFETY = 'FIREWORKS_SAFETY',
+
+  // Other types for backward compatibility
+  OTHERS = 'OTHERS'
 }
 
 export enum CertificateIssuer {
@@ -46,9 +101,64 @@ export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
 };
 
 export const CertificateTypeTranslationKeys: Record<CertificateType, string> = {
-  [CertificateType.ELECTRICIAN]: 'certificateType.electrician',
-  [CertificateType.WELDER]: 'certificateType.welder',
-  [CertificateType.EXCAVATOR]: 'certificateType.excavator'
+  // Crane & Machinery Types (起重机械)
+  [CertificateType.Q1_COMMAND]: 'certificateType.q1Command',
+  [CertificateType.Q2_MOBILE_CRANE]: 'certificateType.q2MobileCrane',
+  [CertificateType.Q2_BRIDGE_CRANE]: 'certificateType.q2BridgeCrane',
+  [CertificateType.Q2_GANTRY_CRANE]: 'certificateType.q2GantryCrane',
+  [CertificateType.Q2_TOWER_CRANE]: 'certificateType.q2TowerCrane',
+  [CertificateType.Q2_HOIST]: 'certificateType.q2Hoist',
+
+  // Forklift & Industrial Vehicles
+  [CertificateType.N1_FORKLIFT]: 'certificateType.n1Forklift',
+  [CertificateType.N2_SIGHTSEEING_CAR]: 'certificateType.n2SightseeingCar',
+
+  // Boiler & Pressure Vessels (锅炉压力容器)
+  [CertificateType.G1_INDUSTRIAL_BOILER]: 'certificateType.g1IndustrialBoiler',
+  [CertificateType.G3_BOILER_WATER_TREATMENT]: 'certificateType.g3BoilerWaterTreatment',
+  [CertificateType.R1_QUICK_OPEN_PRESSURE_VESSEL]: 'certificateType.r1QuickOpenPressureVessel',
+  [CertificateType.R2_MOBILE_PRESSURE_VESSEL]: 'certificateType.r2MobilePressureVessel',
+  [CertificateType.P_GAS_FILLING]: 'certificateType.pGasFilling',
+
+  // Safety Management
+  [CertificateType.A_SPECIAL_EQUIPMENT_SAFETY]: 'certificateType.aSpecialEquipmentSafety',
+
+  // Elevator Operations
+  [CertificateType.T_ELEVATOR_OPERATION]: 'certificateType.tElevatorOperation',
+
+  // Construction Trades (建筑施工)
+  [CertificateType.CONSTRUCTION_ELECTRICIAN]: 'certificateType.constructionElectrician',
+  [CertificateType.CONSTRUCTION_WELDER]: 'certificateType.constructionWelder',
+  [CertificateType.CONSTRUCTION_SCAFFOLDER]: 'certificateType.constructionScaffolder',
+  [CertificateType.CONSTRUCTION_LIFTING_EQUIPMENT]: 'certificateType.constructionLiftingEquipment',
+  [CertificateType.CONSTRUCTION_SIGNALMAN]: 'certificateType.constructionSignalman',
+  [CertificateType.CONSTRUCTION_MATERIAL_HOIST_DRIVER]: 'certificateType.constructionMaterialHoistDriver',
+  [CertificateType.CONSTRUCTION_GONDOLA_INSTALLER]: 'certificateType.constructionGondolaInstaller',
+
+  // Electrical Operations (电工作业)
+  [CertificateType.LOW_VOLTAGE_ELECTRICIAN]: 'certificateType.lowVoltageElectrician',
+  [CertificateType.WELDING_THERMAL_CUTTING]: 'certificateType.weldingThermalCutting',
+  [CertificateType.HIGH_VOLTAGE_ELECTRICIAN]: 'certificateType.highVoltageElectrician',
+
+  // High-Altitude Work (高处作业)
+  [CertificateType.HIGH_ALTITUDE_INSTALLATION]: 'certificateType.highAltitudeInstallation',
+  [CertificateType.HIGH_ALTITUDE_SCAFFOLDING]: 'certificateType.highAltitudeScaffolding',
+
+  // Specialized Operations
+  [CertificateType.REFRIGERATION_AIR_CONDITIONING]: 'certificateType.refrigerationAirConditioning',
+
+  // Mining & Industry Safety (矿山安全作业)
+  [CertificateType.COAL_MINE_SAFETY]: 'certificateType.coalMineSafety',
+  [CertificateType.METAL_NONMETAL_MINE_SAFETY]: 'certificateType.metalNonmetalMineSafety',
+
+  // Petroleum & Chemical Safety (石油化工安全)
+  [CertificateType.OIL_GAS_SAFETY]: 'certificateType.oilGasSafety',
+  [CertificateType.HAZARDOUS_CHEMICALS_SAFETY]: 'certificateType.hazardousChemicalsSafety',
+  [CertificateType.METALLURGY_SAFETY]: 'certificateType.metallurgySafety',
+  [CertificateType.FIREWORKS_SAFETY]: 'certificateType.fireworksSafety',
+
+  // Other types for backward compatibility
+  [CertificateType.OTHERS]: 'certificateType.others'
 };
 
 export const CertificateIssuerTranslationKeys: Record<CertificateIssuer, string> = {

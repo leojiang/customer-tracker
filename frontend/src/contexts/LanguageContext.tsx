@@ -267,9 +267,64 @@ const translations = {
     'education.professional': 'Professional Degree',
     'education.certificate': 'Certificate/Diploma',
     'education.other': 'Other',
-    'certificateType.electrician': 'Electrician',
-    'certificateType.welder': 'Welder',
-    'certificateType.excavator': 'Excavator Operator',
+    // Crane & Machinery Types (起重机械)
+    'certificateType.q1Command': 'Q1 Crane Commander',
+    'certificateType.q2MobileCrane': 'Q2 Mobile Crane',
+    'certificateType.q2BridgeCrane': 'Q2 Bridge Crane',
+    'certificateType.q2GantryCrane': 'Q2 Gantry Crane',
+    'certificateType.q2TowerCrane': 'Q2 Tower Crane',
+    'certificateType.q2Hoist': 'Q2 Hoist/Lift',
+
+    // Forklift & Industrial Vehicles
+    'certificateType.n1Forklift': 'N1 Forklift',
+    'certificateType.n2SightseeingCar': 'N2 Sightseeing Car',
+
+    // Boiler & Pressure Vessels (锅炉压力容器)
+    'certificateType.g1IndustrialBoiler': 'G1 Industrial Boiler',
+    'certificateType.g3BoilerWaterTreatment': 'G3 Boiler Water Treatment',
+    'certificateType.r1QuickOpenPressureVessel': 'R1 Quick-Open Pressure Vessel',
+    'certificateType.r2MobilePressureVessel': 'R2 Mobile Pressure Vessel',
+    'certificateType.pGasFilling': 'P Gas Cylinder Filling',
+
+    // Safety Management
+    'certificateType.aSpecialEquipmentSafety': 'A Special Equipment Safety Management',
+
+    // Elevator Operations
+    'certificateType.tElevatorOperation': 'T Elevator Operation',
+
+    // Construction Trades (建筑施工)
+    'certificateType.constructionElectrician': 'Construction Electrician',
+    'certificateType.constructionWelder': 'Construction Welder',
+    'certificateType.constructionScaffolder': 'Construction Scaffolder',
+    'certificateType.constructionLiftingEquipment': 'Construction Lifting Equipment Operation',
+    'certificateType.constructionSignalman': 'Construction Rigger/Signalman',
+    'certificateType.constructionMaterialHoistDriver': 'Construction Material Hoist Driver',
+    'certificateType.constructionGondolaInstaller': 'Construction Gondola Installer',
+
+    // Electrical Operations (电工作业)
+    'certificateType.lowVoltageElectrician': 'Low Voltage Electrician',
+    'certificateType.weldingThermalCutting': 'Welding & Thermal Cutting',
+    'certificateType.highVoltageElectrician': 'High Voltage Electrician',
+
+    // High-Altitude Work (高处作业)
+    'certificateType.highAltitudeInstallation': 'High Altitude Installation/Maintenance/Dismantling',
+    'certificateType.highAltitudeScaffolding': 'High Altitude Scaffolding',
+
+    // Specialized Operations
+    'certificateType.refrigerationAirConditioning': 'Refrigeration & Air Conditioning',
+
+    // Mining & Industry Safety (矿山安全作业)
+    'certificateType.coalMineSafety': 'Coal Mine Safety Operation',
+    'certificateType.metalNonmetalMineSafety': 'Metal/Non-Metal Mine Safety Operation',
+
+    // Petroleum & Chemical Safety (石油化工安全)
+    'certificateType.oilGasSafety': 'Oil & Natural Gas Safety Operation',
+    'certificateType.hazardousChemicalsSafety': 'Hazardous Chemicals Safety Operation',
+    'certificateType.metallurgySafety': 'Metallurgy (Non-Ferrous) Production Safety Operation',
+    'certificateType.fireworksSafety': 'Fireworks Safety Operation',
+
+    // Other types for backward compatibility
+    'certificateType.others': 'Others',
     'customers.form.selectCertificateType': 'Select certificate type',
     'certificateIssuer.marketSupervisionAdministration': 'Market Supervision Administration',
     'certificateIssuer.housingConstructionBureau': 'Housing and Construction Bureau',
@@ -872,9 +927,64 @@ const translations = {
     'education.professional': '专业学位',
     'education.certificate': '证书/文凭',
     'education.other': '其他',
-    'certificateType.electrician': '电工',
-    'certificateType.welder': '焊工',
-    'certificateType.excavator': '挖掘机',
+    // Crane & Machinery Types (起重机械)
+    'certificateType.q1Command': 'Q1指挥',
+    'certificateType.q2MobileCrane': 'Q2流动式',
+    'certificateType.q2BridgeCrane': 'Q2桥式',
+    'certificateType.q2GantryCrane': 'Q2门式',
+    'certificateType.q2TowerCrane': 'Q2塔式',
+    'certificateType.q2Hoist': 'Q2升降机',
+
+    // Forklift & Industrial Vehicles
+    'certificateType.n1Forklift': 'N1叉车',
+    'certificateType.n2SightseeingCar': 'N2观光车',
+
+    // Boiler & Pressure Vessels (锅炉压力容器)
+    'certificateType.g1IndustrialBoiler': 'G1工业锅炉',
+    'certificateType.g3BoilerWaterTreatment': 'G3锅炉水处理',
+    'certificateType.r1QuickOpenPressureVessel': 'R1快开门式压力容器',
+    'certificateType.r2MobilePressureVessel': 'R2移动式压力容器',
+    'certificateType.pGasFilling': 'P气瓶充装',
+
+    // Safety Management
+    'certificateType.aSpecialEquipmentSafety': 'A特种设备安全管理',
+
+    // Elevator Operations
+    'certificateType.tElevatorOperation': 'T电梯作业',
+
+    // Construction Trades (建筑施工)
+    'certificateType.constructionElectrician': '建筑电工',
+    'certificateType.constructionWelder': '建筑焊工',
+    'certificateType.constructionScaffolder': '建筑架子工',
+    'certificateType.constructionLiftingEquipment': '建筑起重机械操作类',
+    'certificateType.constructionSignalman': '建筑起重信号司索工',
+    'certificateType.constructionMaterialHoistDriver': '建筑物料提升机司机',
+    'certificateType.constructionGondolaInstaller': '建筑吊篮安装拆卸工',
+
+    // Electrical Operations (电工作业)
+    'certificateType.lowVoltageElectrician': '低压电工作业',
+    'certificateType.weldingThermalCutting': '焊接与热切割作业',
+    'certificateType.highVoltageElectrician': '高压电工作业',
+
+    // High-Altitude Work (高处作业)
+    'certificateType.highAltitudeInstallation': '高处安装，维护，拆除作业',
+    'certificateType.highAltitudeScaffolding': '登高架设作业',
+
+    // Specialized Operations
+    'certificateType.refrigerationAirConditioning': '制冷与空调作业',
+
+    // Mining & Industry Safety (矿山安全作业)
+    'certificateType.coalMineSafety': '煤矿安全作业',
+    'certificateType.metalNonmetalMineSafety': '金属非金属矿山安全作业',
+
+    // Petroleum & Chemical Safety (石油化工安全)
+    'certificateType.oilGasSafety': '石油天然气安全作业',
+    'certificateType.hazardousChemicalsSafety': '危险化学品安全作业',
+    'certificateType.metallurgySafety': '冶金（有色）生产安全作业',
+    'certificateType.fireworksSafety': '烟花爆竹安全作业',
+
+    // Other types for backward compatibility
+    'certificateType.others': '其它',
     'customers.form.selectCertificateType': '选择证书类型',
     'certificateIssuer.marketSupervisionAdministration': '市场监督管理局',
     'certificateIssuer.housingConstructionBureau': '住建局',

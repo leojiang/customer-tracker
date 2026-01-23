@@ -6,12 +6,14 @@ import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerReques
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { mapCertificateIssuerToDisplay, getCertificateIssuerOptions } from '@/lib/certificateIssuerUtils';
+import { getCertificateTypeDisplayName } from '@/lib/certificateTypeUtils';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
 import DeleteRequestModal from '@/components/ui/DeleteRequestModal';
 import AlertModal from '@/components/ui/AlertModal';
 import { SalesRole } from '@/types/auth';
@@ -25,6 +27,16 @@ interface CustomerDetailProps {
 export default function CustomerDetail({ customerId, onBack }: CustomerDetailProps) {
   const { t } = useLanguage();
   const { user, token } = useAuth();
+
+  // Try to use the refresh context, but handle cases where it's not available
+  let refreshDeleteRequests: (() => Promise<void>) | null = null;
+  try {
+    const refreshContext = useUserManagementRefresh();
+    refreshDeleteRequests = refreshContext.refreshDeleteRequests;
+  } catch (error) {
+    // Context not available - this is expected for non-admin pages
+    refreshDeleteRequests = null;
+  }
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -292,6 +304,10 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         customerId: customer.id,
         reason
       });
+      // Refresh admin delete requests list (if available)
+      if (refreshDeleteRequests) {
+        await refreshDeleteRequests();
+      }
       // Success is handled by the modal, just close it
       setShowDeleteRequestModal(false);
       setIsDeleting(false);
@@ -770,7 +786,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                     ) : (
                       <p className="text-body-1">
                         {customer.certificateType ? (
-                          t(CertificateTypeTranslationKeys[customer.certificateType])
+                          getCertificateTypeDisplayName(customer.certificateType as CertificateType, t)
                         ) : (
                           <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>
                         )}
