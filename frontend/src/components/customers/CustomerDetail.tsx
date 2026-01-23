@@ -78,6 +78,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     title: '',
     message: '',
   });
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type?: 'success' | 'error';
+  }>({
+    show: false,
+    message: '',
+  });
 
   const loadValidTransitions = useCallback(async () => {
     try {
@@ -207,9 +215,10 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       return;
     }
 
-    // Clear previous errors
+    // Clear previous errors and toasts
     setError(null);
     setFieldErrors({});
+    setAlertModal({ isOpen: false, title: '', message: '' });
 
     // Validate required fields
     const nameValidation = validateName(editForm.name);
@@ -252,10 +261,29 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       const updatedCustomer = await customerApi.updateCustomer(customer.id, cleanedForm);
       setCustomer(updatedCustomer);
       setIsEditing(false);
+
+      // Show success toast
+      setToast({
+        show: true,
+        message: t('customers.updateSuccess'),
+        type: 'success'
+      });
+
+      // Auto-hide toast after 1 second
+      setTimeout(() => {
+        setToast({ show: false, message: '' });
+      }, 1000);
     } catch (err) {
       // Use the error handler to map business error codes to user-friendly messages
       const userErrorMessage = getErrorMessage(err, t);
-      setError(userErrorMessage);
+
+      // Show error in modal instead of inline
+      setAlertModal({
+        isOpen: true,
+        title: t('error.updateFailed'),
+        message: userErrorMessage,
+        type: 'error'
+      });
     } finally {
       setUpdating(false);
     }
@@ -942,6 +970,22 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
             onSubmit={handleDeleteRequest}
             customerName={customer.name}
           />
+
+          {/* Toast Notification */}
+          {toast.show && (
+            <div
+              className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 ${
+                toast.type === 'success'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-red-500 text-white'
+              }`}
+            >
+              {toast.type === 'success' && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>}
+              <span className="font-medium">{toast.message}</span>
+            </div>
+          )}
 
           <AlertModal
             isOpen={alertModal.isOpen}

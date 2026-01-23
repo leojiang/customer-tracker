@@ -166,6 +166,7 @@ const translations = {
     'error.duplicateCustomerCertificate': 'This phone number already has a certificate of this type. Please edit the existing customer or choose a different certificate type.',
     'error.invalidToken': 'Invalid or expired token',
     'error.invalidResponse': 'Invalid response from server',
+    'error.updateFailed': 'Update Failed',
 
     // Error help messages
     'error.tips': 'Tips:',
@@ -434,6 +435,7 @@ const translations = {
     'customers.detail.confirmRestore': 'Are you sure you want to restore this customer?',
     'customers.detail.deleteSuccess': 'Customer deleted successfully',
     'customers.detail.restoreSuccess': 'Customer restored successfully',
+    'customers.updateSuccess': 'Customer updated successfully',
 
     // Registration
     'register.createAccount': 'Create Account',
@@ -850,6 +852,7 @@ const translations = {
     'error.duplicateCustomerCertificate': '该手机号码已经有此类型的证书，请编辑现有客户资料或选择不同的证书类型。',
     'error.invalidToken': '无效或过期的令牌',
     'error.invalidResponse': '服务器响应无效',
+    'error.updateFailed': '更新失败',
 
     // Error help messages
     'error.tips': '提示：',
@@ -1119,6 +1122,7 @@ const translations = {
     'customers.detail.confirmRestore': '确定要恢复这个客户吗？',
     'customers.detail.deleteSuccess': '客户删除成功',
     'customers.detail.restoreSuccess': '客户恢复成功',
+    'customers.updateSuccess': '客户更新成功',
 
     // Registration
     'register.createAccount': '创建账户',

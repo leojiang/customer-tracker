@@ -18,9 +18,6 @@ export interface ErrorResponse {
  */
 export const ERROR_CODE_MAP: Record<string, string> = {
   'DUPLICATE_CUSTOMER_CERTIFICATE': 'error.duplicateCustomerCertificate',
-  'VALIDATION_ERROR': 'error.validationError',
-  'RESOURCE_NOT_FOUND': 'error.resourceNotFound',
-  'INVALID_STATUS_TRANSITION': 'error.invalidStatusTransition',
   'PERMISSION_DENIED': 'error.permissionDenied',
 };
 
@@ -40,6 +37,12 @@ export function getErrorMessage(error: unknown, t: (key: string) => string): str
         const businessError = parsed as BusinessErrorResponse;
         const translationKey = ERROR_CODE_MAP[businessError.errorCode];
         return translationKey ? t(translationKey) : businessError.message;
+      }
+      // Handle ErrorResponse (which has message field but no errorCode)
+      if (parsed.message && !parsed.errorCode) {
+        const errorResponse = parsed as ErrorResponse;
+        const translationKey = ERROR_CODE_MAP[errorResponse.message];
+        return translationKey ? t(translationKey) : errorResponse.message;
       }
       if (parsed.message) {
         return parsed.message;

@@ -110,11 +110,13 @@ public class CustomerService {
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
+    // Check if phone number is being changed and validate uniqueness
+    boolean phoneChanged =
+        !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
+
     // Check composite uniqueness (phone, certificate_type) if both phone and certificate type are
     // being changed
     // Use safe null comparisons to handle legacy data
-    boolean phoneChanged =
-        !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
     boolean certificateTypeChanged =
         !java.util.Objects.equals(
             existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
