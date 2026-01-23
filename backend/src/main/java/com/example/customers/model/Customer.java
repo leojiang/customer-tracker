@@ -54,7 +54,7 @@ public class Customer {
   private String name;
 
   @NotBlank(message = "Phone number is required")
-  @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
+  @PhoneNumber(message = "Phone number must contain only digits")
   @Column(nullable = false)
   private String phone;
 

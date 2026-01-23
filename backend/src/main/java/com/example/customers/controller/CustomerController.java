@@ -516,7 +516,7 @@ public class CustomerController {
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
+    @PhoneNumber(message = "Phone number must contain only digits")
     private String phone;
 
     private String certificateIssuer;
@@ -643,7 +643,7 @@ public class CustomerController {
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
+    @PhoneNumber(message = "Phone number must contain only digits")
     private String phone;
 
     private String certificateIssuer;

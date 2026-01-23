@@ -310,7 +310,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       // Trigger history refresh
       setHistoryRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('customers.detail.failedLoad'));
+      // Show error in modal popup
+      const userErrorMessage = getErrorMessage(err, t);
+      setAlertModal({
+        isOpen: true,
+        title: t('customers.detail.statusTransitionFailed'),
+        message: userErrorMessage,
+        type: 'error'
+      });
     } finally {
       setUpdating(false);
     }
