@@ -29,7 +29,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   const { user, token } = useAuth();
 
   // Try to use the refresh context, but handle cases where it's not available
-  let refreshDeleteRequests: (() => Promise<void>) | null = null;
+  let refreshDeleteRequests: (() => void) | null = null;
   try {
     const refreshContext = useUserManagementRefresh();
     refreshDeleteRequests = refreshContext.refreshDeleteRequests;
