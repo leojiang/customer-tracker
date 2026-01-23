@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -263,6 +264,23 @@ public class UserApprovalController {
     Sales disabledUser = approvalService.disableUser(phone, adminPhone, request.getReason());
 
     return ResponseEntity.ok(toApprovalDto(disabledUser));
+  }
+
+  @Operation(
+      summary = "Reset user password",
+      description = "Reset password for officer and customer agent users (admin only)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+      })
+  @PostMapping("/{phone}/reset-password")
+  public ResponseEntity<PasswordResetResponse> resetUserPassword(
+      @Parameter(description = "User phone number", required = true) @PathVariable String phone) {
+
+    String temporaryPassword = approvalService.resetUserPassword(phone);
+    return ResponseEntity.ok(new PasswordResetResponse(temporaryPassword, phone));
   }
 
   @Operation(
@@ -630,6 +648,33 @@ public class UserApprovalController {
 
     public String getMessage() {
       return message;
+    }
+  }
+
+  /** Response DTO for password reset operations. */
+  public static class PasswordResetResponse {
+    private String temporaryPassword;
+    private String userPhone;
+
+    public PasswordResetResponse(String temporaryPassword, String userPhone) {
+      this.temporaryPassword = temporaryPassword;
+      this.userPhone = userPhone;
+    }
+
+    public String getTemporaryPassword() {
+      return temporaryPassword;
+    }
+
+    public void setTemporaryPassword(String temporaryPassword) {
+      this.temporaryPassword = temporaryPassword;
+    }
+
+    public String getUserPhone() {
+      return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+      this.userPhone = userPhone;
     }
   }
 

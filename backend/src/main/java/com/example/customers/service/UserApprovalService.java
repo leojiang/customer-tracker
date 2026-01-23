@@ -9,11 +9,13 @@ import com.example.customers.repository.UserApprovalHistoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +32,16 @@ public class UserApprovalService {
 
   private final SalesRepository salesRepository;
   private final UserApprovalHistoryRepository historyRepository;
+  private final PasswordEncoder passwordEncoder;
 
   @Autowired
   public UserApprovalService(
-      SalesRepository salesRepository, UserApprovalHistoryRepository historyRepository) {
+      SalesRepository salesRepository,
+      UserApprovalHistoryRepository historyRepository,
+      PasswordEncoder passwordEncoder) {
     this.salesRepository = salesRepository;
     this.historyRepository = historyRepository;
+    this.passwordEncoder = passwordEncoder;
   }
 
   /**
@@ -276,6 +282,83 @@ public class UserApprovalService {
   public List<UserApprovalHistory> getRecentActivity(int days) {
     ZonedDateTime since = ZonedDateTime.now().minusDays(days);
     return historyRepository.findRecentActions(since);
+  }
+
+  /**
+   * Reset user password (admin only).
+   *
+   * <p>Generates a secure temporary password and resets the user's password.
+   *
+   * @param userPhone phone of the user whose password to reset
+   * @return the generated temporary password
+   * @throws EntityNotFoundException if user not found
+   */
+  public String resetUserPassword(String userPhone) {
+    Sales user =
+        salesRepository
+            .findByPhone(userPhone)
+            .orElseThrow(() -> new EntityNotFoundException("User not found: " + userPhone));
+
+    // Generate a secure temporary password (12 characters with mixed case, numbers, and special chars)
+    String temporaryPassword = generateSecurePassword();
+
+    // Hash and set the new password
+    String hashedPassword = passwordEncoder.encode(temporaryPassword);
+    user.setPassword(hashedPassword);
+
+    // Save the updated user
+    salesRepository.save(user);
+
+    log.info("Password reset for user {} by admin", userPhone);
+
+    return temporaryPassword;
+  }
+
+  /**
+   * Generate a secure random password.
+   *
+   * @return secure random password with at least 12 characters
+   */
+  private String generateSecurePassword() {
+    String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+    String digits = "0123456789";
+    String specialChars = "!@#$%^&*";
+
+    String allChars = upperCase + lowerCase + digits + specialChars;
+
+    StringBuilder password = new StringBuilder();
+
+    // Ensure at least one character from each category
+    password.append(upperCase.charAt((int) (Math.random() * upperCase.length())));
+    password.append(lowerCase.charAt((int) (Math.random() * lowerCase.length())));
+    password.append(digits.charAt((int) (Math.random() * digits.length())));
+    password.append(specialChars.charAt((int) (Math.random() * specialChars.length())));
+
+    // Fill the rest with random characters (total 12 characters)
+    for (int i = 4; i < 12; i++) {
+      password.append(allChars.charAt((int) (Math.random() * allChars.length())));
+    }
+
+    // Shuffle the characters to avoid predictable patterns
+    return shuffleString(password.toString());
+  }
+
+  /**
+   * Shuffle a string randomly.
+   *
+   * @param input string to shuffle
+   * @return shuffled string
+   */
+  private String shuffleString(String input) {
+    char[] characters = input.toCharArray();
+    for (int i = 0; i < characters.length; i++) {
+      int randomIndex = (int) (Math.random() * characters.length);
+      char temp = characters[i];
+      characters[i] = characters[randomIndex];
+      characters[randomIndex] = temp;
+    }
+    return new String(characters);
   }
 
   /**

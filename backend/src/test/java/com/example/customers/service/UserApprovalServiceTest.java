@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User Approval Service Tests")
@@ -34,6 +35,7 @@ class UserApprovalServiceTest {
 
   @Mock private SalesRepository salesRepository;
   @Mock private UserApprovalHistoryRepository historyRepository;
+  @Mock private PasswordEncoder passwordEncoder;
 
   @InjectMocks private UserApprovalService userApprovalService;
 
@@ -485,5 +487,96 @@ class UserApprovalServiceTest {
                         && history.getAction() == ApprovalAction.APPROVED
                         && history.getAdminPhone().equals(testAdminPhone)
                         && history.getReason() == null));
+  }
+
+  // Reset Password Tests
+
+  @Test
+  @DisplayName("Should reset user password successfully")
+  void shouldResetUserPasswordSuccessfully() {
+    // Given
+    when(salesRepository.findByPhone(testUserPhone)).thenReturn(Optional.of(testUser));
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedpassword");
+    when(salesRepository.save(any(Sales.class))).thenReturn(testUser);
+
+    // When
+    String temporaryPassword = userApprovalService.resetUserPassword(testUserPhone);
+
+    // Then
+    assertNotNull(temporaryPassword);
+    assertTrue(temporaryPassword.length() >= 12);
+    assertTrue(
+        temporaryPassword.matches(".*[A-Z].*"), "Password should contain at least one uppercase letter");
+    assertTrue(
+        temporaryPassword.matches(".*[a-z].*"), "Password should contain at least one lowercase letter");
+    assertTrue(temporaryPassword.matches(".*[0-9].*"), "Password should contain at least one digit");
+    assertTrue(
+        temporaryPassword.matches(".*[!@#$%^&*].*"),
+        "Password should contain at least one special character");
+
+    verify(salesRepository).findByPhone(testUserPhone);
+    verify(passwordEncoder).encode(temporaryPassword);
+    verify(salesRepository).save(argThat(sales -> sales.getPassword().equals("$2a$10$hashedpassword")));
+  }
+
+  @Test
+  @DisplayName("Should throw exception when resetting password for non-existent user")
+  void shouldThrowExceptionWhenResettingPasswordForNonExistentUser() {
+    // Given
+    when(salesRepository.findByPhone(testUserPhone)).thenReturn(Optional.empty());
+
+    // When & Then
+    assertThrows(
+        EntityNotFoundException.class, () -> userApprovalService.resetUserPassword(testUserPhone));
+
+    verify(salesRepository).findByPhone(testUserPhone);
+    verify(passwordEncoder, never()).encode(anyString());
+    verify(salesRepository, never()).save(any(Sales.class));
+  }
+
+  @Test
+  @DisplayName("Should generate unique passwords for each reset")
+  void shouldGenerateUniquePasswordsForEachReset() {
+    // Given
+    when(salesRepository.findByPhone(testUserPhone)).thenReturn(Optional.of(testUser));
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedpassword");
+    when(salesRepository.save(any(Sales.class))).thenReturn(testUser);
+
+    // When
+    String password1 = userApprovalService.resetUserPassword(testUserPhone);
+    String password2 = userApprovalService.resetUserPassword(testUserPhone);
+
+    // Then
+    assertNotEquals(password1, password2, "Each password reset should generate a unique password");
+
+    verify(salesRepository, times(2)).findByPhone(testUserPhone);
+    verify(passwordEncoder, times(2)).encode(anyString());
+    verify(salesRepository, times(2)).save(any(Sales.class));
+  }
+
+  @Test
+  @DisplayName("Should ensure password meets security requirements")
+  void shouldEnsurePasswordMeetsSecurityRequirements() {
+    // Given
+    when(salesRepository.findByPhone(testUserPhone)).thenReturn(Optional.of(testUser));
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedpassword");
+    when(salesRepository.save(any(Sales.class))).thenReturn(testUser);
+
+    // When - Generate multiple passwords to test consistency
+    for (int i = 0; i < 10; i++) {
+      String temporaryPassword = userApprovalService.resetUserPassword(testUserPhone);
+
+      // Then - Verify security requirements for each generated password
+      assertNotNull(temporaryPassword);
+      assertTrue(temporaryPassword.length() >= 12, "Password should be at least 12 characters");
+      assertTrue(temporaryPassword.matches(".*[A-Z].*"), "Should contain uppercase");
+      assertTrue(temporaryPassword.matches(".*[a-z].*"), "Should contain lowercase");
+      assertTrue(temporaryPassword.matches(".*[0-9].*"), "Should contain digit");
+      assertTrue(temporaryPassword.matches(".*[!@#$%^&*].*"), "Should contain special character");
+    }
+
+    verify(salesRepository, times(10)).findByPhone(testUserPhone);
+    verify(passwordEncoder, times(10)).encode(anyString());
+    verify(salesRepository, times(10)).save(any(Sales.class));
   }
 }

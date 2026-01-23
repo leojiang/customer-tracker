@@ -141,8 +141,9 @@ public class AuthController {
   @PostMapping("/change-password")
   public ResponseEntity<AuthResponse> changePassword(
       @Valid @RequestBody ChangePasswordRequest request) {
-    AuthResult result = authService.changePassword(
-        request.getPhone(), request.getCurrentPassword(), request.getNewPassword());
+    AuthResult result =
+        authService.changePassword(
+            request.getPhone(), request.getCurrentPassword(), request.getNewPassword());
 
     if (result.isSuccess()) {
       return ResponseEntity.ok(

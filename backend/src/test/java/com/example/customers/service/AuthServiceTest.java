@@ -293,7 +293,8 @@ class AuthServiceTest {
     when(salesRepository.save(any(Sales.class))).thenReturn(testSales);
 
     // When
-    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+    AuthService.AuthResult result =
+        authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
     assertTrue(result.isSuccess());
@@ -377,7 +378,8 @@ class AuthServiceTest {
     when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.empty());
 
     // When
-    AuthService.AuthResult result = authService.changePassword(testPhone, "currentPass", "newPass123");
+    AuthService.AuthResult result =
+        authService.changePassword(testPhone, "currentPass", "newPass123");
 
     // Then
     assertFalse(result.isSuccess());
@@ -398,7 +400,8 @@ class AuthServiceTest {
     when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(false);
 
     // When
-    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+    AuthService.AuthResult result =
+        authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
     assertFalse(result.isSuccess());
@@ -420,7 +423,8 @@ class AuthServiceTest {
     when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(true);
 
     // When
-    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+    AuthService.AuthResult result =
+        authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
     assertFalse(result.isSuccess());
@@ -446,7 +450,8 @@ class AuthServiceTest {
     when(passwordEncoder.matches(newPassword, testHashedPassword)).thenReturn(true);
 
     // When
-    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+    AuthService.AuthResult result =
+        authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
     assertFalse(result.isSuccess());
