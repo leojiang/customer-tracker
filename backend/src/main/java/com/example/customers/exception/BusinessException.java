@@ -23,9 +23,7 @@ public class BusinessException extends RuntimeException {
     return errorCode;
   }
 
-  /**
-   * Business error codes that can be mapped to specific frontend error messages.
-   */
+  /** Business error codes that can be mapped to specific frontend error messages. */
   public enum ErrorCode {
     DUPLICATE_CUSTOMER_CERTIFICATE,
     VALIDATION_ERROR,

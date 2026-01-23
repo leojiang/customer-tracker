@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus } from '@/types/customer';
+import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
+import { getCertificateIssuerOptions, mapCertificateIssuerToDisplay } from '@/lib/certificateIssuerUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -289,22 +290,19 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </select>
               </div>
 
-              {/* Certificate Type Filter - 2 columns */}
-              <div className="col-span-2">
-                <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateType')}</label>
-                <select
-                  value={selectedCertificateType}
-                  onChange={(e) => setSelectedCertificateType(e.target.value)}
-                  className="input-field w-full text-sm"
-                >
-                  <option value="">{t('customers.all')}</option>
-                  {Object.values(CertificateType).map((type) => (
-                    <option key={type} value={type}>
-                      {t(CertificateTypeTranslationKeys[type])}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Customer Agent - 2 columns (conditional for Admin/Officer) */}
+              {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
+                <div className="col-span-2">
+                  <label className="block text-xs text-gray-600 mb-1">{t('customers.form.customerAgent')}</label>
+                  <input
+                    type="text"
+                    value={customerAgent}
+                    onChange={(e) => setCustomerAgent(e.target.value)}
+                    placeholder={t('customers.form.customerAgent.placeholder')}
+                    className="input-field w-full text-sm"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Clear Button - at the end of row 1 - wider */}
@@ -324,28 +322,36 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               {/* Certificate Issuer - 5 columns (expanded) */}
               <div className="col-span-5">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateIssuer')}</label>
-                <input
-                  type="text"
+                <select
                   value={certificateIssuer}
                   onChange={(e) => setCertificateIssuer(e.target.value)}
-                  placeholder={t('customers.form.certificateIssuer.placeholder')}
                   className="input-field w-full text-sm"
-                />
+                >
+                  <option value="">{t('customers.all')}</option>
+                  {getCertificateIssuerOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {t(CertificateIssuerTranslationKeys[option.value])}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Customer Agent - 2 columns (conditional for Admin/Officer) */}
-              {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
-                <div className="col-span-2">
-                  <label className="block text-xs text-gray-600 mb-1">{t('customers.form.customerAgent')}</label>
-                  <input
-                    type="text"
-                    value={customerAgent}
-                    onChange={(e) => setCustomerAgent(e.target.value)}
-                    placeholder={t('customers.form.customerAgent.placeholder')}
-                    className="input-field w-full text-sm"
-                  />
-                </div>
-              )}
+              {/* Certificate Type Filter - 2 columns */}
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateType')}</label>
+                <select
+                  value={selectedCertificateType}
+                  onChange={(e) => setSelectedCertificateType(e.target.value)}
+                  className="input-field w-full text-sm"
+                >
+                  <option value="">{t('customers.all')}</option>
+                  {Object.values(CertificateType).map((type) => (
+                    <option key={type} value={type}>
+                      {t(CertificateTypeTranslationKeys[type])}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Start Date - 2 columns */}
               <div className="col-span-2">
@@ -510,7 +516,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                         {customer.certificateType ? t(CertificateTypeTranslationKeys[customer.certificateType]) : '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                        {customer.certificateIssuer || '-'}
+                        {customer.certificateIssuer ? t(CertificateIssuerTranslationKeys[mapCertificateIssuerToDisplay(customer.certificateIssuer)]) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {customer.certifiedAt ? (

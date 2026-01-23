@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.example.customers.exception.BusinessException;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.StatusHistoryRepository;
-import com.example.customers.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -73,22 +73,24 @@ class CustomerServiceTest {
   }
 
   @Test
-  @DisplayName("Should throw exception when creating customer with duplicate phone and certificate type")
+  @DisplayName(
+      "Should throw exception when creating customer with duplicate phone and certificate type")
   void shouldThrowExceptionWhenCreatingCustomerWithDuplicatePhone() {
     // Given
     Customer newCustomer = new Customer();
     newCustomer.setPhone("+1234567890");
     newCustomer.setCertificateType(com.example.customers.model.CertificateType.ELECTRICIAN);
 
-    when(customerRepository.findByPhoneAndCertificateType("+1234567890", com.example.customers.model.CertificateType.ELECTRICIAN))
+    when(customerRepository.findByPhoneAndCertificateType(
+            "+1234567890", com.example.customers.model.CertificateType.ELECTRICIAN))
         .thenReturn(Optional.of(testCustomer));
 
     // When & Then
     BusinessException exception =
-        assertThrows(
-            BusinessException.class, () -> customerService.createCustomer(newCustomer));
+        assertThrows(BusinessException.class, () -> customerService.createCustomer(newCustomer));
 
-    assertEquals(BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
+    assertEquals(
+        BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
     assertTrue(exception.getMessage().contains("already has"));
     assertTrue(exception.getMessage().contains("certificate"));
     verify(customerRepository, never()).save(any());
@@ -169,7 +171,8 @@ class CustomerServiceTest {
   }
 
   @Test
-  @DisplayName("Should throw exception when updating customer with duplicate phone and certificate type")
+  @DisplayName(
+      "Should throw exception when updating customer with duplicate phone and certificate type")
   void shouldThrowExceptionWhenUpdatingCustomerWithDuplicatePhone() {
     // Given
     Customer otherCustomer = new Customer();
@@ -182,7 +185,8 @@ class CustomerServiceTest {
     updateData.setCertificateType(com.example.customers.model.CertificateType.ELECTRICIAN);
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerRepository.findByPhoneAndCertificateType("+1111111111", com.example.customers.model.CertificateType.ELECTRICIAN))
+    when(customerRepository.findByPhoneAndCertificateType(
+            "+1111111111", com.example.customers.model.CertificateType.ELECTRICIAN))
         .thenReturn(Optional.of(otherCustomer));
 
     // When & Then
@@ -191,7 +195,8 @@ class CustomerServiceTest {
             BusinessException.class,
             () -> customerService.updateCustomer(testCustomerId, updateData));
 
-    assertEquals(BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
+    assertEquals(
+        BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
     assertTrue(exception.getMessage().contains("already has"));
     assertTrue(exception.getMessage().contains("certificate"));
     verify(customerRepository, never()).save(any());

@@ -75,11 +75,9 @@ public class GlobalExceptionHandler {
   public ResponseEntity<BusinessErrorResponse> handleBusinessException(
       BusinessException ex, WebRequest request) {
 
-    BusinessErrorResponse response = new BusinessErrorResponse(
-        ex.getErrorCode().toString(),
-        ex.getMessage(),
-        LocalDateTime.now()
-    );
+    BusinessErrorResponse response =
+        new BusinessErrorResponse(
+            ex.getErrorCode().toString(), ex.getMessage(), LocalDateTime.now());
 
     return ResponseEntity.badRequest().body(response);
   }

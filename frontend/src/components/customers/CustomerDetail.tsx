@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2, UserCircle, Calendar } from 'lucide-react';
-import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
+import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
+import { mapCertificateIssuerToDisplay, getCertificateIssuerOptions } from '@/lib/certificateIssuerUtils';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
@@ -86,7 +87,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       setEditForm({
         name: data.name,
         phone: data.phone,
-        certificateIssuer: data.certificateIssuer || '',
+        certificateIssuer: mapCertificateIssuerToDisplay(data.certificateIssuer),
         businessRequirements: data.businessRequirements || '',
         certificateType: data.certificateType,
         age: data.age,
@@ -541,15 +542,29 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       {t('customers.form.certificateIssuer')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.certificateIssuer}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, certificateIssuer: e.target.value }))}
+                      <select
+                        value={editForm.certificateIssuer || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const certificateIssuerValue = value && value !== '' ? value as CertificateIssuer : CertificateIssuer.OTHER;
+                          setEditForm(prev => ({ ...prev, certificateIssuer: certificateIssuerValue }));
+                        }}
                         className="input-field"
-                        placeholder={t('customers.form.certificateIssuer')}
-                      />
+                      >
+                        {getCertificateIssuerOptions().map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {t(CertificateIssuerTranslationKeys[option.value])}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
-                      <p className="text-body-1">{customer.certificateIssuer || <span className="text-surface-400 italic">{t('customers.form.certificateIssuer')}</span>}</p>
+                      <p className="text-body-1">
+                  {customer.certificateIssuer ? (
+                    t(CertificateIssuerTranslationKeys[mapCertificateIssuerToDisplay(customer.certificateIssuer)])
+                  ) : (
+                    <span className="text-surface-400 italic">{t('customers.form.certificateIssuer')}</span>
+                  )}
+                </p>
                     )}
                   </div>
 

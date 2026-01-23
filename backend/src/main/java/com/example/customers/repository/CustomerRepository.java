@@ -36,7 +36,8 @@ public interface CustomerRepository
   List<Customer> findAllByPhone(String phone);
 
   /** Find customer by phone and certificate type. */
-  Optional<Customer> findByPhoneAndCertificateType(String phone, com.example.customers.model.CertificateType certificateType);
+  Optional<Customer> findByPhoneAndCertificateType(
+      String phone, com.example.customers.model.CertificateType certificateType);
 
   /** Find active customer by ID. */
   Optional<Customer> findById(UUID id);

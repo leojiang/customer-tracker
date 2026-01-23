@@ -25,6 +25,13 @@ export enum CertificateType {
   EXCAVATOR = 'EXCAVATOR'
 }
 
+export enum CertificateIssuer {
+  MARKET_SUPERVISION_ADMINISTRATION = '市场监督管理局',
+  HOUSING_CONSTRUCTION_BUREAU = '住建局',
+  EMERGENCY_MANAGEMENT_DEPARTMENT = '应急管理厅',
+  OTHER = '其它'
+}
+
 export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
   [EducationLevel.ELEMENTARY]: 'Elementary School',
   [EducationLevel.MIDDLE_SCHOOL]: 'Middle School',
@@ -42,6 +49,13 @@ export const CertificateTypeTranslationKeys: Record<CertificateType, string> = {
   [CertificateType.ELECTRICIAN]: 'certificateType.electrician',
   [CertificateType.WELDER]: 'certificateType.welder',
   [CertificateType.EXCAVATOR]: 'certificateType.excavator'
+};
+
+export const CertificateIssuerTranslationKeys: Record<CertificateIssuer, string> = {
+  [CertificateIssuer.MARKET_SUPERVISION_ADMINISTRATION]: 'certificateIssuer.marketSupervisionAdministration',
+  [CertificateIssuer.HOUSING_CONSTRUCTION_BUREAU]: 'certificateIssuer.housingConstructionBureau',
+  [CertificateIssuer.EMERGENCY_MANAGEMENT_DEPARTMENT]: 'certificateIssuer.emergencyManagementDepartment',
+  [CertificateIssuer.OTHER]: 'certificateIssuer.other'
 };
 
 export const CustomerStatusDisplayNames: Record<CustomerStatus, string> = {

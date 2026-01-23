@@ -1,5 +1,6 @@
 package com.example.customers.service;
 
+import com.example.customers.exception.BusinessException;
 import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
@@ -7,7 +8,6 @@ import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerSpecifications;
 import com.example.customers.repository.StatusHistoryRepository;
-import com.example.customers.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -61,10 +61,13 @@ public class CustomerService {
       if (existingCustomer.isPresent()) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with phone number '" + customer.getPhone() +
-            "' already has a '" + customer.getCertificateType() + "' certificate. " +
-            "Each phone number can only have one certificate of each type. " +
-            "Please edit the existing customer or choose a different certificate type.");
+            "A customer with phone number '"
+                + customer.getPhone()
+                + "' already has a '"
+                + customer.getCertificateType()
+                + "' certificate. "
+                + "Each phone number can only have one certificate of each type. "
+                + "Please edit the existing customer or choose a different certificate type.");
       }
     }
 
@@ -113,13 +116,18 @@ public class CustomerService {
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
-    // Check composite uniqueness (phone, certificate_type) if both phone and certificate type are being changed
+    // Check composite uniqueness (phone, certificate_type) if both phone and certificate type are
+    // being changed
     // Use safe null comparisons to handle legacy data
-    boolean phoneChanged = !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
-    boolean certificateTypeChanged = !java.util.Objects.equals(existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
+    boolean phoneChanged =
+        !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
+    boolean certificateTypeChanged =
+        !java.util.Objects.equals(
+            existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
 
-    if ((phoneChanged || certificateTypeChanged) &&
-        updatedCustomer.getPhone() != null && updatedCustomer.getCertificateType() != null) {
+    if ((phoneChanged || certificateTypeChanged)
+        && updatedCustomer.getPhone() != null
+        && updatedCustomer.getCertificateType() != null) {
 
       Optional<Customer> duplicateCustomer =
           customerRepository.findByPhoneAndCertificateType(
@@ -128,10 +136,13 @@ public class CustomerService {
       if (duplicateCustomer.isPresent() && !duplicateCustomer.get().getId().equals(id)) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with phone number '" + updatedCustomer.getPhone() +
-            "' already has a '" + updatedCustomer.getCertificateType() + "' certificate. " +
-            "Each phone number can only have one certificate of each type. " +
-            "Please edit the existing customer or choose a different certificate type.");
+            "A customer with phone number '"
+                + updatedCustomer.getPhone()
+                + "' already has a '"
+                + updatedCustomer.getCertificateType()
+                + "' certificate. "
+                + "Each phone number can only have one certificate of each type. "
+                + "Please edit the existing customer or choose a different certificate type.");
       }
     }
 
@@ -373,7 +384,8 @@ public class CustomerService {
 
   /** Get certificate by phone and certificate type. */
   @Transactional(readOnly = true)
-  public Optional<Customer> getCertificateByPhoneAndType(String phone, CertificateType certificateType) {
+  public Optional<Customer> getCertificateByPhoneAndType(
+      String phone, CertificateType certificateType) {
     return customerRepository.findByPhoneAndCertificateType(phone, certificateType);
   }
 

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock, Calendar } from 'lucide-react';
-import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
+import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import { getErrorMessage } from '@/lib/errorHandler';
+import { getCertificateIssuerOptions } from '@/lib/certificateIssuerUtils';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,7 +27,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   const [formData, setFormData] = useState<CreateCustomerRequest>({
     name: '',
     phone: '',
-    certificateIssuer: '',
+    certificateIssuer: CertificateIssuer.OTHER,
     businessRequirements: '',
     certificateType: undefined as CertificateType | undefined,
     age: undefined,
@@ -293,13 +294,21 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   <Building2 size={16} className="text-surface-500" />
                   {t('customers.form.certificateIssuer')}
                 </label>
-                <input
-                  type="text"
-                  value={formData.certificateIssuer}
-                  onChange={(e) => handleInputChange('certificateIssuer', e.target.value)}
+                <select
+                  value={formData.certificateIssuer || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const certificateIssuerValue = value && value !== '' ? value as CertificateIssuer : CertificateIssuer.OTHER;
+                    handleInputChange('certificateIssuer', certificateIssuerValue);
+                  }}
                   className="input-field"
-                  placeholder={t('customers.form.certificateIssuer')}
-                />
+                >
+                  {getCertificateIssuerOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {t(CertificateIssuerTranslationKeys[option.value])}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Location */}
