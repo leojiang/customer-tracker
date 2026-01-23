@@ -79,7 +79,8 @@ class CustomerServiceTest {
     // Given
     Customer newCustomer = new Customer();
     newCustomer.setPhone("+1234567890");
-    newCustomer.setCertificateType(com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    newCustomer.setCertificateType(
+        com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     when(customerRepository.findByPhoneAndCertificateType(
             "+1234567890", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
@@ -178,11 +179,13 @@ class CustomerServiceTest {
     Customer otherCustomer = new Customer();
     otherCustomer.setId(UUID.randomUUID());
     otherCustomer.setPhone("+1111111111");
-    otherCustomer.setCertificateType(com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    otherCustomer.setCertificateType(
+        com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     Customer updateData = new Customer();
     updateData.setPhone("+1111111111");
-    updateData.setCertificateType(com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    updateData.setCertificateType(
+        com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerRepository.findByPhoneAndCertificateType(

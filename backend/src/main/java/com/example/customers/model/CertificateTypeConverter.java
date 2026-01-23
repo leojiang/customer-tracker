@@ -4,8 +4,8 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 /**
- * Converter for CertificateType enum that handles conversion between
- * enum constants and database string values.
+ * Converter for CertificateType enum that handles conversion between enum constants and database
+ * string values.
  */
 @Converter(autoApply = true)
 public class CertificateTypeConverter implements AttributeConverter<CertificateType, String> {
@@ -107,7 +107,7 @@ public class CertificateTypeConverter implements AttributeConverter<CertificateT
         return CertificateType.FIREWORKS_SAFETY;
       case "其它":
         return CertificateType.OTHERS;
-      // Handle old enum constant names for backward compatibility
+        // Handle old enum constant names for backward compatibility
       case "ELECTRICIAN":
         return CertificateType.LOW_VOLTAGE_ELECTRICIAN;
       case "WELDER":

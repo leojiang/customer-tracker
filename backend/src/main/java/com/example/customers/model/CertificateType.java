@@ -4,8 +4,9 @@ package com.example.customers.model;
  * Enumeration of certificate types for customers.
  *
  * <p>Provides standardized certificate type options for customer data.
- * <p>Enum constant names are used as the canonical identifiers, while
- * display names are handled by the frontend localization system.
+ *
+ * <p>Enum constant names are used as the canonical identifiers, while display names are handled by
+ * the frontend localization system.
  */
 public enum CertificateType {
   // Crane & Machinery Types (起重机械)

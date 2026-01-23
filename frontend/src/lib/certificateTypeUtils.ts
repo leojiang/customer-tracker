@@ -10,7 +10,7 @@ import { CertificateType, CertificateTypeTranslationKeys } from '@/types/custome
  * @param t - The translation function from useLanguage hook
  * @returns Localized display name for the certificate type
  */
-export function getCertificateTypeDisplayName(certificateType: CertificateType, t: any): string {
+export function getCertificateTypeDisplayName(certificateType: CertificateType, t: (key: string) => string): string {
   const translationKey = CertificateTypeTranslationKeys[certificateType];
   return translationKey ? t(translationKey) : certificateType;
 }
