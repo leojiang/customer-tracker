@@ -311,7 +311,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
             <button
               type="button"
               onClick={handleClearAllFilters}
-              className="btn-secondary flex items-center gap-2 px-8 py-2 flex-shrink-0 min-w-[120px]"
+              className="btn-secondary flex items-center justify-center gap-2 px-8 py-2 flex-shrink-0 w-[140px]"
             >
               <X size={16} />
               <span>{t('customers.clear')}</span>
@@ -397,7 +397,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
             {/* Search Button - at the end of row 2 - wider */}
             <button
               type="submit"
-              className="btn-primary flex items-center gap-2 px-8 py-2 flex-shrink-0 min-w-[120px]"
+              className="btn-primary flex items-center justify-center gap-2 px-8 py-2 flex-shrink-0 w-[140px]"
             >
               <Search size={16} />
               <span>{t('customers.search')}</span>

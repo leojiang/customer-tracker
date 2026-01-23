@@ -70,6 +70,20 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(response);
   }
 
+  /** Handle business exceptions with error codes. */
+  @ExceptionHandler(BusinessException.class)
+  public ResponseEntity<BusinessErrorResponse> handleBusinessException(
+      BusinessException ex, WebRequest request) {
+
+    BusinessErrorResponse response = new BusinessErrorResponse(
+        ex.getErrorCode().toString(),
+        ex.getMessage(),
+        LocalDateTime.now()
+    );
+
+    return ResponseEntity.badRequest().body(response);
+  }
+
   /** Generic error response DTO. */
   public static class ErrorResponse {
     private String message;
@@ -78,6 +92,31 @@ public class GlobalExceptionHandler {
     public ErrorResponse(String message, LocalDateTime timestamp) {
       this.message = message;
       this.timestamp = timestamp;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+
+    public LocalDateTime getTimestamp() {
+      return timestamp;
+    }
+  }
+
+  /** Business error response DTO with error code. */
+  public static class BusinessErrorResponse {
+    private String errorCode;
+    private String message;
+    private LocalDateTime timestamp;
+
+    public BusinessErrorResponse(String errorCode, String message, LocalDateTime timestamp) {
+      this.errorCode = errorCode;
+      this.message = message;
+      this.timestamp = timestamp;
+    }
+
+    public String getErrorCode() {
+      return errorCode;
     }
 
     public String getMessage() {

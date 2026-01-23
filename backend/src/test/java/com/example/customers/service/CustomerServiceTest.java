@@ -9,6 +9,7 @@ import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.StatusHistoryRepository;
+import com.example.customers.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -59,8 +60,6 @@ class CustomerServiceTest {
     newCustomer.setName("Jane Smith");
     newCustomer.setPhone("+9876543210");
 
-    when(customerRepository.findByPhoneIncludingDeleted("+9876543210"))
-        .thenReturn(Optional.empty());
     when(customerRepository.save(any(Customer.class))).thenReturn(testCustomer);
 
     // When
@@ -69,27 +68,29 @@ class CustomerServiceTest {
     // Then
     assertNotNull(result);
     assertEquals(CustomerStatus.NEW, newCustomer.getCurrentStatus());
-    verify(customerRepository).findByPhoneIncludingDeleted("+9876543210");
     verify(customerRepository).save(newCustomer);
     verify(statusHistoryRepository).save(any(StatusHistory.class));
   }
 
   @Test
-  @DisplayName("Should throw exception when creating customer with duplicate phone")
+  @DisplayName("Should throw exception when creating customer with duplicate phone and certificate type")
   void shouldThrowExceptionWhenCreatingCustomerWithDuplicatePhone() {
     // Given
     Customer newCustomer = new Customer();
     newCustomer.setPhone("+1234567890");
+    newCustomer.setCertificateType(com.example.customers.model.CertificateType.ELECTRICIAN);
 
-    when(customerRepository.findByPhoneIncludingDeleted("+1234567890"))
+    when(customerRepository.findByPhoneAndCertificateType("+1234567890", com.example.customers.model.CertificateType.ELECTRICIAN))
         .thenReturn(Optional.of(testCustomer));
 
     // When & Then
-    IllegalArgumentException exception =
+    BusinessException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> customerService.createCustomer(newCustomer));
+            BusinessException.class, () -> customerService.createCustomer(newCustomer));
 
-    assertTrue(exception.getMessage().contains("already exists"));
+    assertEquals(BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
+    assertTrue(exception.getMessage().contains("already has"));
+    assertTrue(exception.getMessage().contains("certificate"));
     verify(customerRepository, never()).save(any());
     verify(statusHistoryRepository, never()).save(any());
   }
@@ -133,8 +134,6 @@ class CustomerServiceTest {
     updateData.setCertificateIssuer("Updated Certificate Issuer");
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerRepository.findByPhoneIncludingDeleted("+1111111111"))
-        .thenReturn(Optional.empty());
     when(customerRepository.save(any(Customer.class))).thenReturn(testCustomer);
 
     // When
@@ -143,7 +142,6 @@ class CustomerServiceTest {
     // Then
     assertNotNull(result);
     verify(customerRepository).findById(testCustomerId);
-    verify(customerRepository).findByPhoneIncludingDeleted("+1111111111");
     verify(customerRepository).save(testCustomer);
     assertEquals("Updated Name", testCustomer.getName());
     assertEquals("+1111111111", testCustomer.getPhone());
@@ -171,27 +169,31 @@ class CustomerServiceTest {
   }
 
   @Test
-  @DisplayName("Should throw exception when updating customer with duplicate phone")
+  @DisplayName("Should throw exception when updating customer with duplicate phone and certificate type")
   void shouldThrowExceptionWhenUpdatingCustomerWithDuplicatePhone() {
     // Given
     Customer otherCustomer = new Customer();
     otherCustomer.setId(UUID.randomUUID());
     otherCustomer.setPhone("+1111111111");
+    otherCustomer.setCertificateType(com.example.customers.model.CertificateType.ELECTRICIAN);
 
     Customer updateData = new Customer();
     updateData.setPhone("+1111111111");
+    updateData.setCertificateType(com.example.customers.model.CertificateType.ELECTRICIAN);
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerRepository.findByPhoneIncludingDeleted("+1111111111"))
+    when(customerRepository.findByPhoneAndCertificateType("+1111111111", com.example.customers.model.CertificateType.ELECTRICIAN))
         .thenReturn(Optional.of(otherCustomer));
 
     // When & Then
-    IllegalArgumentException exception =
+    BusinessException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            BusinessException.class,
             () -> customerService.updateCustomer(testCustomerId, updateData));
 
-    assertTrue(exception.getMessage().contains("already exists"));
+    assertEquals(BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE, exception.getErrorCode());
+    assertTrue(exception.getMessage().contains("already has"));
+    assertTrue(exception.getMessage().contains("certificate"));
     verify(customerRepository, never()).save(any());
   }
 

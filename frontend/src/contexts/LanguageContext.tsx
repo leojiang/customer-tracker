@@ -138,6 +138,7 @@ const translations = {
     'error.connectionError': 'Connection Error',
     'error.dismissMessage': 'Dismiss error message',
     'error.phoneAlreadyExists': 'Phone number already exists',
+    'error.duplicateCustomerCertificate': 'This phone number already has a certificate of this type. Please edit the existing customer or choose a different certificate type.',
     'error.invalidToken': 'Invalid or expired token',
     'error.invalidResponse': 'Invalid response from server',
 
@@ -445,6 +446,7 @@ const translations = {
     'validation.phoneLength': 'Phone number must be 11 digits',
     'validation.nameLength': 'Name must be 2-50 characters',
     'validation.ageInvalid': 'Please enter a valid age between 1 and 120',
+    'validation.certificateTypeRequired': 'Certificate type is required',
 
     // Common actions
     'actions.save': 'Save',
@@ -735,6 +737,7 @@ const translations = {
     'error.connectionError': '连接错误',
     'error.dismissMessage': '关闭错误消息',
     'error.phoneAlreadyExists': '手机号码已存在',
+    'error.duplicateCustomerCertificate': '该手机号码已经有此类型的证书，请编辑现有客户资料或选择不同的证书类型。',
     'error.invalidToken': '无效或过期的令牌',
     'error.invalidResponse': '服务器响应无效',
 
@@ -1043,6 +1046,7 @@ const translations = {
     'validation.phoneLength': '手机号码必须是11位数字',
     'validation.nameLength': '姓名长度必须为2-50个字符',
     'validation.ageInvalid': '请输入1-120之间的有效年龄',
+    'validation.certificateTypeRequired': '证书类型为必填项',
 
     // Common actions
     'actions.save': '保存',

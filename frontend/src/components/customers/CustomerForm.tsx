@@ -5,6 +5,7 @@ import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, Doll
 import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
+import { getErrorMessage } from '@/lib/errorHandler';
 import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -69,6 +70,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
       newFieldErrors.age = ageValidation.message!;
     }
 
+    if (!formData.certificateType) {
+      newFieldErrors.certificateType = t('validation.certificateTypeRequired');
+    }
+
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       return;
@@ -92,7 +97,9 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
       await customerApi.createCustomer(cleanedData);
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('customers.form.failedCreate'));
+      // Use the error handler to map business error codes to user-friendly messages
+      const userErrorMessage = getErrorMessage(err, t);
+      setError(userErrorMessage);
     } finally {
       setLoading(false);
     }
@@ -129,6 +136,17 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
       case 'age':
         validation = validateAge(value as number);
         break;
+      case 'certificateType':
+        if (!value) {
+          setFieldErrors(prev => ({ ...prev, [field]: t('validation.certificateTypeRequired') }));
+        } else {
+          setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[field];
+            return newErrors;
+          });
+        }
+        return;
       default:
         return;
     }
@@ -409,7 +427,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <Briefcase size={16} className="text-surface-500" />
-                  {t('customers.form.certificateType')}
+                  {t('customers.form.certificateType')} *
                 </label>
                 <select
                   value={formData.certificateType || ''}
@@ -417,8 +435,10 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                     const value = e.target.value;
                     const certificateValue = value && value !== '' ? value as CertificateType : undefined;
                     handleInputChange('certificateType', certificateValue);
+                    validateField('certificateType', certificateValue);
                   }}
-                  className="input-field"
+                  className={`input-field ${fieldErrors.certificateType ? 'border-red-500' : ''}`}
+                  required
                 >
                   <option value="">{t('customers.form.selectCertificateType')}</option>
                   {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
@@ -427,8 +447,12 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                     </option>
                   ))}
                 </select>
-                {/* Placeholder to maintain alignment with Location field */}
-                <div className="h-1"></div>
+                {fieldErrors.certificateType && (
+                  <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                    <AlertCircle size={14} />
+                    <span>{fieldErrors.certificateType}</span>
+                  </div>
+                )}
               </div>
 
               {/* Certified At */}

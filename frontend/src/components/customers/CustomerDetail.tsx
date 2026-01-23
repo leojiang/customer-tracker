@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2, UserCircle, Calendar } from 'lucide-react';
 import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errorHandler';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
@@ -216,6 +217,11 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       newFieldErrors.age = ageValidation.message!;
     }
 
+    // Validate certificate type is required
+    if (!editForm.certificateType) {
+      newFieldErrors.certificateType = t('validation.certificateTypeRequired');
+    }
+
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       return;
@@ -234,7 +240,9 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
       setCustomer(updatedCustomer);
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('customers.form.failedUpdate'));
+      // Use the error handler to map business error codes to user-friendly messages
+      const userErrorMessage = getErrorMessage(err, t);
+      setError(userErrorMessage);
     } finally {
       setUpdating(false);
     }
@@ -708,25 +716,42 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <Briefcase size={18} className="text-surface-500" />
-                      {t('customers.form.certificateType')}
+                      {t('customers.form.certificateType')} *
                     </label>
                     {isEditing ? (
-                      <select
-                        value={editForm.certificateType || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const certificateValue = value && value !== '' ? value as CertificateType : undefined;
-                          setEditForm(prev => ({ ...prev, certificateType: certificateValue }));
-                        }}
-                        className="input-field"
-                      >
-                        <option value="">{t('customers.form.selectCertificateType')}</option>
-                        {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
-                          <option key={key} value={key}>
-                            {t(CertificateTypeTranslationKeys[key as CertificateType])}
-                          </option>
-                        ))}
-                      </select>
+                      <>
+                        <select
+                          value={editForm.certificateType || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const certificateValue = value && value !== '' ? value as CertificateType : undefined;
+                            setEditForm(prev => ({ ...prev, certificateType: certificateValue }));
+                            // Clear field error when user makes a selection
+                            if (certificateValue && fieldErrors.certificateType) {
+                              setFieldErrors(prev => {
+                                const newErrors = { ...prev };
+                                delete newErrors.certificateType;
+                                return newErrors;
+                              });
+                            }
+                          }}
+                          className={`input-field ${fieldErrors.certificateType ? 'border-red-500' : ''}`}
+                          required
+                        >
+                          <option value="">{t('customers.form.selectCertificateType')}</option>
+                          {Object.entries(CertificateTypeTranslationKeys).map(([key]) => (
+                            <option key={key} value={key}>
+                              {t(CertificateTypeTranslationKeys[key as CertificateType])}
+                            </option>
+                          ))}
+                        </select>
+                        {fieldErrors.certificateType && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                            <AlertCircle size={14} />
+                            <span>{fieldErrors.certificateType}</span>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <p className="text-body-1">
                         {customer.certificateType ? (

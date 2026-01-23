@@ -7,6 +7,7 @@ import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerSpecifications;
 import com.example.customers.repository.StatusHistoryRepository;
+import com.example.customers.exception.BusinessException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -51,10 +52,20 @@ public class CustomerService {
 
   /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
-    // Validate phone uniqueness (including soft-deleted records)
-    if (customerRepository.findByPhoneIncludingDeleted(customer.getPhone()).isPresent()) {
-      throw new IllegalArgumentException(
-          "Customer with phone " + customer.getPhone() + " already exists");
+    // Validate composite uniqueness (phone, certificate_type) only when both are present
+    if (customer.getPhone() != null && customer.getCertificateType() != null) {
+      Optional<Customer> existingCustomer =
+          customerRepository.findByPhoneAndCertificateType(
+              customer.getPhone(), customer.getCertificateType());
+
+      if (existingCustomer.isPresent()) {
+        throw new BusinessException(
+            BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
+            "A customer with phone number '" + customer.getPhone() +
+            "' already has a '" + customer.getCertificateType() + "' certificate. " +
+            "Each phone number can only have one certificate of each type. " +
+            "Please edit the existing customer or choose a different certificate type.");
+      }
     }
 
     // Set default status if not provided
@@ -102,13 +113,25 @@ public class CustomerService {
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
-    // Check phone uniqueness if phone is being changed
-    if (!existingCustomer.getPhone().equals(updatedCustomer.getPhone())) {
-      Optional<Customer> customerWithPhone =
-          customerRepository.findByPhoneIncludingDeleted(updatedCustomer.getPhone());
-      if (customerWithPhone.isPresent() && !customerWithPhone.get().getId().equals(id)) {
-        throw new IllegalArgumentException(
-            "Customer with phone " + updatedCustomer.getPhone() + " already exists");
+    // Check composite uniqueness (phone, certificate_type) if both phone and certificate type are being changed
+    // Use safe null comparisons to handle legacy data
+    boolean phoneChanged = !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
+    boolean certificateTypeChanged = !java.util.Objects.equals(existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
+
+    if ((phoneChanged || certificateTypeChanged) &&
+        updatedCustomer.getPhone() != null && updatedCustomer.getCertificateType() != null) {
+
+      Optional<Customer> duplicateCustomer =
+          customerRepository.findByPhoneAndCertificateType(
+              updatedCustomer.getPhone(), updatedCustomer.getCertificateType());
+
+      if (duplicateCustomer.isPresent() && !duplicateCustomer.get().getId().equals(id)) {
+        throw new BusinessException(
+            BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
+            "A customer with phone number '" + updatedCustomer.getPhone() +
+            "' already has a '" + updatedCustomer.getCertificateType() + "' certificate. " +
+            "Each phone number can only have one certificate of each type. " +
+            "Please edit the existing customer or choose a different certificate type.");
       }
     }
 
@@ -340,6 +363,24 @@ public class CustomerService {
                 () -> new EntityNotFoundException("Customer not found with id: " + customerId));
 
     return transitionValidator.isValidTransition(customer.getCurrentStatus(), toStatus);
+  }
+
+  /** Get all certificates for a specific phone number. */
+  @Transactional(readOnly = true)
+  public List<Customer> getCertificatesByPhone(String phone) {
+    return customerRepository.findAllByPhone(phone);
+  }
+
+  /** Get certificate by phone and certificate type. */
+  @Transactional(readOnly = true)
+  public Optional<Customer> getCertificateByPhoneAndType(String phone, CertificateType certificateType) {
+    return customerRepository.findByPhoneAndCertificateType(phone, certificateType);
+  }
+
+  /** Check if a customer with the same phone and certificate type already exists. */
+  @Transactional(readOnly = true)
+  public boolean existsByPhoneAndCertificateType(String phone, CertificateType certificateType) {
+    return customerRepository.findByPhoneAndCertificateType(phone, certificateType).isPresent();
   }
 
   // Private helper methods

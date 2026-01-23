@@ -36,7 +36,10 @@ import org.hibernate.annotations.Where;
 @Entity
 @Table(
     name = "customers",
-    uniqueConstraints = {@UniqueConstraint(name = "unique_phone", columnNames = "phone")})
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "unique_phone_certificate_type",
+          columnNames = {"phone", "certificate_type"})})
 @SQLDelete(sql = "UPDATE customers SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class Customer {
@@ -51,7 +54,7 @@ public class Customer {
 
   @NotBlank(message = "Phone number is required")
   @PhoneNumber(message = "Phone number must be in international format (+1234567890)")
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   private String phone;
 
   @Column(name = "certificate_issuer")
