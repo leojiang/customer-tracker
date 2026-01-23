@@ -81,10 +81,21 @@ export enum CertificateType {
 }
 
 export enum CertificateIssuer {
-  MARKET_SUPERVISION_ADMINISTRATION = '市场监督管理局',
-  HOUSING_CONSTRUCTION_BUREAU = '住建局',
-  EMERGENCY_MANAGEMENT_DEPARTMENT = '应急管理厅',
-  OTHER = '其它'
+  MARKET_SUPERVISION_ADMINISTRATION = 'MARKET_SUPERVISION_ADMINISTRATION',
+  HOUSING_CONSTRUCTION_BUREAU = 'HOUSING_CONSTRUCTION_BUREAU',
+  EMERGENCY_MANAGEMENT_DEPARTMENT = 'EMERGENCY_MANAGEMENT_DEPARTMENT',
+  OTHER = 'OTHER'
+}
+
+export function getCertificateIssuerDisplayName(issuer: CertificateIssuer, t: (key: string) => string): string {
+  // Convert MARKET_SUPERVISION_ADMINISTRATION to marketSupervisionAdministration
+  const camelCase = issuer
+    .toLowerCase()
+    .split('_')
+    .map((word, index) => index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+  const translationKey = `certificateIssuer.${camelCase}`;
+  return t(translationKey);
 }
 
 export const EducationLevelDisplayNames: Record<EducationLevel, string> = {
