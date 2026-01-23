@@ -131,6 +131,28 @@ public class AuthController {
         .body(new AuthResponse(null, null, null, "error.invalidToken", null));
   }
 
+  /**
+   * Changes password for authenticated user.
+   *
+   * @param request change password request
+   * @return ResponseEntity containing success/error message
+   */
+  @Operation(summary = "Change user password")
+  @PostMapping("/change-password")
+  public ResponseEntity<AuthResponse> changePassword(
+      @Valid @RequestBody ChangePasswordRequest request) {
+    AuthResult result = authService.changePassword(
+        request.getPhone(), request.getCurrentPassword(), request.getNewPassword());
+
+    if (result.isSuccess()) {
+      return ResponseEntity.ok(
+          new AuthResponse(null, request.getPhone(), null, result.getMessage(), null));
+    }
+
+    return ResponseEntity.badRequest()
+        .body(new AuthResponse(null, null, null, result.getMessage(), null));
+  }
+
   // Request DTOs
   /** Login request DTO. */
   public static class LoginRequest {
@@ -214,6 +236,42 @@ public class AuthController {
 
     public void setToken(String token) {
       this.token = token;
+    }
+  }
+
+  /** Change password request DTO. */
+  public static class ChangePasswordRequest {
+    @NotBlank(message = "Phone number is required")
+    private String phone;
+
+    @NotBlank(message = "Current password is required")
+    private String currentPassword;
+
+    @NotBlank(message = "New password is required")
+    private String newPassword;
+
+    public String getPhone() {
+      return phone;
+    }
+
+    public void setPhone(String phone) {
+      this.phone = phone;
+    }
+
+    public String getCurrentPassword() {
+      return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+      this.currentPassword = currentPassword;
+    }
+
+    public String getNewPassword() {
+      return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+      this.newPassword = newPassword;
     }
   }
 

@@ -132,6 +132,57 @@ public class AuthService {
     return Optional.empty();
   }
 
+  /**
+   * Changes password for authenticated user.
+   *
+   * @param phone user phone number
+   * @param currentPassword current password for verification
+   * @param newPassword new password to set
+   * @return result indicating success or failure with message
+   */
+  public AuthResult changePassword(String phone, String currentPassword, String newPassword) {
+    // Validate input parameters
+    if (phone == null || phone.trim().isEmpty()) {
+      return AuthResult.failure("error.phoneRequired", null);
+    }
+    if (currentPassword == null || currentPassword.trim().isEmpty()) {
+      return AuthResult.failure("error.currentPasswordRequired", null);
+    }
+    if (newPassword == null || newPassword.trim().isEmpty()) {
+      return AuthResult.failure("error.newPasswordRequired", null);
+    }
+
+    // Find user
+    Optional<Sales> salesOptional = salesRepository.findByPhone(phone);
+    if (salesOptional.isEmpty()) {
+      return AuthResult.failure("error.userNotFound", null);
+    }
+
+    Sales sales = salesOptional.get();
+
+    // Verify current password
+    if (!passwordEncoder.matches(currentPassword, sales.getPassword())) {
+      return AuthResult.failure("error.incorrectCurrentPassword", null);
+    }
+
+    // Validate new password length
+    if (newPassword.length() < 6) {
+      return AuthResult.failure("error.passwordTooShort", null);
+    }
+
+    // Ensure new password is different from current password
+    if (passwordEncoder.matches(newPassword, sales.getPassword())) {
+      return AuthResult.failure("error.newPasswordSameAsOld", null);
+    }
+
+    // Hash and update new password
+    String hashedNewPassword = passwordEncoder.encode(newPassword);
+    sales.setPassword(hashedNewPassword);
+    salesRepository.save(sales);
+
+    return AuthResult.successWithMessage("password.success.changed", null, null);
+  }
+
   /** Result class for authentication operations. */
   public static class AuthResult {
     private final boolean success;
@@ -153,6 +204,10 @@ public class AuthService {
 
     public static AuthResult success(String token, String phone, String role) {
       return new AuthResult(true, null, token, phone, role, "APPROVED");
+    }
+
+    public static AuthResult successWithMessage(String message, String token, String phone) {
+      return new AuthResult(true, message, token, phone, null, null);
     }
 
     public static AuthResult failure(String message, String status) {

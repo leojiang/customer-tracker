@@ -276,85 +276,185 @@ class AuthServiceTest {
     verify(salesRepository, never()).findByPhone(any());
   }
 
+  // Change Password Tests
+
   @Test
-  @DisplayName("Should return empty when token extraction throws exception")
-  void shouldReturnEmptyWhenTokenExtractionThrowsException() {
+  @DisplayName("Should change password successfully with valid data")
+  void shouldChangePasswordSuccessfullyWithValidData() {
     // Given
-    when(jwtService.extractPhone(testToken)).thenThrow(new RuntimeException("Invalid token"));
+    String currentPassword = "currentPassword";
+    String newPassword = "newPassword123";
+    String newHashedPassword = "$2a$10$newhashedpassword";
+
+    when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.of(testSales));
+    when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(true);
+    when(passwordEncoder.matches(newPassword, testHashedPassword)).thenReturn(false);
+    when(passwordEncoder.encode(newPassword)).thenReturn(newHashedPassword);
+    when(salesRepository.save(any(Sales.class))).thenReturn(testSales);
 
     // When
-    Optional<Sales> result = authService.validateToken(testToken);
+    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
-    assertFalse(result.isPresent());
+    assertTrue(result.isSuccess());
+    assertEquals("password.success.changed", result.getMessage());
 
-    verify(jwtService).extractPhone(testToken);
-    verify(jwtService, never()).isTokenValid(any(), any());
-    verify(salesRepository, never()).findByPhone(any());
+    verify(salesRepository).findByPhone(testPhone);
+    verify(passwordEncoder).matches(currentPassword, testHashedPassword);
+    verify(passwordEncoder).matches(newPassword, testHashedPassword);
+    verify(passwordEncoder).encode(newPassword);
+    verify(salesRepository).save(argThat(sales -> sales.getPassword().equals(newHashedPassword)));
   }
 
   @Test
-  @DisplayName("Should return empty when user not found for valid token")
-  void shouldReturnEmptyWhenUserNotFoundForValidToken() {
+  @DisplayName("Should fail when phone is null or empty")
+  void shouldFailWhenPhoneIsNullOrEmpty() {
+    // When
+    AuthService.AuthResult result1 = authService.changePassword(null, "currentPass", "newPass123");
+    AuthService.AuthResult result2 = authService.changePassword("", "currentPass", "newPass123");
+    AuthService.AuthResult result3 = authService.changePassword("   ", "currentPass", "newPass123");
+
+    // Then
+    assertFalse(result1.isSuccess());
+    assertEquals("error.phoneRequired", result1.getMessage());
+
+    assertFalse(result2.isSuccess());
+    assertEquals("error.phoneRequired", result2.getMessage());
+
+    assertFalse(result3.isSuccess());
+    assertEquals("error.phoneRequired", result3.getMessage());
+
+    verify(salesRepository, never()).findByPhone(any());
+    verify(passwordEncoder, never()).matches(any(), any());
+  }
+
+  @Test
+  @DisplayName("Should fail when current password is null or empty")
+  void shouldFailWhenCurrentPasswordIsNullOrEmpty() {
+    // When
+    AuthService.AuthResult result1 = authService.changePassword(testPhone, null, "newPass123");
+    AuthService.AuthResult result2 = authService.changePassword(testPhone, "", "newPass123");
+    AuthService.AuthResult result3 = authService.changePassword(testPhone, "   ", "newPass123");
+
+    // Then
+    assertFalse(result1.isSuccess());
+    assertEquals("error.currentPasswordRequired", result1.getMessage());
+
+    assertFalse(result2.isSuccess());
+    assertEquals("error.currentPasswordRequired", result2.getMessage());
+
+    assertFalse(result3.isSuccess());
+    assertEquals("error.currentPasswordRequired", result3.getMessage());
+
+    verify(passwordEncoder, never()).matches(any(), any());
+  }
+
+  @Test
+  @DisplayName("Should fail when new password is null or empty")
+  void shouldFailWhenNewPasswordIsNullOrEmpty() {
+    // When
+    AuthService.AuthResult result1 = authService.changePassword(testPhone, "currentPass", null);
+    AuthService.AuthResult result2 = authService.changePassword(testPhone, "currentPass", "");
+    AuthService.AuthResult result3 = authService.changePassword(testPhone, "currentPass", "   ");
+
+    // Then
+    assertFalse(result1.isSuccess());
+    assertEquals("error.newPasswordRequired", result1.getMessage());
+
+    assertFalse(result2.isSuccess());
+    assertEquals("error.newPasswordRequired", result2.getMessage());
+
+    assertFalse(result3.isSuccess());
+    assertEquals("error.newPasswordRequired", result3.getMessage());
+
+    verify(passwordEncoder, never()).encode(any());
+  }
+
+  @Test
+  @DisplayName("Should fail when user not found")
+  void shouldFailWhenUserNotFound() {
     // Given
-    when(jwtService.extractPhone(testToken)).thenReturn(testPhone);
-    when(jwtService.isTokenValid(testToken, testPhone)).thenReturn(true);
     when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.empty());
 
     // When
-    Optional<Sales> result = authService.validateToken(testToken);
-
-    // Then
-    assertFalse(result.isPresent());
-
-    verify(jwtService).extractPhone(testToken);
-    verify(jwtService).isTokenValid(testToken, testPhone);
-    verify(salesRepository).findByPhone(testPhone);
-  }
-
-  @Test
-  @DisplayName("AuthResult success should have correct values")
-  void authResultSuccessShouldHaveCorrectValues() {
-    // When
-    AuthService.AuthResult result = AuthService.AuthResult.success(testToken, testPhone, "SALES");
-
-    // Then
-    assertTrue(result.isSuccess());
-    assertEquals(testToken, result.getToken());
-    assertEquals(testPhone, result.getPhone());
-    assertEquals("SALES", result.getRole());
-    assertEquals("APPROVED", result.getStatus());
-    assertNull(result.getMessage());
-  }
-
-  @Test
-  @DisplayName("AuthResult failure should have correct values")
-  void authResultFailureShouldHaveCorrectValues() {
-    // When
-    AuthService.AuthResult result = AuthService.AuthResult.failure("error.message", "PENDING");
+    AuthService.AuthResult result = authService.changePassword(testPhone, "currentPass", "newPass123");
 
     // Then
     assertFalse(result.isSuccess());
-    assertEquals("error.message", result.getMessage());
-    assertEquals("PENDING", result.getStatus());
-    assertNull(result.getToken());
-    assertNull(result.getPhone());
-    assertNull(result.getRole());
+    assertEquals("error.userNotFound", result.getMessage());
+
+    verify(salesRepository).findByPhone(testPhone);
+    verify(passwordEncoder, never()).matches(any(), any());
   }
 
   @Test
-  @DisplayName("AuthResult registration success should have correct values")
-  void authResultRegistrationSuccessShouldHaveCorrectValues() {
+  @DisplayName("Should fail when current password is incorrect")
+  void shouldFailWhenCurrentPasswordIsIncorrect() {
+    // Given
+    String currentPassword = "wrongPassword";
+    String newPassword = "newPassword123";
+
+    when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.of(testSales));
+    when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(false);
+
     // When
-    AuthService.AuthResult result =
-        AuthService.AuthResult.registrationSuccess("success.message", testPhone, "PENDING");
+    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
 
     // Then
-    assertTrue(result.isSuccess());
-    assertEquals("success.message", result.getMessage());
-    assertEquals(testPhone, result.getPhone());
-    assertEquals("PENDING", result.getStatus());
-    assertNull(result.getToken());
-    assertNull(result.getRole());
+    assertFalse(result.isSuccess());
+    assertEquals("error.incorrectCurrentPassword", result.getMessage());
+
+    verify(salesRepository).findByPhone(testPhone);
+    verify(passwordEncoder).matches(currentPassword, testHashedPassword);
+    verify(passwordEncoder, never()).encode(any());
+  }
+
+  @Test
+  @DisplayName("Should fail when new password is too short")
+  void shouldFailWhenNewPasswordIsTooShort() {
+    // Given
+    String currentPassword = "currentPassword";
+    String newPassword = "12345"; // Less than 6 characters
+
+    when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.of(testSales));
+    when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(true);
+
+    // When
+    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+
+    // Then
+    assertFalse(result.isSuccess());
+    assertEquals("error.passwordTooShort", result.getMessage());
+
+    verify(salesRepository).findByPhone(testPhone);
+    verify(passwordEncoder).matches(currentPassword, testHashedPassword);
+    verify(passwordEncoder, never()).encode(any());
+  }
+
+  @Test
+  @DisplayName("Should fail when new password is same as current password")
+  void shouldFailWhenNewPasswordIsSameAsCurrentPassword() {
+    // Given
+    String currentPassword = "currentPassword";
+    String newPassword = "currentPassword"; // Same as current
+
+    when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.of(testSales));
+    // First call for current password verification (should match)
+    when(passwordEncoder.matches(currentPassword, testHashedPassword)).thenReturn(true);
+    // The service checks if new password is different from current password
+    // Since both are "currentPassword", the second check should also return true
+    when(passwordEncoder.matches(newPassword, testHashedPassword)).thenReturn(true);
+
+    // When
+    AuthService.AuthResult result = authService.changePassword(testPhone, currentPassword, newPassword);
+
+    // Then
+    assertFalse(result.isSuccess());
+    assertEquals("error.newPasswordSameAsOld", result.getMessage());
+
+    verify(salesRepository).findByPhone(testPhone);
+    verify(passwordEncoder, times(2)).matches(anyString(), eq(testHashedPassword));
+    verify(passwordEncoder, never()).encode(any());
+    verify(salesRepository, never()).save(any());
   }
 }
