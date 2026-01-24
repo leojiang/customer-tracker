@@ -160,6 +160,7 @@ public class CustomerService {
   }
 
   /** Transition customer status with history tracking and validation. */
+  @Transactional
   public Customer transitionStatus(UUID customerId, CustomerStatus toStatus, String reason) {
     Customer customer =
         customerRepository
@@ -168,6 +169,11 @@ public class CustomerService {
                 () -> new EntityNotFoundException("Customer not found with id: " + customerId));
 
     CustomerStatus fromStatus = customer.getCurrentStatus();
+
+    // Allow no-op transition (same status) - return customer without changes
+    if (fromStatus.equals(toStatus)) {
+      return customer;
+    }
 
     // Validate status transition according to business rules
     if (!transitionValidator.isValidTransition(fromStatus, toStatus)) {
