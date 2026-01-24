@@ -10,12 +10,13 @@ import SettingsModal from '@/components/ui/SettingsModal';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Shield, BarChart3, UserCheck, Settings, Users } from 'lucide-react';
+import { User, Shield, BarChart3, UserCheck, Settings, Users, Upload } from 'lucide-react';
 import AdminDashboard from '@/app/dashboard/admin/page';
 import UserManagementPage from '@/app/dashboard/admin/user-management/page';
 import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
+import BatchImportExportPage from '@/app/batch-import-export/page';
 
-type View = 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals';
+type View = 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals' | 'batch-import-export';
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<View>('list');
@@ -131,6 +132,22 @@ export default function HomePage() {
               </button>
             )}
 
+            {(user?.role === 'ADMIN' || user?.role === 'OFFICER') && (
+              <button
+                onClick={() => handleNavigation('batch-import-export')}
+                className={`w-full flex items-center rounded-lg transition-colors ${
+                  isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+                } ${
+                  currentView === 'batch-import-export'
+                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                    : 'text-surface-700 hover:bg-surface-100'
+                }`}
+              >
+                <Upload size={20} />
+                {!isSidebarCollapsed && <span className="font-medium">{t('nav.batchImport')}</span>}
+              </button>
+            )}
+
             {user?.role === 'ADMIN' && (
               <button
                 onClick={() => handleNavigation('user-approvals')}
@@ -223,6 +240,12 @@ export default function HomePage() {
             {currentView === 'user-approvals' && (
               <div className="h-full overflow-y-auto">
                 <UserManagementPage />
+              </div>
+            )}
+
+            {currentView === 'batch-import-export' && (
+              <div className="h-full overflow-y-auto">
+                <BatchImportExportPage />
               </div>
             )}
           </main>

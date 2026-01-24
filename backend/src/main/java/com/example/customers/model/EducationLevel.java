@@ -9,6 +9,7 @@ public enum EducationLevel {
   ELEMENTARY("Elementary School"),
   MIDDLE_SCHOOL("Middle School"),
   HIGH_SCHOOL("High School"),
+  SECONDARY_VOCATIONAL("Secondary Vocational School"),
   ASSOCIATE("Associate Degree"),
   BACHELOR("Bachelor's Degree"),
   MASTER("Master's Degree"),

@@ -98,7 +98,7 @@ CREATE TABLE customers (
     CONSTRAINT customers_current_status_check
         CHECK (current_status IN ('NEW', 'NOTIFIED', 'ABORTED', 'SUBMITTED', 'CERTIFIED')),
     CONSTRAINT check_education_level
-        CHECK (education IN ('ELEMENTARY', 'MIDDLE_SCHOOL', 'HIGH_SCHOOL', 'ASSOCIATE',
+        CHECK (education IN ('ELEMENTARY', 'MIDDLE_SCHOOL', 'HIGH_SCHOOL', 'ASSOCIATE', 'SECONDARY_VOCATIONAL',
                             'BACHELOR', 'MASTER', 'DOCTORATE', 'PROFESSIONAL', 'CERTIFICATE', 'OTHER'))
 );
 

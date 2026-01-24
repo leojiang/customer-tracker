@@ -20,7 +20,9 @@ import {
   CustomerPageResponse,
   CustomerSearchParams,
   StatusHistory,
-  CustomerStatus
+  CustomerStatus,
+  CertificateType,
+  EducationLevel
 } from '@/types/customer';
 import { customerDeleteRequestApi } from '@/services/customerDeleteRequestApi';
 
@@ -287,6 +289,92 @@ export const userApprovalApi = {
 
   async getRecentActivity(days: number = 7): Promise<UserApprovalHistory[]> {
     return fetchApi<UserApprovalHistory[]>(`/admin/user-approvals/activity?days=${days}`);
+  },
+};
+
+// Customer Import API
+export interface CustomerStaging {
+  id: string;
+  name: string;
+  phone: string;
+  certificateIssuer?: string;
+  businessRequirements?: string;
+  certificateType?: CertificateType;
+  age?: number;
+  education?: EducationLevel;
+  gender?: string;
+  address?: string;
+  idCard?: string;
+  currentStatus: CustomerStatus;
+  customerAgent?: string;
+  certifiedAt?: string;
+  importStatus: 'PENDING' | 'VALID' | 'UPDATE' | 'DUPLICATE' | 'INVALID';
+  validationMessage?: string;
+  rowNumber?: number;
+  createdAt: string;
+}
+
+export interface ImportSummary {
+  imported: number;
+  updated: number;
+  skipped: number;
+  total: number;
+}
+
+export interface UploadResponse {
+  rowCount: number;
+  message: string;
+}
+
+export interface StagingPageResponse {
+  items: CustomerStaging[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const customerImportApi = {
+  async uploadFile(file: File): Promise<UploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    const response = await fetch(`${API_BASE_URL}/customers/import/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to upload file');
+    }
+
+    return response.json();
+  },
+
+  async getStagedRecords(page: number = 1, limit: number = 20): Promise<StagingPageResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return fetchApi<StagingPageResponse>(`/customers/import/staged?${params}`);
+  },
+
+  async confirmImport(): Promise<ImportSummary> {
+    return fetchApi<ImportSummary>('/customers/import/confirm', {
+      method: 'POST',
+    });
+  },
+
+  async cancelImport(): Promise<void> {
+    return fetchApi<void>('/customers/import/cancel', {
+      method: 'DELETE',
+    });
   },
 };
 

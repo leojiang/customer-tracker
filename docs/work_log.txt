@@ -27,7 +27,8 @@ batch import from excel update customer info
 - 品种 改为 证件类型
 - 业务员 改为 业务经理
 - 籍贯地枝 改为 地址
-- 
+- Name* | Phone* | Certificate Issuer | Business Requirements | Certificate Type* | Age | Education | Gender | Address | ID Card | Customer Agent | Certified
+  At
 
 multiple records for a person --done
 

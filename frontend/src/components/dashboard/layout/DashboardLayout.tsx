@@ -11,7 +11,8 @@ import {
   RefreshCw,
   Menu,
   X,
-  Settings
+  Settings,
+  Upload
 } from 'lucide-react';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import SettingsModal from '@/components/ui/SettingsModal';
@@ -52,6 +53,12 @@ export default function DashboardLayout({
       name: t('nav.customers'),
       href: '/',
       icon: Users,
+      current: false
+    },
+    {
+      name: t('nav.batchImport'),
+      href: '/batch-import-export',
+      icon: Upload,
       current: false
     },
     {
