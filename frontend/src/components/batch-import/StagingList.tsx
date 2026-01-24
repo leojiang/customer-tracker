@@ -164,7 +164,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
   }
 
   return (
-      <div className="bg-white rounded-lg shadow flex flex-col  overflow-hidden border" style={{ maxHeight: '70vh' }}>
+    <div className="bg-white rounded-lg shadow flex flex-col overflow-hidden border" style={{ maxHeight: '70vh' }}>
       {/* Scrollable Table Area */}
       <div className="flex-1 overflow-auto">
         <table className="divide-y divide-gray-300" style={{ minWidth: '1400px' }}>
@@ -233,30 +233,28 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
       </div>
 
       {/* Pagination */}
-      <div className="border-t border-gray-200 px-4 sm:px-8 py-4 flex-shrink-0">
-        <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
-              <div className="text-sm text-gray-700">
-                {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="pageSize" className="text-sm text-gray-700">
-                  {t('customers.show')}
-                </label>
-                <select
-                  id="pageSize"
-                  value={pageInfo.limit}
-                  onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
-                  className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
-              </div>
+      <div className="border-t border-gray-200 px-1 sm:px-3 py-2 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <div className="text-sm text-gray-700">
+              {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="pageSize" className="text-sm text-gray-700">
+                {t('customers.show')}
+              </label>
+              <select
+                id="pageSize"
+                value={pageInfo.limit}
+                onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+                className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
             </div>
           </div>
 

@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { customerImportApi, ImportSummary, StagingStatistics } from '@/lib/api';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import {useState, useEffect} from 'react';
+import {useLanguage} from '@/contexts/LanguageContext';
+import {useAuth} from '@/contexts/AuthContext';
+import {customerImportApi, ImportSummary, StagingStatistics} from '@/lib/api';
+import {Upload, FileSpreadsheet, CheckCircle, AlertCircle} from 'lucide-react';
 import StagingList from '@/components/batch-import/StagingList';
 
 export default function BatchImportExportPage() {
-  const { t } = useLanguage();
-  const { user } = useAuth();
+  const {t} = useLanguage();
+  const {user} = useAuth();
 
   // Import states
   const [file, setFile] = useState<File | null>(null);
@@ -46,7 +46,7 @@ export default function BatchImportExportPage() {
       setFile(e.target.files[0]);
       setUploadMessage(null);
       setImportResult(null); // Clear import result when selecting a new file
-      setStagingStats({ valid: 0, update: 0, duplicate: 0, invalid: 0 }); // Clear statistics
+      setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0}); // Clear statistics
     } else {
       setFile(null);
     }
@@ -73,7 +73,7 @@ export default function BatchImportExportPage() {
       // Trigger refresh of staging list
       setStagingRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      setUploadMessage({ type: 'error', text: t('batchImport.uploadFailed') });
+      setUploadMessage({type: 'error', text: t('batchImport.uploadFailed')});
       console.error('Upload error:', err);
     } finally {
       setUploading(false);
@@ -112,7 +112,7 @@ export default function BatchImportExportPage() {
       setImportResult(null);
       setUploadMessage(null); // Clear upload message (success or error)
       setFile(null); // Clear selected file
-      setStagingStats({ valid: 0, update: 0, duplicate: 0, invalid: 0 }); // Clear statistics
+      setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0}); // Clear statistics
 
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
@@ -130,7 +130,7 @@ export default function BatchImportExportPage() {
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4"/>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               {t('batchImport.permissionDenied')}
             </h2>
@@ -145,8 +145,8 @@ export default function BatchImportExportPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-7">
+        <div className="mx-auto space-y-4">
           {/* Top Component */}
           <div className="bg-white rounded-lg shadow p-4">
             {/* Header and Action Buttons */}
@@ -181,7 +181,7 @@ export default function BatchImportExportPage() {
                   disabled={confirming}
                   className="btn-primary focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex items-center gap-2 text-sm"
                 >
-                  <CheckCircle size={18} />
+                  <CheckCircle size={18}/>
                   <span>{confirming ? t('batchImport.importing') : t('batchImport.confirmImport')}</span>
                 </button>
               </div>
@@ -189,9 +189,10 @@ export default function BatchImportExportPage() {
 
             {/* Second Row - File Info and Actions */}
             {file && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+              <div
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg mb-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <FileSpreadsheet className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <FileSpreadsheet className="w-5 h-5 text-green-600 flex-shrink-0"/>
                   <span className="text-sm font-medium text-gray-700 truncate">{file.name}</span>
                   <span className="text-xs text-gray-500 flex-shrink-0">({(file.size / 1024).toFixed(2)} KB)</span>
                 </div>
@@ -217,7 +218,7 @@ export default function BatchImportExportPage() {
                     disabled={uploading}
                     className="text-indigo-600 hover:text-indigo-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <Upload size={16} />
+                    <Upload size={16}/>
                     {uploading ? t('batchImport.uploading') : t('batchImport.uploadNow')}
                   </button>
                 </div>
@@ -273,12 +274,10 @@ export default function BatchImportExportPage() {
           </div>
 
           {/* Staging List */}
-          <div className="mt-[2px]">
-            <StagingList
-              refreshTrigger={stagingRefreshTrigger}
-              onStatsUpdate={handleStatsUpdate}
-            />
-          </div>
+          <StagingList
+            refreshTrigger={stagingRefreshTrigger}
+            onStatsUpdate={handleStatsUpdate}
+          />
         </div>
       </div>
     </div>
