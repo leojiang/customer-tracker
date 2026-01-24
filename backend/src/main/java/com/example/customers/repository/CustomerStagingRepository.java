@@ -21,6 +21,14 @@ public interface CustomerStagingRepository extends JpaRepository<CustomerStaging
   List<CustomerStaging> findByImportStatus(ImportStatus status);
 
   /**
+   * Count staging records by import status.
+   *
+   * @param status import status
+   * @return count of staging records
+   */
+  long countByImportStatus(ImportStatus status);
+
+  /**
    * Find staging record by phone number.
    *
    * @param phone phone number

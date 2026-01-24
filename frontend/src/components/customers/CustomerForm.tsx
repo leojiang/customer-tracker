@@ -420,8 +420,8 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 </label>
                 <input
                   type="date"
-                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
-                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
+                  value={formData.certifiedAt || ''}
+                  onChange={(e) => handleInputChange('certifiedAt', e.target.value || undefined)}
                   className="input-field"
                   placeholder={t('customers.form.certifiedAt.placeholder')}
                 />

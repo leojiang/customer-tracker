@@ -78,6 +78,17 @@ public class CustomerImportController {
     return ResponseEntity.ok(response);
   }
 
+  /** Get overall statistics for all staged records. */
+  @Operation(
+      summary = "Get staging statistics",
+      description = "Retrieve overall statistics for all staged customer records grouped by status")
+  @GetMapping("/statistics")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
+  public ResponseEntity<CustomerImportService.StagingStatistics> getStagingStatistics() {
+    CustomerImportService.StagingStatistics statistics = importService.getStagingStatistics();
+    return ResponseEntity.ok(statistics);
+  }
+
   /** Confirm import and move staged data to customers table. */
   @Operation(
       summary = "Confirm import",

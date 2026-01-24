@@ -334,6 +334,13 @@ export interface StagingPageResponse {
   totalPages: number;
 }
 
+export interface StagingStatistics {
+  valid: number;
+  update: number;
+  duplicate: number;
+  invalid: number;
+}
+
 export const customerImportApi = {
   async uploadFile(file: File): Promise<UploadResponse> {
     const formData = new FormData();
@@ -363,6 +370,10 @@ export const customerImportApi = {
       limit: limit.toString(),
     });
     return fetchApi<StagingPageResponse>(`/customers/import/staged?${params}`);
+  },
+
+  async getStagingStatistics(): Promise<StagingStatistics> {
+    return fetchApi<StagingStatistics>('/customers/import/statistics');
   },
 
   async confirmImport(): Promise<ImportSummary> {

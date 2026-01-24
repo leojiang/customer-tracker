@@ -92,7 +92,7 @@ public class Customer {
   private String customerAgent;
 
   @Column(name = "certified_at")
-  private ZonedDateTime certifiedAt;
+  private String certifiedAt; // Format: YYYY-MM-DD (e.g., "2024-01-15")
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -275,11 +275,11 @@ public class Customer {
     this.customerAgent = customerAgent;
   }
 
-  public ZonedDateTime getCertifiedAt() {
+  public String getCertifiedAt() {
     return certifiedAt;
   }
 
-  public void setCertifiedAt(ZonedDateTime certifiedAt) {
+  public void setCertifiedAt(String certifiedAt) {
     this.certifiedAt = certifiedAt;
   }
 

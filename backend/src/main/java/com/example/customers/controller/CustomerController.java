@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -212,14 +211,8 @@ public class CustomerController {
       customer.setIdCard(request.getIdCard());
       customer.setCustomerAgent(request.getCustomerAgent());
 
-      if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
-        try {
-          customer.setCertifiedAt(ZonedDateTime.parse(request.getCertifiedAt()));
-        } catch (Exception e) {
-          // If date parsing fails, set to null
-          customer.setCertifiedAt(null);
-        }
-      }
+      // Set certifiedAt directly as string (format: YYYY-MM-DD)
+      customer.setCertifiedAt(request.getCertifiedAt());
 
       if (request.getCurrentStatus() != null) {
         customer.setCurrentStatus(request.getCurrentStatus());
@@ -278,16 +271,8 @@ public class CustomerController {
       customer.setIdCard(request.getIdCard());
       customer.setCustomerAgent(request.getCustomerAgent());
 
-      if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
-        try {
-          customer.setCertifiedAt(ZonedDateTime.parse(request.getCertifiedAt()));
-        } catch (Exception e) {
-          // If date parsing fails, set to null
-          customer.setCertifiedAt(null);
-        }
-      } else {
-        customer.setCertifiedAt(null);
-      }
+      // Set certifiedAt directly as string (format: YYYY-MM-DD)
+      customer.setCertifiedAt(request.getCertifiedAt());
 
       Customer updatedCustomer = customerService.updateCustomer(id, customer);
       return ResponseEntity.ok(updatedCustomer);

@@ -653,13 +653,13 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                     {isEditing ? (
                       <input
                         type="date"
-                        value={editForm.certifiedAt ? editForm.certifiedAt.split('T')[0] : ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, certifiedAt: e.target.value ? `${e.target.value}T00:00:00Z` : undefined }))}
+                        value={editForm.certifiedAt || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, certifiedAt: e.target.value || undefined }))}
                         className="input-field"
                         placeholder={t('customers.form.certifiedAt.placeholder')}
                       />
                     ) : (
-                      <p className="text-body-1">{customer.certifiedAt ? new Date(customer.certifiedAt).toLocaleDateString() : <span className="text-surface-400 italic">{t('customers.form.certifiedAt.placeholder')}</span>}</p>
+                      <p className="text-body-1">{customer.certifiedAt || <span className="text-surface-400 italic">{t('customers.form.certifiedAt.placeholder')}</span>}</p>
                     )}
                   </div>
                 </div>

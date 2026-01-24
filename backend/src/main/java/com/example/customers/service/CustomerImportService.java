@@ -9,7 +9,6 @@ import com.example.customers.model.EducationLevel;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerStagingRepository;
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -184,7 +183,8 @@ public class CustomerImportService {
           staging.setIdCard(getCellValueAsString(row.getCell(columnIndexMap.get("身份证"))));
           staging.setCustomerAgent(getCellValueAsString(row.getCell(columnIndexMap.get("业务经理"))));
           staging.setCertifiedAt(
-              parseChineseDateTime(getCellValueAsString(row.getCell(columnIndexMap.get("发证时间")))));
+              parseChineseDateToISOString(
+                  getCellValueAsString(row.getCell(columnIndexMap.get("发证时间")))));
 
           // Set default status to CERTIFIED for imported records
           staging.setCurrentStatus(CustomerStatus.CERTIFIED);
@@ -223,6 +223,20 @@ public class CustomerImportService {
 
     return new StagingPageResponse(
         stagingPage.getContent(), (int) stagingPage.getTotalElements(), page, limit);
+  }
+
+  /**
+   * Get overall statistics for all staged records.
+   *
+   * @return statistics grouped by import status
+   */
+  public StagingStatistics getStagingStatistics() {
+    long valid = stagingRepository.countByImportStatus(ImportStatus.VALID);
+    long update = stagingRepository.countByImportStatus(ImportStatus.UPDATE);
+    long duplicate = stagingRepository.countByImportStatus(ImportStatus.DUPLICATE);
+    long invalid = stagingRepository.countByImportStatus(ImportStatus.INVALID);
+
+    return new StagingStatistics(valid, update, duplicate, invalid);
   }
 
   /**
@@ -421,13 +435,6 @@ public class CustomerImportService {
     return int1.equals(int2);
   }
 
-  /** Helper method for null-safe ZonedDateTime comparison. */
-  private boolean nullSafeEquals(ZonedDateTime date1, ZonedDateTime date2) {
-    if (date1 == null && date2 == null) return true;
-    if (date1 == null || date2 == null) return false;
-    return date1.equals(date2);
-  }
-
   /** Get cell value as string. */
   private String getCellValueAsString(Cell cell) {
     if (cell == null) return null;
@@ -465,18 +472,8 @@ public class CustomerImportService {
     }
   }
 
-  /** Parse date-time from string. */
-  private ZonedDateTime parseDateTime(String value) {
-    if (value == null || value.trim().isEmpty()) return null;
-    try {
-      return ZonedDateTime.parse(value.trim());
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  /** Parse Chinese date format (e.g., "2022.4.10" or "2022.04.10"). */
-  private ZonedDateTime parseChineseDateTime(String value) {
+  /** Parse Chinese date format (e.g., "2022.4.10" or "2022.04.10") to YYYY-MM-DD format. */
+  private String parseChineseDateToISOString(String value) {
     if (value == null || value.trim().isEmpty()) return null;
 
     try {
@@ -489,15 +486,8 @@ public class CustomerImportService {
         int month = Integer.parseInt(parts[1]);
         int day = Integer.parseInt(parts[2]);
 
-        // Create ZonedDateTime in system timezone
-        return ZonedDateTime.now()
-            .withYear(year)
-            .withMonth(month)
-            .withDayOfMonth(day)
-            .withHour(0)
-            .withMinute(0)
-            .withSecond(0)
-            .withNano(0);
+        // Return in YYYY-MM-DD format
+        return String.format("%04d-%02d-%02d", year, month, day);
       }
     } catch (Exception e) {
       logger.warn("Failed to parse Chinese date: {}", value);
@@ -649,6 +639,37 @@ public class CustomerImportService {
 
     public int getTotalPages() {
       return totalPages;
+    }
+  }
+
+  /** Staging statistics DTO. */
+  public static class StagingStatistics {
+    private final long valid;
+    private final long update;
+    private final long duplicate;
+    private final long invalid;
+
+    public StagingStatistics(long valid, long update, long duplicate, long invalid) {
+      this.valid = valid;
+      this.update = update;
+      this.duplicate = duplicate;
+      this.invalid = invalid;
+    }
+
+    public long getValid() {
+      return valid;
+    }
+
+    public long getUpdate() {
+      return update;
+    }
+
+    public long getDuplicate() {
+      return duplicate;
+    }
+
+    public long getInvalid() {
+      return invalid;
     }
   }
 }
