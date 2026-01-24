@@ -1,0 +1,44 @@
+audit log for user login, creation, customer deletion etc.
+
+
+add certificate issuer/发证单位 in search --done
+
+
+search by issuer and agent  --done
+
+change password --done
+
+add report:
+issuer 
+months
+years
+agent performance
+
+
+refactor AuthResult : password related error should define customized error code.
+
+数据备份
+
+
+batch import from excel update customer info
+- 添加一列 发证机关
+- 有错误的品种名，至少不标准
+- 出证时间 改为 发证时间
+- 品种 改为 证件类型
+- 业务员 改为 业务经理
+- 籍贯地枝 改为 地址
+- 
+
+multiple records for a person --done
+
+excel, 证件品种，发证机构 --done
+
+
+status : 1️已提醒复审（Notified) 2 客户放弃(Aborted) 3 已提交资料(Submitted) 4. 已发证(Certified) -- done
+
+
+customer add person change to agent  -- done
+
+
+
+客户代理 ==》 业务经理 done

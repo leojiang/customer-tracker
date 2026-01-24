@@ -219,8 +219,8 @@ export interface Customer {
   age?: number;
   education?: EducationLevel;
   gender?: string;
-  location?: string;
-  price?: number;
+  address?: string;
+  idCard?: string;
   currentStatus: CustomerStatus;
   salesPhone?: string;
   customerAgent?: string;
@@ -249,8 +249,8 @@ export interface CreateCustomerRequest {
   age?: number;
   education?: EducationLevel;
   gender?: string;
-  location?: string;
-  price?: number;
+  address?: string;
+  idCard?: string;
   currentStatus?: CustomerStatus;
   customerAgent?: string;
   certifiedAt?: string;
@@ -265,8 +265,8 @@ export interface UpdateCustomerRequest {
   age?: number;
   education?: EducationLevel;
   gender?: string;
-  location?: string;
-  price?: number;
+  address?: string;
+  idCard?: string;
   customerAgent?: string;
   certifiedAt?: string;
 }

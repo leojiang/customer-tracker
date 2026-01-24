@@ -151,8 +151,8 @@ public class CustomerService {
     existingCustomer.setAge(updatedCustomer.getAge());
     existingCustomer.setEducation(updatedCustomer.getEducation());
     existingCustomer.setGender(updatedCustomer.getGender());
-    existingCustomer.setLocation(updatedCustomer.getLocation());
-    existingCustomer.setPrice(updatedCustomer.getPrice());
+    existingCustomer.setAddress(updatedCustomer.getAddress());
+    existingCustomer.setIdCard(updatedCustomer.getIdCard());
     existingCustomer.setCertifiedAt(updatedCustomer.getCertifiedAt());
     existingCustomer.setCustomerAgent(updatedCustomer.getCustomerAgent());
 

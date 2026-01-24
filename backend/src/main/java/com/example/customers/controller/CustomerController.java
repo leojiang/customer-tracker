@@ -8,6 +8,7 @@ import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.service.CustomerService;
+import com.example.customers.validation.IdCard;
 import com.example.customers.validation.PhoneNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -208,8 +208,8 @@ public class CustomerController {
       customer.setAge(request.getAge());
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
-      customer.setLocation(request.getLocation());
-      customer.setPrice(request.getPrice());
+      customer.setAddress(request.getAddress());
+      customer.setIdCard(request.getIdCard());
       customer.setCustomerAgent(request.getCustomerAgent());
 
       if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
@@ -274,8 +274,8 @@ public class CustomerController {
       customer.setAge(request.getAge());
       customer.setEducation(request.getEducation());
       customer.setGender(request.getGender());
-      customer.setLocation(request.getLocation());
-      customer.setPrice(request.getPrice());
+      customer.setAddress(request.getAddress());
+      customer.setIdCard(request.getIdCard());
       customer.setCustomerAgent(request.getCustomerAgent());
 
       if (request.getCertifiedAt() != null && !request.getCertifiedAt().isEmpty()) {
@@ -525,8 +525,11 @@ public class CustomerController {
     private Integer age;
     private EducationLevel education;
     private String gender;
-    private String location;
-    private BigDecimal price;
+    private String address;
+
+    @IdCard(message = "Identity card must contain only digits and English letters")
+    private String idCard;
+
     private CustomerStatus currentStatus;
     private String certifiedAt;
     private String customerAgent;
@@ -596,20 +599,20 @@ public class CustomerController {
       this.gender = gender;
     }
 
-    public String getLocation() {
-      return location;
+    public String getAddress() {
+      return address;
     }
 
-    public void setLocation(String location) {
-      this.location = location;
+    public void setAddress(String address) {
+      this.address = address;
     }
 
-    public BigDecimal getPrice() {
-      return price;
+    public String getIdCard() {
+      return idCard;
     }
 
-    public void setPrice(BigDecimal price) {
-      this.price = price;
+    public void setIdCard(String idCard) {
+      this.idCard = idCard;
     }
 
     public CustomerStatus getCurrentStatus() {
@@ -652,8 +655,11 @@ public class CustomerController {
     private Integer age;
     private EducationLevel education;
     private String gender;
-    private String location;
-    private BigDecimal price;
+    private String address;
+
+    @IdCard(message = "Identity card must contain only digits and English letters")
+    private String idCard;
+
     private String certifiedAt;
     private String customerAgent;
 
@@ -722,20 +728,20 @@ public class CustomerController {
       this.gender = gender;
     }
 
-    public String getLocation() {
-      return location;
+    public String getAddress() {
+      return address;
     }
 
-    public void setLocation(String location) {
-      this.location = location;
+    public void setAddress(String address) {
+      this.address = address;
     }
 
-    public BigDecimal getPrice() {
-      return price;
+    public String getIdCard() {
+      return idCard;
     }
 
-    public void setPrice(BigDecimal price) {
-      this.price = price;
+    public void setIdCard(String idCard) {
+      this.idCard = idCard;
     }
 
     public String getCertifiedAt() {

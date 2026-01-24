@@ -1,5 +1,6 @@
 package com.example.customers.model;
 
+import com.example.customers.validation.IdCard;
 import com.example.customers.validation.PhoneNumber;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
@@ -17,7 +18,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,10 +74,11 @@ public class Customer {
 
   private String gender;
 
-  private String location;
+  private String address;
 
-  @Column(name = "price", precision = 19, scale = 2)
-  private BigDecimal price;
+  @IdCard(message = "Identity card must contain only digits and English letters")
+  @Column(name = "id_card")
+  private String idCard;
 
   @NotNull
   @Enumerated(EnumType.STRING)
@@ -202,20 +203,20 @@ public class Customer {
     this.gender = gender;
   }
 
-  public String getLocation() {
-    return location;
+  public String getAddress() {
+    return address;
   }
 
-  public void setLocation(String location) {
-    this.location = location;
+  public void setAddress(String address) {
+    this.address = address;
   }
 
-  public BigDecimal getPrice() {
-    return price;
+  public String getIdCard() {
+    return idCard;
   }
 
-  public void setPrice(BigDecimal price) {
-    this.price = price;
+  public void setIdCard(String idCard) {
+    this.idCard = idCard;
   }
 
   public CustomerStatus getCurrentStatus() {

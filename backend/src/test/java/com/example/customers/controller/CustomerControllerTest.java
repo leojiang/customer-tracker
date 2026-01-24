@@ -77,7 +77,7 @@ class CustomerControllerTest {
     testCustomer.setAge(30);
     testCustomer.setEducation(EducationLevel.BACHELOR);
     testCustomer.setGender("Male");
-    testCustomer.setLocation("New York");
+    testCustomer.setAddress("New York");
     testCustomer.setCurrentStatus(CustomerStatus.NEW);
     testCustomer.setSalesPhone("+9999999999"); // Match the mock authenticated user's phone
     testCustomer.setCreatedAt(ZonedDateTime.now());

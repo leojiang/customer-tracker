@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, DollarSign, AlertCircle, Trash2, UserCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, AlertCircle, Trash2, UserCircle, Calendar, IdCard } from 'lucide-react';
 import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -10,7 +10,6 @@ import { getCertificateTypeDisplayName } from '@/lib/certificateTypeUtils';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatusHistory from '@/components/customers/StatusHistory';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
-import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
@@ -50,8 +49,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     age: undefined,
     education: undefined,
     gender: '',
-    location: '',
-    price: undefined,
+    address: '',
+    idCard: undefined,
     customerAgent: '',
     certifiedAt: undefined,
   });
@@ -64,8 +63,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
   const [validTransitions, setValidTransitions] = useState<CustomerStatus[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [showMapPicker, setShowMapPicker] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [idCardError, setIdCardError] = useState<string>('');
   const [showDeleteRequestModal, setShowDeleteRequestModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [alertModal, setAlertModal] = useState<{
@@ -113,8 +111,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         age: data.age,
         education: data.education || undefined,
         gender: data.gender || '',
-        location: data.location || '',
-        price: data.price,
+        address: data.address || '',
+        idCard: data.idCard,
         customerAgent: data.customerAgent || '',
         certifiedAt: data.certifiedAt,
       });
@@ -146,8 +144,8 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         age: customer.age,
         education: customer.education || undefined,
         gender: customer.gender || '',
-        location: customer.location || '',
-        price: customer.price,
+        address: customer.address || '',
+        idCard: customer.idCard,
         customerAgent: customer.customerAgent || '',
         certifiedAt: customer.certifiedAt,
       });
@@ -195,19 +193,6 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         return newErrors;
       });
     }
-  };
-
-  const handleLocationSelect = (location: LocationData) => {
-    setSelectedLocation(location);
-    setEditForm(prev => ({ ...prev, location: location.address }));
-  };
-
-  const handleOpenMapPicker = () => {
-    setShowMapPicker(true);
-  };
-
-  const handleCloseMapPicker = () => {
-    setShowMapPicker(false);
   };
 
   const handleSave = async () => {
@@ -555,6 +540,46 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
 
                   <div>
                     <label className="input-label flex items-center gap-2">
+                      <IdCard size={18} className="text-surface-500" />
+                      {t('customers.form.idCard')}
+                    </label>
+                    {isEditing ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editForm.idCard || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Check if value contains only digits and English letters
+                            if (value === '' || /^[a-zA-Z0-9]*$/.test(value)) {
+                              setEditForm(prev => ({ ...prev, idCard: value || undefined }));
+                              setIdCardError('');
+                            } else {
+                              setIdCardError(t('customers.form.idCardHelp'));
+                            }
+                          }}
+                          className={`input-field ${idCardError ? 'border-red-500' : ''}`}
+                          placeholder={t('customers.form.idCardPlaceholder')}
+                        />
+                        {idCardError && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                            <AlertCircle size={14} />
+                            <span>{idCardError}</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-body-1">
+                        {customer.idCard
+                          ? customer.idCard
+                          : <span className="text-surface-400 italic">{t('customers.form.noIdCard')}</span>
+                        }
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
                       <User size={18} className="text-surface-500" />
                       {t('customers.form.customerAgent')}
                     </label>
@@ -635,31 +660,6 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       />
                     ) : (
                       <p className="text-body-1">{customer.certifiedAt ? new Date(customer.certifiedAt).toLocaleDateString() : <span className="text-surface-400 italic">{t('customers.form.certifiedAt.placeholder')}</span>}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="input-label flex items-center gap-2">
-                      <DollarSign size={18} className="text-surface-500" />
-                      {t('customers.form.price')}
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        value={editForm.price || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, price: e.target.value ? parseFloat(e.target.value) : undefined }))}
-                        className="input-field"
-                        placeholder={t('customers.form.price')}
-                        min="0"
-                        step="0.01"
-                      />
-                    ) : (
-                      <p className="text-body-1">
-                        {customer.price !== undefined && customer.price !== null
-                          ? `$${customer.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                          : <span className="text-surface-400 italic">{t('customers.form.price')}</span>
-                        }
-                      </p>
                     )}
                   </div>
                 </div>
@@ -745,38 +745,18 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                   <div>
                     <label className="input-label flex items-center gap-2">
                       <MapPin size={18} className="text-surface-500" />
-                      {t('customers.form.location')}
+                      {t('customers.form.address')}
                     </label>
                     {isEditing ? (
-                      <div>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={editForm.location}
-                            onChange={(e) => handleEditFormChange('location', e.target.value)}
-                            className="input-field flex-1"
-                            placeholder={t('customers.form.location')}
-                            readOnly
-                          />
-                          <button
-                            type="button"
-                            onClick={handleOpenMapPicker}
-                            className="btn-outline flex items-center gap-2 px-3"
-                          >
-                            <MapPin size={16} />
-                            {t('map.location')}
-                          </button>
-                        </div>
-                        {selectedLocation && (
-                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                            <strong>{t('map.selectedLocation')}:</strong> {selectedLocation.address}
-                            <br />
-                            <span className="text-xs">{t('map.location')}: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}</span>
-                          </div>
-                        )}
-                      </div>
+                      <input
+                        type="text"
+                        value={editForm.address}
+                        onChange={(e) => handleEditFormChange('address', e.target.value)}
+                        className="input-field"
+                        placeholder={t('customers.form.address')}
+                      />
                     ) : (
-                      <p className="text-body-1">{customer.location || <span className="text-surface-400 italic">{t('customers.form.location')}</span>}</p>
+                      <p className="text-body-1">{customer.address || <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}</p>
                     )}
                   </div>
 
@@ -831,15 +811,17 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                     <div className="h-1"></div>
                   </div>
 
+                  {/* Business Requirements */}
                   <div>
-                    <label className="input-label">
+                    <label className="input-label flex items-center gap-2">
+                      <Briefcase size={18} className="text-surface-500" />
                       {t('customers.form.businessReq')}
                     </label>
                     {isEditing ? (
-                      <textarea
+                      <input
+                        type="text"
                         value={editForm.businessRequirements}
                         onChange={(e) => setEditForm(prev => ({ ...prev, businessRequirements: e.target.value }))}
-                        rows={4}
                         className="input-field"
                         placeholder={t('customers.form.businessReq')}
                       />
@@ -960,14 +942,6 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
           </div>
         </div>
       )}
-
-      {/* Map Picker Modal */}
-      <GaodeMapPicker
-        isOpen={showMapPicker}
-        onClose={handleCloseMapPicker}
-        onSelect={handleLocationSelect}
-        initialLocation={selectedLocation || undefined}
-      />
 
       {/* Delete Request Modal for Officers */}
       {customer && (

@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, DollarSign, AlertCircle, Lock, Calendar } from 'lucide-react';
+import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, AlertCircle, Lock, Calendar, IdCard } from 'lucide-react';
 import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { getCertificateIssuerOptions } from '@/lib/certificateIssuerUtils';
-import GaodeMapPicker, { LocationData } from '@/components/ui/GaodeMapPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SalesRole } from '@/types/auth';
@@ -33,8 +32,8 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     age: undefined,
     education: undefined as EducationLevel | undefined,
     gender: '',
-    location: '',
-    price: undefined,
+    address: '',
+    idCard: undefined,
     currentStatus: CustomerStatus.NEW,
     customerAgent: '',
     certifiedAt: undefined,
@@ -42,8 +41,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [showMapPicker, setShowMapPicker] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [idCardError, setIdCardError] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +90,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
         certificateType: formData.certificateType,
         education: formData.education,
         gender: formData.gender?.trim() || undefined,
-        location: selectedLocation ? `${selectedLocation.address} (${selectedLocation.latitude.toFixed(6)}, ${selectedLocation.longitude.toFixed(6)})` : formData.location?.trim() || undefined,
+        address: formData.address?.trim() || undefined,
       };
 
       await customerApi.createCustomer(cleanedData);
@@ -163,19 +161,6 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     }
   };
 
-  const handleLocationSelect = (location: LocationData) => {
-    setSelectedLocation(location);
-    setFormData(prev => ({ ...prev, location: location.address }));
-  };
-
-  const handleOpenMapPicker = () => {
-    setShowMapPicker(true);
-  };
-
-  const handleCloseMapPicker = () => {
-    setShowMapPicker(false);
-  };
-
   // Show permission denied message for CUSTOMER_AGENT
   if (!canAddCustomer) {
     return (
@@ -205,8 +190,8 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">{t('customers.form.createCustomer')}</h2>
             <button
@@ -218,7 +203,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-600 text-sm">{error}</p>
@@ -273,6 +258,36 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
+              {/* ID Card */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <IdCard size={16} className="text-surface-500" />
+                  {t('customers.form.idCard')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.idCard || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Check if value contains only digits and English letters
+                    if (value === '' || /^[a-zA-Z0-9]*$/.test(value)) {
+                      handleInputChange('idCard', value || undefined);
+                      setIdCardError('');
+                    } else {
+                      setIdCardError(t('customers.form.idCardHelp'));
+                    }
+                  }}
+                  className={`input-field ${idCardError ? 'border-red-500' : ''}`}
+                  placeholder={t('customers.form.idCardPlaceholder')}
+                />
+                {idCardError && (
+                  <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                    <AlertCircle size={14} />
+                    <span>{idCardError}</span>
+                  </div>
+                )}
+              </div>
+
               {/* Customer Agent */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
@@ -315,49 +330,14 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <MapPin size={16} className="text-surface-500" />
-                  {t('customers.form.location')}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="input-field flex-1"
-                    placeholder={t('customers.form.location')}
-                    readOnly
-                  />
-                  <button
-                    type="button"
-                    onClick={handleOpenMapPicker}
-                    className="btn-outline flex items-center gap-2 px-3"
-                  >
-                    <MapPin size={16} />
-                    {t('map.location')}
-                  </button>
-                </div>
-                {selectedLocation && (
-                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                    <strong>{t('map.selectedLocation')}:</strong> {selectedLocation.address}
-                    <br />
-                    <span className="text-xs">{t('map.location')}: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                  <DollarSign size={16} className="text-surface-500" />
-                  {t('customers.form.price')}
+                  {t('customers.form.address')}
                 </label>
                 <input
-                  type="number"
-                  value={formData.price || ''}
-                  onChange={(e) => handleInputChange('price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
                   className="input-field"
-                  placeholder={t('customers.form.price')}
-                  min="0"
-                  step="0.01"
+                  placeholder={t('customers.form.address')}
                 />
               </div>
             </div>
@@ -432,6 +412,21 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 <div className="h-1"></div>
               </div>
 
+              {/* Certified At */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Calendar size={16} className="text-surface-500" />
+                  {t('customers.form.certifiedAt')}
+                </label>
+                <input
+                  type="date"
+                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
+                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
+                  className="input-field"
+                  placeholder={t('customers.form.certifiedAt.placeholder')}
+                />
+              </div>
+
               {/* Certificate Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
@@ -464,65 +459,48 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                 )}
               </div>
 
-              {/* Certified At */}
+              {/* Business Requirements */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                  <Calendar size={16} className="text-surface-500" />
-                  {t('customers.form.certifiedAt')}
+                  <Briefcase size={16} className="text-surface-500" />
+                  {t('customers.form.businessReq')}
                 </label>
                 <input
-                  type="date"
-                  value={formData.certifiedAt ? formData.certifiedAt.split('T')[0] : ''}
-                  onChange={(e) => handleInputChange('certifiedAt', e.target.value ? `${e.target.value}T00:00:00Z` : undefined)}
+                  type="text"
+                  value={formData.businessRequirements}
+                  onChange={(e) => handleInputChange('businessRequirements', e.target.value)}
                   className="input-field"
-                  placeholder={t('customers.form.certifiedAt.placeholder')}
+                  placeholder={t('customers.form.businessReq')}
                 />
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('customers.form.businessReq')}
-            </label>
-            <textarea
-              value={formData.businessRequirements}
-              onChange={(e) => handleInputChange('businessRequirements', e.target.value)}
-              rows={4}
-              className="input-field"
-              placeholder={t('customers.form.businessReq')}
-            />
-          </div>
-
           <div className="divider"></div>
-
-          <div className="flex flex-col sm:flex-row justify-end gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex items-center justify-center gap-3 sm:w-auto"
-            >
-              {t('customers.form.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary flex items-center justify-center gap-3 sm:w-auto"
-            >
-              <Save size={18} />
-              {loading ? t('customers.form.creating') : t('customers.form.create')}
-            </button>
-          </div>
         </form>
-      </div>
 
-      {/* Map Picker Modal */}
-      <GaodeMapPicker
-        isOpen={showMapPicker}
-        onClose={handleCloseMapPicker}
-        onSelect={handleLocationSelect}
-        initialLocation={selectedLocation || undefined}
-      />
+        <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4 bg-white">
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col sm:flex-row justify-end gap-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-secondary flex items-center justify-center gap-3 sm:w-auto"
+              >
+                {t('customers.form.cancel')}
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary flex items-center justify-center gap-3 sm:w-auto"
+              >
+                <Save size={18} />
+                {loading ? t('customers.form.creating') : t('customers.form.create')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
