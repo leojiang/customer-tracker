@@ -20,7 +20,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
 
   const [records, setRecords] = useState<CustomerStaging[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [_stats, setStats] = useState({
     valid: 0,
     update: 0,
     duplicate: 0,

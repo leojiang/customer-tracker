@@ -61,7 +61,7 @@ export default function BatchImportExportPage() {
       setUploading(true);
       setUploadMessage(null);
 
-      const response = await customerImportApi.uploadFile(file);
+      await customerImportApi.uploadFile(file);
       setFile(null);
 
       // Reset file input
@@ -80,7 +80,7 @@ export default function BatchImportExportPage() {
     }
   };
 
-  const handleStatsUpdate = (stats: { valid: number; update: number; duplicate: number; invalid: number }) => {
+  const handleStatsUpdate = (_stats: { valid: number; update: number; duplicate: number; invalid: number }) => {
     // No longer needed - we use overall statistics from the API
     // Keeping this for compatibility with StagingList component
   };
