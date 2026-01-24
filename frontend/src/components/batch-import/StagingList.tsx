@@ -164,7 +164,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
   }
 
   return (
-    <div className="bg-white rounded-lg shadow flex flex-col" style={{ maxHeight: '70vh' }}>
+      <div className="bg-white rounded-lg shadow flex flex-col  overflow-hidden border" style={{ maxHeight: '70vh' }}>
       {/* Scrollable Table Area */}
       <div className="flex-1 overflow-auto">
         <table className="divide-y divide-gray-300" style={{ minWidth: '1400px' }}>
@@ -233,38 +233,40 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
       </div>
 
       {/* Pagination */}
-      <div className="border-t border-gray-200 px-8 py-4 flex-shrink-0">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-700">
-              {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="pageSize" className="text-sm text-gray-700">
-                {t('customers.show')}
-              </label>
-              <select
-                id="pageSize"
-                value={pageInfo.limit}
-                onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
+      <div className="border-t border-gray-200 px-4 sm:px-8 py-4 flex-shrink-0">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <div className="text-sm text-gray-700">
+                {t('customers.showing')} {Math.min((pageInfo.page - 1) * pageInfo.limit + 1, pageInfo.total)} {t('customers.to')} {Math.min(pageInfo.page * pageInfo.limit, pageInfo.total)} {t('customers.of')} {pageInfo.total} {t('customers.customers')}
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="pageSize" className="text-sm text-gray-700">
+                  {t('customers.show')}
+                </label>
+                <select
+                  id="pageSize"
+                  value={pageInfo.limit}
+                  onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+                  className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-gray-700">{t('customers.perPage')}</span>
+              </div>
             </div>
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto">
             {/* First Page Button */}
             <button
               onClick={() => handlePageChange(1)}
               disabled={pageInfo.page === 1 || loading}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center flex-shrink-0"
               title={t('approvals.firstPage')}
             >
               <ChevronLeft size={16} />
@@ -275,7 +277,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
             <button
               onClick={() => handlePageChange(pageInfo.page - 1)}
               disabled={pageInfo.page === 1 || loading}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               title={t('approvals.previousPage')}
             >
               <ChevronLeft size={16} />
@@ -288,7 +290,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
                   key={`${pageNum}-${index}`}
                   onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
                   disabled={typeof pageNum !== 'number' || loading}
-                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                  className={`px-2 sm:px-3 py-2 text-sm font-medium rounded-md flex-shrink-0 ${
                     pageNum === pageInfo.page
                       ? 'bg-indigo-600 text-white border border-indigo-600'
                       : typeof pageNum === 'number'
@@ -305,7 +307,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
             <button
               onClick={() => handlePageChange(pageInfo.page + 1)}
               disabled={pageInfo.page === pageInfo.totalPages || loading}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               title={t('approvals.nextPage')}
             >
               <ChevronRight size={16} />
@@ -315,7 +317,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
             <button
               onClick={() => handlePageChange(pageInfo.totalPages)}
               disabled={pageInfo.page === pageInfo.totalPages || loading}
-              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center flex-shrink-0"
               title={t('approvals.lastPage')}
             >
               <ChevronRight size={16} />

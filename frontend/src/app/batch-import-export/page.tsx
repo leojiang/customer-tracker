@@ -150,10 +150,10 @@ export default function BatchImportExportPage() {
           {/* Top Component */}
           <div className="bg-white rounded-lg shadow p-4">
             {/* Header and Action Buttons */}
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <h1 className="text-xl font-semibold text-gray-900">{t('batchImport.uploadExcel')}</h1>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <input
                   id="file-upload"
                   type="file"
@@ -164,7 +164,7 @@ export default function BatchImportExportPage() {
 
                 <button
                   onClick={() => document.getElementById('file-upload')?.click()}
-                  className="btn-secondary focus:outline-none focus:ring-0 active:outline-none active:ring-0"
+                  className="btn-secondary focus:outline-none focus:ring-0 active:outline-none active:ring-0 text-sm"
                 >
                   {t('batchImport.selectFile')}
                 </button>
@@ -172,31 +172,31 @@ export default function BatchImportExportPage() {
                 {/* Action Buttons */}
                 <button
                   onClick={handleCancelImport}
-                  className="btn-secondary focus:outline-none focus:ring-0 active:outline-none active:ring-0"
+                  className="btn-secondary focus:outline-none focus:ring-0 active:outline-none active:ring-0 text-sm"
                 >
                   {t('batchImport.cancelClear')}
                 </button>
                 <button
                   onClick={handleConfirmImport}
                   disabled={confirming}
-                  className="btn-primary focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex items-center gap-2"
+                  className="btn-primary focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex items-center gap-2 text-sm"
                 >
                   <CheckCircle size={18} />
-                  {confirming ? t('batchImport.importing') : t('batchImport.confirmImport')}
+                  <span>{confirming ? t('batchImport.importing') : t('batchImport.confirmImport')}</span>
                 </button>
               </div>
             </div>
 
             {/* Second Row - File Info and Actions */}
             {file && (
-              <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                <div className="flex items-center gap-3">
-                  <FileSpreadsheet className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium text-gray-700">{file.name}</span>
-                  <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(2)} KB)</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileSpreadsheet className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-700 truncate">{file.name}</span>
+                  <span className="text-xs text-gray-500 flex-shrink-0">({(file.size / 1024).toFixed(2)} KB)</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <button
                     onClick={() => {
                       setFile(null);
@@ -273,10 +273,12 @@ export default function BatchImportExportPage() {
           </div>
 
           {/* Staging List */}
-          <StagingList
-            refreshTrigger={stagingRefreshTrigger}
-            onStatsUpdate={handleStatsUpdate}
-          />
+          <div className="mt-[2px]">
+            <StagingList
+              refreshTrigger={stagingRefreshTrigger}
+              onStatsUpdate={handleStatsUpdate}
+            />
+          </div>
         </div>
       </div>
     </div>

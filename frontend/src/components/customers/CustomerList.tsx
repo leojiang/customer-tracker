@@ -457,7 +457,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg flex flex-col h-full">
+          <div className="my-[5px] overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg flex flex-col h-full">
             <div className="overflow-y-auto flex-1">
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50 sticky top-0 z-10">
