@@ -130,6 +130,20 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
     return statusMap[status] || status;
   };
 
+  const hasFieldChanged = (record: CustomerStaging, fieldName: string): boolean => {
+    // Only highlight when filtering by UPDATE status and the record is UPDATE
+    if (importStatusFilter !== 'UPDATE' || record.importStatus !== 'UPDATE') {
+      return false;
+    }
+
+    if (!record.changedFields) {
+      return false;
+    }
+
+    const changedFieldsArray = record.changedFields.split(',');
+    return changedFieldsArray.includes(fieldName);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'VALID':
@@ -176,6 +190,24 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
 
   return (
     <div className="bg-white rounded-lg shadow flex flex-col overflow-hidden border" style={{ maxHeight: '70vh' }}>
+      {/* Info banner for UPDATE filter */}
+      {importStatusFilter === 'UPDATE' && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 px-4 py-2">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                {t('batchImport.updateFilterInfo')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Scrollable Table Area */}
       <div className="flex-1 overflow-auto">
         <table className="divide-y divide-gray-300" style={{ minWidth: '1400px' }}>
@@ -197,21 +229,31 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
             {records.map((record) => (
               <tr key={record.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{record.name}</div>
+                  <div className={`text-sm font-medium ${
+                    hasFieldChanged(record, 'name') ? 'text-red-600' : 'text-gray-900'
+                  }`}>{record.name}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-28">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-28 ${
+                  hasFieldChanged(record, 'gender') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.gender ? getLocalizedGender(record.gender) : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-32 ${
+                  hasFieldChanged(record, 'phone') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   <div className="flex items-center gap-1.5">
                     <Phone size={14} className="text-gray-400" />
                     <span>{record.phone}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-40">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-40 ${
+                  hasFieldChanged(record, 'idCard') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.idCard || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-36">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-36 ${
+                  hasFieldChanged(record, 'certifiedAt') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.certifiedAt ? (
                     <div className="flex items-center gap-1.5">
                       <Calendar size={14} className="text-gray-400" />
@@ -219,16 +261,24 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                     </div>
                   ) : '-'}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-500 w-56">
+                <td className={`px-6 py-4 text-sm w-56 ${
+                  hasFieldChanged(record, 'certificateIssuer') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.certificateIssuer ? t(CertificateIssuerTranslationKeys[record.certificateIssuer as CertificateIssuer]) : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-32 ${
+                  hasFieldChanged(record, 'certificateType') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.certificateType ? getCertificateTypeDisplayName(record.certificateType as CertificateType, t) : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-44">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-44 ${
+                  hasFieldChanged(record, 'education') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.education ? getTranslatedEducationLevelName(record.education as EducationLevel, t) : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-36">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm w-36 ${
+                  hasFieldChanged(record, 'customerAgent') ? 'text-red-600' : 'text-gray-500'
+                }`}>
                   {record.customerAgent || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap w-28">

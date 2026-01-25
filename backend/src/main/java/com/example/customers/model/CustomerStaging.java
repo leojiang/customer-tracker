@@ -77,6 +77,9 @@ public class CustomerStaging {
   @Column(name = "validation_message")
   private String validationMessage;
 
+  @Column(name = "changed_fields")
+  private String changedFields;
+
   @Column(name = "row_number")
   private Integer rowNumber;
 
@@ -232,6 +235,14 @@ public class CustomerStaging {
 
   public void setImportStatus(ImportStatus importStatus) {
     this.importStatus = importStatus;
+  }
+
+  public String getChangedFields() {
+    return changedFields;
+  }
+
+  public void setChangedFields(String changedFields) {
+    this.changedFields = changedFields;
   }
 
   public String getValidationMessage() {

@@ -442,6 +442,7 @@ const translations = {
     'batchImport.confirmNewFileMessage': 'There\'s still data not confirmed. Do you still want to select another file?',
     'batchImport.confirmNewFileYes': 'Yes, clear and select new file',
     'batchImport.confirmNewFileNo': 'No, keep current data',
+    'batchImport.updateFilterInfo': 'Fields displayed in red text will be updated in existing customer records.',
 
     // Customer Detail
     'customers.detail.customerDetails': 'Customer Details',
@@ -1155,6 +1156,7 @@ const translations = {
     'batchImport.confirmNewFileMessage': '仍有未确认导入的数据，您确定要选择新文件吗？',
     'batchImport.confirmNewFileYes': '是的，清除并选择新文件',
     'batchImport.confirmNewFileNo': '不，保留当前数据',
+    'batchImport.updateFilterInfo': '红色文字显示的内容将更新到现有客户记录。',
 
     // Customer Detail
     'customers.detail.customerDetails': '客户详情',

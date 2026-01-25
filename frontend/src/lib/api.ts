@@ -310,6 +310,7 @@ export interface CustomerStaging {
   certifiedAt?: string;
   importStatus: 'PENDING' | 'VALID' | 'UPDATE' | 'DUPLICATE' | 'INVALID';
   validationMessage?: string;
+  changedFields?: string;
   rowNumber?: number;
   createdAt: string;
 }

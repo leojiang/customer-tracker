@@ -418,8 +418,16 @@ public class CustomerImportService {
         changedFields.add("certifiedAt");
       }
 
+      // Compare certificate type
+      if (staging.getCertificateType() != existing.getCertificateType()) {
+        hasChanges = true;
+        changedFields.add("certificateType");
+      }
+
       if (hasChanges) {
         staging.setImportStatus(ImportStatus.UPDATE);
+        // Store changed fields as comma-separated string
+        staging.setChangedFields(String.join(",", changedFields));
         staging.setValidationMessage(
             "Will update existing customer. Changed fields: " + String.join(", ", changedFields));
       } else {
