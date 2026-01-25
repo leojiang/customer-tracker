@@ -35,7 +35,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
   });
 
   // Track previous filter to detect changes
-  const prevImportStatusFilter = useRef<string | null>(importStatusFilter);
+  const prevImportStatusFilter = useRef<string | null>(importStatusFilter ?? null);
 
   // Use ref to store current limit to avoid dependency issues
   const limitRef = useRef(pageInfo.limit);
@@ -78,11 +78,11 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
 
   // Combined effect to handle filter changes and refresh
   useEffect(() => {
-    const filterChanged = prevImportStatusFilter.current !== importStatusFilter;
+    const filterChanged = prevImportStatusFilter.current !== (importStatusFilter ?? null);
 
     if (filterChanged) {
       // Reset to page 1 when filter changes
-      prevImportStatusFilter.current = importStatusFilter;
+      prevImportStatusFilter.current = importStatusFilter ?? null;
       loadRecords(1, pageInfo.limit);
       setPageInfo(prev => ({ ...prev, page: 1 }));
     } else {
