@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PhoneNumber {
 
-  String message() default "Phone number must be in international format (+1234567890)";
+  String message() default "Phone number must contains only digits (1234567890)";
 
   Class<?>[] groups() default {};
 

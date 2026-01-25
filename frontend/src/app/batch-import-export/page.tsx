@@ -135,14 +135,14 @@ export default function BatchImportExportPage() {
 
       // Trigger refresh of staging list
       setStagingRefreshTrigger(prev => prev + 1);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Extract error message from API response
       let errorMessage = t('batchImport.uploadFailed');
 
-      if (err?.response?.data) {
-        const errorData = err.response.data;
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorData = (err as { response?: { data?: { message?: string; errors?: Record<string, string> } } }).response?.data;
 
-        if (errorData.message) {
+        if (errorData?.message) {
           errorMessage = errorData.message;
 
           // If there are specific field errors, append them
@@ -153,8 +153,8 @@ export default function BatchImportExportPage() {
             errorMessage += ` (${fieldErrors})`;
           }
         }
-      } else if (err?.message) {
-        errorMessage = err.message;
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as Error).message;
       }
 
       setUploadMessage({type: 'error', text: errorMessage});
