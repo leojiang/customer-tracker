@@ -364,11 +364,14 @@ export const customerImportApi = {
     return response.json();
   },
 
-  async getStagedRecords(page: number = 1, limit: number = 20): Promise<StagingPageResponse> {
+  async getStagedRecords(page: number = 1, limit: number = 20, importStatus?: string): Promise<StagingPageResponse> {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
     });
+    if (importStatus) {
+      params.append('importStatus', importStatus);
+    }
     return fetchApi<StagingPageResponse>(`/customers/import/staged?${params}`);
   },
 

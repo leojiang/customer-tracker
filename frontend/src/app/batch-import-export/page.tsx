@@ -24,8 +24,15 @@ export default function BatchImportExportPage() {
     duplicate: 0,
     invalid: 0,
   });
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const canImport = user?.role === 'ADMIN' || user?.role === 'OFFICER';
+
+  const hasStagedData = () => {
+    return stagingStats.valid + stagingStats.update + stagingStats.duplicate + stagingStats.invalid > 0;
+  };
 
   const loadStagingStatistics = async () => {
     try {
@@ -43,13 +50,69 @@ export default function BatchImportExportPage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setUploadMessage(null);
-      setImportResult(null); // Clear import result when selecting a new file
-      setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0}); // Clear statistics
+      const selectedFile = e.target.files[0];
+
+      // Check if there's existing staged data
+      if (hasStagedData()) {
+        // Store the pending file and show confirmation dialog
+        setPendingFile(selectedFile);
+        setShowConfirmDialog(true);
+
+        // Reset the file input so the same file can be selected again if needed
+        e.target.value = '';
+      } else {
+        // No staged data, proceed normally
+        setFile(selectedFile);
+        setUploadMessage(null);
+        setImportResult(null); // Clear import result when selecting a new file
+        setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0}); // Clear statistics
+        setSelectedStatus(null); // Reset filter
+      }
     } else {
       setFile(null);
     }
+  };
+
+  const handleStatusFilter = (status: string | null) => {
+    // Toggle the filter: if clicking the same status, clear it
+    if (selectedStatus === status) {
+      setSelectedStatus(null);
+    } else {
+      setSelectedStatus(status);
+    }
+  };
+
+  const handleConfirmDialogYes = async () => {
+    // User confirmed: cancel existing import and proceed with new file
+    try {
+      await customerImportApi.cancelImport();
+      setStagingRefreshTrigger(prev => prev + 1);
+      setImportResult(null);
+      setUploadMessage(null);
+      setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0});
+      setSelectedStatus(null);
+
+      // Set the new file
+      setFile(pendingFile);
+      setUploadMessage(null);
+      setImportResult(null);
+      setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0});
+      setSelectedStatus(null);
+
+      // Clear pending file and close dialog
+      setPendingFile(null);
+      setShowConfirmDialog(false);
+    } catch (err) {
+      console.error('Failed to cancel import:', err);
+      setPendingFile(null);
+      setShowConfirmDialog(false);
+    }
+  };
+
+  const handleConfirmDialogNo = () => {
+    // User cancelled: just close the dialog and keep existing data
+    setPendingFile(null);
+    setShowConfirmDialog(false);
   };
 
   const handleUpload = async () => {
@@ -72,8 +135,29 @@ export default function BatchImportExportPage() {
 
       // Trigger refresh of staging list
       setStagingRefreshTrigger(prev => prev + 1);
-    } catch (err) {
-      setUploadMessage({type: 'error', text: t('batchImport.uploadFailed')});
+    } catch (err: any) {
+      // Extract error message from API response
+      let errorMessage = t('batchImport.uploadFailed');
+
+      if (err?.response?.data) {
+        const errorData = err.response.data;
+
+        if (errorData.message) {
+          errorMessage = errorData.message;
+
+          // If there are specific field errors, append them
+          if (errorData.errors) {
+            const fieldErrors = Object.entries(errorData.errors)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ');
+            errorMessage += ` (${fieldErrors})`;
+          }
+        }
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      setUploadMessage({type: 'error', text: errorMessage});
       console.error('Upload error:', err);
     } finally {
       setUploading(false);
@@ -113,6 +197,7 @@ export default function BatchImportExportPage() {
       setUploadMessage(null); // Clear upload message (success or error)
       setFile(null); // Clear selected file
       setStagingStats({valid: 0, update: 0, duplicate: 0, invalid: 0}); // Clear statistics
+      setSelectedStatus(null); // Reset filter
 
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
@@ -251,21 +336,49 @@ export default function BatchImportExportPage() {
                 </div>
               </div>
             ) : stagingStats.valid + stagingStats.update + stagingStats.duplicate + stagingStats.invalid > 0 ? (
-              /* Staging Statistics (after file upload) */
+              /* Staging Statistics (after file upload) - Clickable to filter */
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div
+                  onClick={() => handleStatusFilter('VALID')}
+                  className={`bg-green-50 border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedStatus === 'VALID'
+                      ? 'border-green-500 ring-2 ring-green-300'
+                      : 'border-green-200 hover:border-green-400 hover:shadow-md'
+                  }`}
+                >
                   <div className="text-2xl font-bold text-green-600">{stagingStats.valid}</div>
                   <div className="text-sm text-green-700">{t('batchImport.newToImport')}</div>
                 </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div
+                  onClick={() => handleStatusFilter('UPDATE')}
+                  className={`bg-blue-50 border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedStatus === 'UPDATE'
+                      ? 'border-blue-500 ring-2 ring-blue-300'
+                      : 'border-blue-200 hover:border-blue-400 hover:shadow-md'
+                  }`}
+                >
                   <div className="text-2xl font-bold text-blue-600">{stagingStats.update}</div>
                   <div className="text-sm text-blue-700">{t('batchImport.toUpdate')}</div>
                 </div>
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div
+                  onClick={() => handleStatusFilter('DUPLICATE')}
+                  className={`bg-orange-50 border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedStatus === 'DUPLICATE'
+                      ? 'border-orange-500 ring-2 ring-orange-300'
+                      : 'border-orange-200 hover:border-orange-400 hover:shadow-md'
+                  }`}
+                >
                   <div className="text-2xl font-bold text-orange-600">{stagingStats.duplicate}</div>
                   <div className="text-sm text-orange-700">{t('batchImport.duplicates')}</div>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div
+                  onClick={() => handleStatusFilter('INVALID')}
+                  className={`bg-red-50 border rounded-lg p-4 cursor-pointer transition-all ${
+                    selectedStatus === 'INVALID'
+                      ? 'border-red-500 ring-2 ring-red-300'
+                      : 'border-red-200 hover:border-red-400 hover:shadow-md'
+                  }`}
+                >
                   <div className="text-2xl font-bold text-red-600">{stagingStats.invalid}</div>
                   <div className="text-sm text-red-700">{t('batchImport.invalid')}</div>
                 </div>
@@ -277,9 +390,38 @@ export default function BatchImportExportPage() {
           <StagingList
             refreshTrigger={stagingRefreshTrigger}
             onStatsUpdate={handleStatsUpdate}
+            importStatusFilter={selectedStatus}
           />
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {t('batchImport.confirmNewFileTitle')}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {t('batchImport.confirmNewFileMessage')}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleConfirmDialogNo}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                {t('batchImport.confirmNewFileNo')}
+              </button>
+              <button
+                onClick={handleConfirmDialogYes}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+              >
+                {t('batchImport.confirmNewFileYes')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

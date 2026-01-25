@@ -434,6 +434,14 @@ const translations = {
     'batchImport.uploadNow': 'Upload Now',
     'batchImport.permissionDenied': 'Permission Denied',
     'batchImport.noPermissionMessage': 'You don&apos;t have permission to access batch import functionality.',
+    'batchImport.status.valid': 'Valid',
+    'batchImport.status.update': 'Update',
+    'batchImport.status.duplicate': 'Duplicate',
+    'batchImport.status.invalid': 'Invalid',
+    'batchImport.confirmNewFileTitle': 'Unconfirmed Data',
+    'batchImport.confirmNewFileMessage': 'There\'s still data not confirmed. Do you still want to select another file?',
+    'batchImport.confirmNewFileYes': 'Yes, clear and select new file',
+    'batchImport.confirmNewFileNo': 'No, keep current data',
 
     // Customer Detail
     'customers.detail.customerDetails': 'Customer Details',
@@ -1139,6 +1147,14 @@ const translations = {
     'batchImport.uploadNow': '立即上传',
     'batchImport.permissionDenied': '权限被拒绝',
     'batchImport.noPermissionMessage': '您没有权限访问批量导入功能。',
+    'batchImport.status.valid': '有效',
+    'batchImport.status.update': '更新',
+    'batchImport.status.duplicate': '重复',
+    'batchImport.status.invalid': '无效',
+    'batchImport.confirmNewFileTitle': '未确认的数据',
+    'batchImport.confirmNewFileMessage': '仍有未确认导入的数据，您确定要选择新文件吗？',
+    'batchImport.confirmNewFileYes': '是的，清除并选择新文件',
+    'batchImport.confirmNewFileNo': '不，保留当前数据',
 
     // Customer Detail
     'customers.detail.customerDetails': '客户详情',

@@ -1,5 +1,6 @@
 package com.example.customers.controller;
 
+import com.example.customers.model.CustomerStaging.ImportStatus;
 import com.example.customers.service.CustomerImportService;
 import com.example.customers.service.CustomerImportService.ImportSummary;
 import com.example.customers.service.CustomerImportService.StagingPageResponse;
@@ -73,8 +74,16 @@ public class CustomerImportController {
   @GetMapping("/staged")
   @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
   public ResponseEntity<StagingPageResponse> getStagedRecords(
-      @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int limit) {
-    StagingPageResponse response = importService.getStagedRecords(page, limit);
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "20") int limit,
+      @RequestParam(required = false) String importStatus) {
+    // Convert string to ImportStatus if provided
+    ImportStatus status = null;
+    if (importStatus != null && !importStatus.isEmpty()) {
+      status = ImportStatus.valueOf(importStatus.toUpperCase());
+    }
+
+    StagingPageResponse response = importService.getStagedRecords(page, limit, status);
     return ResponseEntity.ok(response);
   }
 

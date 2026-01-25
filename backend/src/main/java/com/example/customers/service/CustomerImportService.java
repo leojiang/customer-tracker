@@ -217,9 +217,22 @@ public class CustomerImportService {
    * @return paginated staged records
    */
   public StagingPageResponse getStagedRecords(int page, int limit) {
+    return getStagedRecords(page, limit, null);
+  }
+
+  /**
+   * Get all staged records with pagination and optional status filter.
+   *
+   * @param page page number (1-based)
+   * @param limit page size
+   * @param importStatus optional import status filter
+   * @return paginated staged records
+   */
+  public StagingPageResponse getStagedRecords(int page, int limit, ImportStatus importStatus) {
     // Convert to 0-based page number
     Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("rowNumber").ascending());
-    Page<CustomerStaging> stagingPage = stagingRepository.findAll(pageable);
+    Page<CustomerStaging> stagingPage =
+        stagingRepository.findByImportStatusOptional(importStatus, pageable);
 
     return new StagingPageResponse(
         stagingPage.getContent(), (int) stagingPage.getTotalElements(), page, limit);

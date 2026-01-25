@@ -13,9 +13,10 @@ import { enUS, zhCN } from 'date-fns/locale';
 interface StagingListProps {
   refreshTrigger: number;
   onStatsUpdate?: (stats: { valid: number; update: number; duplicate: number; invalid: number }) => void;
+  importStatusFilter?: string | null;
 }
 
-export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingListProps) {
+export default function StagingList({ refreshTrigger, onStatsUpdate, importStatusFilter }: StagingListProps) {
   const { t, language } = useLanguage();
 
   const [records, setRecords] = useState<CustomerStaging[]>([]);
@@ -38,10 +39,10 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
   const loadRecords = async (page: number = 1, limit: number = 20) => {
     try {
       setLoading(true);
-      const response: StagingPageResponse = await customerImportApi.getStagedRecords(page, limit);
+      const response: StagingPageResponse = await customerImportApi.getStagedRecords(page, limit, importStatusFilter || undefined);
       setRecords(response.items);
 
-      // Calculate statistics
+      // Calculate statistics (only for displayed records)
       const valid = response.items.filter(r => r.importStatus === 'VALID').length;
       const update = response.items.filter(r => r.importStatus === 'UPDATE').length;
       const duplicate = response.items.filter(r => r.importStatus === 'DUPLICATE').length;
@@ -70,7 +71,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
 
   useEffect(() => {
     loadRecords(pageInfo.page, pageInfo.limit);
-  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refreshTrigger, importStatusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageInfo.totalPages) {
@@ -117,6 +118,16 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
       return t('customers.form.gender.female');
     }
     return gender;
+  };
+
+  const getLocalizedStatus = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'VALID': t('batchImport.status.valid'),
+      'UPDATE': t('batchImport.status.update'),
+      'DUPLICATE': t('batchImport.status.duplicate'),
+      'INVALID': t('batchImport.status.invalid'),
+    };
+    return statusMap[status] || status;
   };
 
   const getStatusIcon = (status: string) => {
@@ -223,7 +234,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate }: StagingLi
                 <td className="px-6 py-4 whitespace-nowrap w-28">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(record.importStatus)}`}>
                     {getStatusIcon(record.importStatus)}
-                    {record.importStatus}
+                    {getLocalizedStatus(record.importStatus)}
                   </span>
                 </td>
               </tr>
