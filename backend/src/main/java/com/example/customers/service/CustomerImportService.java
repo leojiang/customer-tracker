@@ -21,6 +21,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.etsi.uri.x01903.v13.impl.CertificateValuesTypeImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -340,6 +341,18 @@ public class CustomerImportService {
       return;
     }
 
+    if (staging.getCertificateIssuer() == null) {
+      staging.setImportStatus(ImportStatus.INVALID);
+      staging.setValidationMessage("Certificate Issuer is required");
+      return;
+    }
+
+    if (staging.getCertifiedAt() == null) {
+      staging.setImportStatus(ImportStatus.INVALID);
+      staging.setValidationMessage("Certificate time is required");
+      return;
+    }
+
     // Check if customer already exists (by phone + certificate type)
     Optional<Customer> existingOpt =
         customerRepository.findByPhoneAndCertificateType(
@@ -541,20 +554,12 @@ public class CustomerImportService {
         return EducationLevel.MASTER;
       case "博士":
         return EducationLevel.DOCTORATE;
-      case "职业":
+      case "专业学位":
         return EducationLevel.PROFESSIONAL;
-      case "证书":
-      case "文凭":
+      case "证书/文凭":
         return EducationLevel.CERTIFICATE;
-      case "其他":
-        return EducationLevel.OTHER;
       default:
-        // Try direct enum parsing
-        try {
-          return EducationLevel.valueOf(level.toUpperCase());
-        } catch (IllegalArgumentException e) {
-          return null;
-        }
+        return EducationLevel.OTHER;
     }
   }
 
@@ -570,8 +575,7 @@ public class CustomerImportService {
       return enumValue;
     }
 
-    // If not found, return the original value (might be a valid enum name already)
-    return issuer;
+    return null;
   }
 
   /** Parse Chinese certificate type to enum. */
