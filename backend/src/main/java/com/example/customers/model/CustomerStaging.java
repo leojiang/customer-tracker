@@ -34,7 +34,6 @@ public class CustomerStaging {
   private String name;
 
   @NotBlank
-  @PhoneNumber(message = "Phone number must contain only digits")
   @Column(nullable = false)
   private String phone;
 

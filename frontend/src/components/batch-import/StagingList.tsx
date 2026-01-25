@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Phone, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomerStaging, StagingPageResponse } from '@/lib/api';
 import { CertificateType, CertificateIssuer, CertificateIssuerTranslationKeys, EducationLevel, getTranslatedEducationLevelName } from '@/types/customer';
@@ -34,9 +34,16 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
     limit: 20,
   });
 
+  // Track previous filter to detect changes
+  const prevImportStatusFilter = useRef<string | null>(importStatusFilter);
+
+  // Use ref to store current limit to avoid dependency issues
+  const limitRef = useRef(pageInfo.limit);
+  limitRef.current = pageInfo.limit;
+
   const locale = language === 'zh-CN' ? zhCN : enUS;
 
-  const loadRecords = async (page: number = 1, limit: number = 20) => {
+  const loadRecords = useCallback(async (page: number = 1, limit: number = 20) => {
     try {
       setLoading(true);
       const response: StagingPageResponse = await customerImportApi.getStagedRecords(page, limit, importStatusFilter || undefined);
@@ -67,10 +74,21 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
     } finally {
       setLoading(false);
     }
-  };
+  }, [importStatusFilter, onStatsUpdate]);
 
+  // Combined effect to handle filter changes and refresh
   useEffect(() => {
-    loadRecords(pageInfo.page, pageInfo.limit);
+    const filterChanged = prevImportStatusFilter.current !== importStatusFilter;
+
+    if (filterChanged) {
+      // Reset to page 1 when filter changes
+      prevImportStatusFilter.current = importStatusFilter;
+      loadRecords(1, pageInfo.limit);
+      setPageInfo(prev => ({ ...prev, page: 1 }));
+    } else {
+      // Normal reload with current page
+      loadRecords(pageInfo.page, pageInfo.limit);
+    }
   }, [refreshTrigger, importStatusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePageChange = (newPage: number) => {

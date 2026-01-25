@@ -9,6 +9,8 @@ import com.example.customers.model.EducationLevel;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerStagingRepository;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -161,10 +163,34 @@ public class CustomerImportService {
       // Start from row 1 (skip header)
       for (int i = 1; i <= sheet.getLastRowNum(); i++) {
         Row row = sheet.getRow(i);
-        if (row == null) continue;
+        if (row == null) {
+          continue;
+        }
+
+        // Read and validate the '序号' (row number) column
+        String sequenceNumberStr = getCellValueAsString(
+            row.getCell(columnIndexMap.get("序号")));
+        if (sequenceNumberStr == null || sequenceNumberStr.trim().isEmpty()) {
+          // Skip rows with empty sequence number
+          logger.debug("Skipping row {} due to empty 序号 value", i + 1);
+          continue;
+        }
+
+        // Try to parse the sequence number
+        int sequenceNumber;
+        try {
+          sequenceNumber = Integer.parseInt(sequenceNumberStr.trim());
+          if (sequenceNumber <= 0) {
+            logger.debug("Skipping row {} due to invalid 序号 value: {}", i + 1, sequenceNumberStr);
+            continue;
+          }
+        } catch (NumberFormatException e) {
+          logger.debug("Skipping row {} due to non-numeric 序号 value: {}", i + 1, sequenceNumberStr);
+          continue;
+        }
 
         CustomerStaging staging = new CustomerStaging();
-        staging.setRowNumber(i + 1);
+        staging.setRowNumber(sequenceNumber);
 
         try {
           // Parse row data using dynamic column lookup
@@ -204,6 +230,7 @@ public class CustomerImportService {
     }
 
     // Save all staging records
+    logger.info("before save staging customer");
     stagingRepository.saveAll(stagingRecords);
     logger.info("Staged {} customer records from Excel file", stagingRecords.size());
 
@@ -213,7 +240,7 @@ public class CustomerImportService {
   /**
    * Get all staged records with pagination.
    *
-   * @param page page number (1-based)
+   * @param page page number (1-based)O
    * @param limit page size
    * @return paginated staged records
    */
