@@ -9,8 +9,6 @@ import com.example.customers.model.EducationLevel;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerStagingRepository;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,7 +21,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.etsi.uri.x01903.v13.impl.CertificateValuesTypeImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,8 +165,7 @@ public class CustomerImportService {
         }
 
         // Read and validate the '序号' (row number) column
-        String sequenceNumberStr = getCellValueAsString(
-            row.getCell(columnIndexMap.get("序号")));
+        String sequenceNumberStr = getCellValueAsString(row.getCell(columnIndexMap.get("序号")));
         if (sequenceNumberStr == null || sequenceNumberStr.trim().isEmpty()) {
           // Skip rows with empty sequence number
           logger.debug("Skipping row {} due to empty 序号 value", i + 1);
@@ -190,7 +186,7 @@ public class CustomerImportService {
         }
 
         CustomerStaging staging = new CustomerStaging();
-        staging.setRowNumber(sequenceNumber);
+        staging.setExcelRowNumber(sequenceNumber);
 
         try {
           // Parse row data using dynamic column lookup
@@ -258,7 +254,7 @@ public class CustomerImportService {
    */
   public StagingPageResponse getStagedRecords(int page, int limit, ImportStatus importStatus) {
     // Convert to 0-based page number
-    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("rowNumber").ascending());
+    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("excelRowNumber").ascending());
     Page<CustomerStaging> stagingPage =
         stagingRepository.findByImportStatusOptional(importStatus, pageable);
 

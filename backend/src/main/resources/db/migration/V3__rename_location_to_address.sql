@@ -1,8 +1,5 @@
--- Rename location column to address
+-- Rename location column to address (MySQL Version)
 -- This migration changes the location column to address for better clarity
 
--- Rename the column
-ALTER TABLE customers RENAME COLUMN location TO address;
-
--- Update column comment
-COMMENT ON COLUMN customers.address IS 'Customer address';
+-- Rename the column (MySQL uses CHANGE COLUMN syntax)
+ALTER TABLE customers CHANGE COLUMN location address VARCHAR(500) COMMENT 'Customer address';

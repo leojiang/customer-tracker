@@ -311,7 +311,7 @@ export interface CustomerStaging {
   importStatus: 'PENDING' | 'VALID' | 'UPDATE' | 'DUPLICATE' | 'INVALID';
   validationMessage?: string;
   changedFields?: string;
-  rowNumber?: number;
+  excelRowNumber?: number;
   createdAt: string;
 }
 

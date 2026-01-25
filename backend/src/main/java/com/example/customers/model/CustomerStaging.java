@@ -1,7 +1,6 @@
 package com.example.customers.model;
 
 import com.example.customers.validation.IdCard;
-import com.example.customers.validation.PhoneNumber;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -79,8 +78,8 @@ public class CustomerStaging {
   @Column(name = "changed_fields")
   private String changedFields;
 
-  @Column(name = "row_number")
-  private Integer rowNumber;
+  @Column(name = "excel_row_number")
+  private Integer excelRowNumber;
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -252,12 +251,12 @@ public class CustomerStaging {
     this.validationMessage = validationMessage;
   }
 
-  public Integer getRowNumber() {
-    return rowNumber;
+  public Integer getExcelRowNumber() {
+    return excelRowNumber;
   }
 
-  public void setRowNumber(Integer rowNumber) {
-    this.rowNumber = rowNumber;
+  public void setExcelRowNumber(Integer excelRowNumber) {
+    this.excelRowNumber = excelRowNumber;
   }
 
   public ZonedDateTime getCreatedAt() {
