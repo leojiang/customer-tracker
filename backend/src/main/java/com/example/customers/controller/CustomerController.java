@@ -248,7 +248,7 @@ public class CustomerController {
 
   /** PATCH /api/customers/:id Update customer. */
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER')")
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
   public ResponseEntity<Customer> updateCustomer(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
     try {
