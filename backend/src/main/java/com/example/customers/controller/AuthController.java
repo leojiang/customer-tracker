@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for authentication and authorization operations.
+ *
  * <p>Handles user login, registration, and token validation for the application.
  */
 @Tag(name = "Authentication", description = "Authentication and authorization endpoints")
