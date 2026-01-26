@@ -52,6 +52,8 @@ interface TrendAnalysisResponse {
   totalDays: number;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
 /**
  * Admin Dashboard showing system-wide analytics and metrics
  */
@@ -65,8 +67,6 @@ export default function AdminDashboard() {
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
   const fetchDashboardData = useCallback(async () => {
     if (!token) {

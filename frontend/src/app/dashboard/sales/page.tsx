@@ -35,6 +35,8 @@ interface SalesPerformance {
   statusBreakdown: Record<string, number>;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
 /**
  * Sales Dashboard showing personal performance metrics
  */
@@ -48,8 +50,6 @@ export default function SalesDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
   const fetchDashboardData = useCallback(async (isRefresh = false) => {
     if (!token) {
