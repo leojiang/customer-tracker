@@ -923,7 +923,7 @@ const translations = {
 
     // Landing Page
     'landing.welcome': '欢迎',
-    'landing.welcomeMessage': '欢迎使用客户管理系统。今天可以开始以下操作。',
+    'landing.welcomeMessage': '欢迎使用客户管理系统，今天可以开始以下操作。',
     'landing.quickAccess': '快速访问',
     'landing.availableActions': '可用操作',
     'landing.yourRole': '您的角色',

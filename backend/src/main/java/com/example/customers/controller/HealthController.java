@@ -54,11 +54,6 @@ public class HealthController {
         health.put("databaseUrl", connection.getMetaData().getURL());
       }
 
-      // Get basic statistics
-      CustomerService.CustomerStatistics stats = customerService.getCustomerStatistics(false);
-      health.put("totalCustomers", stats.getTotalCustomers());
-      health.put("recentlyUpdated", stats.getRecentlyUpdatedCount());
-
       health.put("status", "UP");
       return ResponseEntity.ok(health);
 
