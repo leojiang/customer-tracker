@@ -2,7 +2,8 @@ spring:
   application:
     name: customers
   datasource:
-    url: jdbc:mysql://localhost:3306/customers?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/customers
     username: root
     password: 123456
 #  url: jdbc:postgresql://localhost:5432/customers
@@ -36,3 +37,5 @@ springdoc:
 logging:
   level:
     root: INFO
+    # Log HTTP requests
+    com.example.customers: DEBUG

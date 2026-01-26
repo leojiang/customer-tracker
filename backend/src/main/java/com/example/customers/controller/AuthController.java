@@ -20,13 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for authentication and authorization operations.
- *
  * <p>Handles user login, registration, and token validation for the application.
  */
 @Tag(name = "Authentication", description = "Authentication and authorization endpoints")
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
   private final AuthService authService;
