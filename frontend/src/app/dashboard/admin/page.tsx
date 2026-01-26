@@ -66,6 +66,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
   const fetchDashboardData = useCallback(async () => {
     if (!token) {
       return;
@@ -77,25 +79,25 @@ export default function AdminDashboard() {
 
       // Fetch all dashboard data in parallel
       const [overviewRes, statusRes, leaderboardRes, trendsRes] = await Promise.all([
-        fetch('http://localhost:8080/api/analytics/dashboard/overview', {
+        fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:8080/api/analytics/customers/status-distribution', {
+        fetch(`${API_BASE_URL}/analytics/customers/status-distribution`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:8080/api/analytics/sales/leaderboard', {
+        fetch(`${API_BASE_URL}/analytics/sales/leaderboard`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:8080/api/analytics/customers/trends?days=30&granularity=daily', {
+        fetch(`${API_BASE_URL}/analytics/customers/trends?days=30&granularity=daily`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

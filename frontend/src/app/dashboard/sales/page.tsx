@@ -49,6 +49,8 @@ export default function SalesDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
   const fetchDashboardData = useCallback(async (isRefresh = false) => {
     if (!token) {
       return;
@@ -64,19 +66,19 @@ export default function SalesDashboard() {
 
       // Fetch all dashboard data in parallel
       const [overviewRes, statusRes, performanceRes] = await Promise.all([
-        fetch('http://localhost:8080/api/analytics/dashboard/overview', {
+        fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:8080/api/analytics/customers/status-distribution', {
+        fetch(`${API_BASE_URL}/analytics/customers/status-distribution`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:8080/api/analytics/sales/performance', {
+        fetch(`${API_BASE_URL}/analytics/sales/performance`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
