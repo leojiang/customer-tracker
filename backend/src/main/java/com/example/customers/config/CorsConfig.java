@@ -21,7 +21,14 @@ public class CorsConfig implements WebMvcConfigurer {
   public void addCorsMappings(CorsRegistry registry) {
     registry
         .addMapping("/api/**")
-        .allowedOriginPatterns("*")
+        .allowedOriginPatterns(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*",
+            "http://47.109.72.216:*",
+            "http://47.109.72.216",
+            "http://47.109.72.216:80")
         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .allowedHeaders("*")
         .allowCredentials(false)
@@ -60,7 +67,9 @@ public class CorsConfig implements WebMvcConfigurer {
             "http://127.0.0.1:*",
             "https://localhost:*",
             "https://127.0.0.1:*",
-            "http://47.109.72.216:*"));
+            "http://47.109.72.216:*",
+            "http://47.109.72.216",  // For nginx on port 80 (implicit port)
+            "http://47.109.72.216:80"));  // Explicit port 80
     configuration.setAllowedMethods(
         Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
