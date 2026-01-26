@@ -167,6 +167,9 @@ export default function TrendLineChart({
             if (label) {
               label += ': ';
             }
+            if (context.parsed.y === null) {
+              return label + 'N/A';
+            }
             if (context.datasetIndex === 2) {
               // Conversion rate
               label += context.parsed.y.toFixed(1) + '%';
