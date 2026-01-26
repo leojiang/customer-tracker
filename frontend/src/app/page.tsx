@@ -15,11 +15,12 @@ import AdminDashboard from '@/app/dashboard/admin/page';
 import UserManagementPage from '@/app/dashboard/admin/user-management/page';
 import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
 import BatchImportExportPage from '@/app/batch-import-export/page';
+import LandingPage from '@/components/landing/LandingPage';
 
-type View = 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals' | 'batch-import-export';
+type View = 'landing' | 'list' | 'detail' | 'create' | 'dashboard' | 'user-approvals' | 'batch-import-export';
 
 export default function HomePage() {
-  const [currentView, setCurrentView] = useState<View>('list');
+  const [currentView, setCurrentView] = useState<View>('landing');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
@@ -55,18 +56,27 @@ export default function HomePage() {
   };
 
   const handleNavigation = (view: View) => {
-    // Prevent CUSTOMER_AGENT from accessing dashboard or user management
-    if (user?.role === 'CUSTOMER_AGENT' && (view === 'dashboard' || view === 'user-approvals')) {
+    // Prevent CUSTOMER_AGENT and OFFICER from accessing dashboard
+    if (view === 'dashboard' && user?.role !== 'ADMIN') {
+      return;
+    }
+    // Prevent CUSTOMER_AGENT from accessing user management
+    if (user?.role === 'CUSTOMER_AGENT' && view === 'user-approvals') {
       return;
     }
     setCurrentView(view);
     setSelectedCustomer(null);
   };
 
-  // Redirect CUSTOMER_AGENT users away from restricted views
+  // Redirect users away from restricted views
   useEffect(() => {
-    if (user?.role === 'CUSTOMER_AGENT' && (currentView === 'dashboard' || currentView === 'user-approvals')) {
-      setCurrentView('list');
+    // Redirect non-ADMIN users away from dashboard
+    if (currentView === 'dashboard' && user?.role !== 'ADMIN') {
+      setCurrentView('landing');
+    }
+    // Redirect CUSTOMER_AGENT users away from user management
+    if (user?.role === 'CUSTOMER_AGENT' && currentView === 'user-approvals') {
+      setCurrentView('landing');
     }
   }, [user, currentView]);
 
@@ -87,7 +97,10 @@ export default function HomePage() {
           />
 
           {/* Logo and Brand */}
-          <div className={`p-6 border-b border-surface-200 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+          <div
+            className={`p-6 border-b border-surface-200 ${isSidebarCollapsed ? 'flex justify-center' : ''} cursor-pointer hover:bg-surface-50 transition-colors`}
+            onClick={() => setCurrentView('landing')}
+          >
             <div className={`flex items-center ${isSidebarCollapsed ? '' : 'gap-3'}`}>
               <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-md-2">
                 <span className="text-white font-bold text-lg">CT</span>
@@ -103,6 +116,20 @@ export default function HomePage() {
           {/* Navigation Menu */}
           <nav className="flex-1 p-4 space-y-2">
             <button
+              onClick={() => handleNavigation('landing')}
+              className={`w-full flex items-center rounded-lg transition-colors ${
+                isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+              } ${
+                currentView === 'landing'
+                  ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                  : 'text-surface-700 hover:bg-surface-100'
+              }`}
+            >
+              <BarChart3 size={20} />
+              {!isSidebarCollapsed && <span className="font-medium">{t('landing.quickActions')}</span>}
+            </button>
+
+            <button
               onClick={() => handleNavigation('list')}
               className={`w-full flex items-center rounded-lg transition-colors ${
                 isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
@@ -115,22 +142,6 @@ export default function HomePage() {
               <Users size={20} />
               {!isSidebarCollapsed && <span className="font-medium">{t('nav.customers')}</span>}
             </button>
-
-            {user?.role !== 'CUSTOMER_AGENT' && (
-              <button
-                onClick={() => handleNavigation('dashboard')}
-                className={`w-full flex items-center rounded-lg transition-colors ${
-                  isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
-                } ${
-                  currentView === 'dashboard'
-                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                    : 'text-surface-700 hover:bg-surface-100'
-                }`}
-              >
-                <BarChart3 size={20} />
-                {!isSidebarCollapsed && <span className="font-medium">{t('nav.dashboard')}</span>}
-              </button>
-            )}
 
             {(user?.role === 'ADMIN' || user?.role === 'OFFICER') && (
               <button
@@ -145,6 +156,22 @@ export default function HomePage() {
               >
                 <Upload size={20} />
                 {!isSidebarCollapsed && <span className="font-medium">{t('nav.batchImport')}</span>}
+              </button>
+            )}
+
+            {user?.role === 'ADMIN' && (
+              <button
+                onClick={() => handleNavigation('dashboard')}
+                className={`w-full flex items-center rounded-lg transition-colors ${
+                  isSidebarCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+                } ${
+                  currentView === 'dashboard'
+                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                    : 'text-surface-700 hover:bg-surface-100'
+                }`}
+              >
+                <BarChart3 size={20} />
+                {!isSidebarCollapsed && <span className="font-medium">{t('nav.dashboard')}</span>}
               </button>
             )}
 
@@ -198,6 +225,15 @@ export default function HomePage() {
         {/* Main Content Area */}
         <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'} h-screen overflow-hidden`}>
           <main className="h-full overflow-hidden">
+            {currentView === 'landing' && (
+              <LandingPage
+                onNavigateToCustomers={() => handleNavigation('list')}
+                onNavigateToDashboard={() => handleNavigation('dashboard')}
+                onNavigateToBatchImport={() => handleNavigation('batch-import-export')}
+                onNavigateToUserManagement={() => handleNavigation('user-approvals')}
+              />
+            )}
+
             {currentView === 'list' && (
               <div className="h-full flex flex-col">
                 <CustomerList

@@ -167,6 +167,27 @@ const translations = {
     'nav.refresh': 'Refresh',
     'nav.refreshing': 'Refreshing...',
 
+    // Landing Page
+    'landing.welcome': 'Welcome',
+    'landing.welcomeMessage': 'Welcome to Customer Tracker. Here\'s what you can do today.',
+    'landing.quickAccess': 'Quick Access',
+    'landing.availableActions': 'Available Actions',
+    'landing.yourRole': 'Your Role',
+    'landing.accountStatus': 'Account Active',
+    'landing.systemStatus': 'System Status',
+    'landing.online': 'Online',
+    'landing.ready': 'Ready',
+    'landing.quickActions': 'Quick Actions',
+    'landing.manageCustomers': 'Manage Customers',
+    'landing.manageCustomersDesc': 'View, add, edit, and manage customer information',
+    'landing.viewDashboardDesc': 'View analytics, reports, and performance metrics',
+    'landing.batchImportDesc': 'Import or export customer data in bulk',
+    'landing.userManagementDesc': 'Manage user approvals and permissions',
+    'landing.gettingStarted': 'Getting Started',
+    'landing.tip1': 'Click on "Manage Customers" to view and manage your customer list',
+    'landing.tip2': 'Use the Dashboard to track performance and view statistics',
+    'landing.tip3': 'Access Settings from the bottom of the sidebar to manage your account',
+
     // General
     'general.admin': 'Admin',
 
@@ -879,6 +900,27 @@ const translations = {
     'nav.userManagement': '用户管理',
     'nav.refresh': '刷新',
     'nav.refreshing': '刷新中...',
+
+    // Landing Page
+    'landing.welcome': '欢迎',
+    'landing.welcomeMessage': '欢迎使用客户管理系统。今天可以开始以下操作。',
+    'landing.quickAccess': '快速访问',
+    'landing.availableActions': '可用操作',
+    'landing.yourRole': '您的角色',
+    'landing.accountStatus': '账户活跃',
+    'landing.systemStatus': '系统状态',
+    'landing.online': '在线',
+    'landing.ready': '就绪',
+    'landing.quickActions': '快速操作',
+    'landing.manageCustomers': '客户管理',
+    'landing.manageCustomersDesc': '查看、添加、编辑和管理客户信息',
+    'landing.viewDashboardDesc': '查看分析报告和绩效指标',
+    'landing.batchImportDesc': '批量导入或导出客户数据',
+    'landing.userManagementDesc': '管理用户审批和权限',
+    'landing.gettingStarted': '快速入门',
+    'landing.tip1': '点击"客户管理"查看和管理您的客户列表',
+    'landing.tip2': '使用仪表板跟踪绩效和查看统计数据',
+    'landing.tip3': '从侧边栏底部访问设置来管理您的账户',
 
     // General
     'general.admin': '管理员',

@@ -47,8 +47,14 @@ export default function SettingsModal({ isOpen, onClose, onLogout }: SettingsMod
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-md h-full max-h-screen flex flex-col">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg w-full max-w-md h-full max-h-screen flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -132,8 +138,14 @@ export default function SettingsModal({ isOpen, onClose, onLogout }: SettingsMod
 
       {/* Change Password Modal */}
       {showChangePassword && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowChangePassword(false)}
+        >
+          <div
+            className="bg-white rounded-lg w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ChangePasswordForm
               onSuccess={handleChangePasswordSuccess}
               onCancel={() => setShowChangePassword(false)}
