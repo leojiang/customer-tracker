@@ -10,7 +10,8 @@ import {
   UserApprovalHistory,
   ApprovalStatistics,
   ApprovalStatus,
-  UserApprovalDto
+  UserApprovalDto,
+  PasswordResetResponse
 } from '@/types/auth';
 import {
   Customer,
@@ -266,6 +267,12 @@ export const userApprovalApi = {
     return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/disable`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
+    });
+  },
+
+  async resetUserPassword(phone: string): Promise<PasswordResetResponse> {
+    return fetchApi<PasswordResetResponse>(`/admin/user-approvals/${phone}/reset-password`, {
+      method: 'POST',
     });
   },
 

@@ -53,7 +53,7 @@ public class AuthController {
               ? HttpStatus.FORBIDDEN
               : HttpStatus.UNAUTHORIZED;
       return ResponseEntity.status(status)
-          .body(new AuthResponse(null, null, null, result.getMessage(), result.getStatus()));
+          .body(new AuthResponse(null, null, null, result.getMessage(), result.getStatus(), false));
     }
 
     return ResponseEntity.ok(
@@ -62,7 +62,8 @@ public class AuthController {
             result.getPhone(),
             SalesRole.valueOf(result.getRole()),
             null,
-            result.getStatus()));
+            result.getStatus(),
+            result.getMustChangePassword()));
   }
 
   /**
@@ -284,6 +285,7 @@ public class AuthController {
     private SalesRole role;
     private String error;
     private String status;
+    private Boolean mustChangePassword;
 
     /**
      * Constructor for AuthResponse.
@@ -300,6 +302,32 @@ public class AuthController {
       this.role = role;
       this.error = error;
       this.status = status;
+      this.mustChangePassword = false;
+    }
+
+    /**
+     * Constructor for AuthResponse with mustChangePassword flag.
+     *
+     * @param token JWT token
+     * @param phone user phone number
+     * @param role user role
+     * @param error error message if any
+     * @param status approval status
+     * @param mustChangePassword whether user must change password
+     */
+    public AuthResponse(
+        String token,
+        String phone,
+        SalesRole role,
+        String error,
+        String status,
+        Boolean mustChangePassword) {
+      this.token = token;
+      this.phone = phone;
+      this.role = role;
+      this.error = error;
+      this.status = status;
+      this.mustChangePassword = mustChangePassword;
     }
 
     public String getToken() {
@@ -340,6 +368,14 @@ public class AuthController {
 
     public void setStatus(String status) {
       this.status = status;
+    }
+
+    public Boolean getMustChangePassword() {
+      return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+      this.mustChangePassword = mustChangePassword;
     }
   }
 }

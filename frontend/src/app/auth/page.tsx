@@ -14,16 +14,16 @@ type AuthView = 'login' | 'register' | 'success';
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState<AuthView>('login');
   const [registeredPhone, setRegisteredPhone] = useState('');
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, mustChangePassword } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated and not required to change password
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !mustChangePassword) {
       router.push('/');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, mustChangePassword, router]);
 
   const handleRegistrationSuccess = (phone: string) => {
     setRegisteredPhone(phone);
@@ -43,7 +43,7 @@ export default function AuthPage() {
     );
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !mustChangePassword) {
     return null; // Will redirect
   }
 

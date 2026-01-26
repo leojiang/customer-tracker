@@ -71,6 +71,13 @@ public class AuthService {
     }
 
     String token = jwtService.generateToken(sales);
+
+    // Check if user must change password
+    if (Boolean.TRUE.equals(sales.getMustChangePassword())) {
+      return AuthResult.successWithMustChangePassword(
+          token, sales.getPhone(), sales.getRole().name());
+    }
+
     return AuthResult.success(token, sales.getPhone(), sales.getRole().name());
   }
 
@@ -178,6 +185,10 @@ public class AuthService {
     // Hash and update new password
     String hashedNewPassword = passwordEncoder.encode(newPassword);
     sales.setPassword(hashedNewPassword);
+
+    // Clear the mustChangePassword flag since user has successfully changed their password
+    sales.setMustChangePassword(false);
+
     salesRepository.save(sales);
 
     return AuthResult.successWithMessage("password.success.changed", null, null);
@@ -191,31 +202,44 @@ public class AuthService {
     private final String phone;
     private final String role;
     private final String status;
+    private final Boolean mustChangePassword;
 
     private AuthResult(
-        boolean success, String message, String token, String phone, String role, String status) {
+        boolean success,
+        String message,
+        String token,
+        String phone,
+        String role,
+        String status,
+        Boolean mustChangePassword) {
       this.success = success;
       this.message = message;
       this.token = token;
       this.phone = phone;
       this.role = role;
       this.status = status;
+      this.mustChangePassword = mustChangePassword;
     }
 
     public static AuthResult success(String token, String phone, String role) {
-      return new AuthResult(true, null, token, phone, role, "APPROVED");
+      return new AuthResult(true, null, token, phone, role, "APPROVED", false);
+    }
+
+    public static AuthResult successWithMustChangePassword(
+        String token, String phone, String role) {
+      return new AuthResult(true, null, token, phone, role, "APPROVED", true);
     }
 
     public static AuthResult successWithMessage(String message, String token, String phone) {
-      return new AuthResult(true, message, token, phone, null, null);
+      return new AuthResult(true, message, token, phone, null, null, false);
     }
 
     public static AuthResult failure(String message, String status) {
-      return new AuthResult(false, message, null, null, null, status);
+      return new AuthResult(false, message, null, null, null, status, false);
     }
 
     public static AuthResult registrationSuccess(String message, String phone, String status) {
-      return new AuthResult(true, message, null, phone, null, status);
+      return new AuthResult(true, message, null, phone, null, status, false);
     }
 
     // Getters
@@ -241,6 +265,10 @@ public class AuthService {
 
     public String getStatus() {
       return status;
+    }
+
+    public Boolean getMustChangePassword() {
+      return mustChangePassword;
     }
   }
 }

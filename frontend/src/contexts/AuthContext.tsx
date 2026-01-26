@@ -9,7 +9,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<{ success: boolean; error?: string }>;
+  mustChangePassword: boolean;
+  setMustChangePassword: (value: boolean) => void;
+  login: (credentials: LoginRequest) => Promise<{ success: boolean; error?: string; mustChangePassword?: boolean }>;
   register: (data: RegisterRequest) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
@@ -24,6 +26,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<Sales | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   const isAuthenticated = !!user && !!token;
   
@@ -59,11 +62,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth();
   }, []);
 
-  const login = async (credentials: LoginRequest): Promise<{ success: boolean; error?: string }> => {
+  const login = async (credentials: LoginRequest): Promise<{ success: boolean; error?: string; mustChangePassword?: boolean }> => {
     try {
       // Do NOT use global isLoading for login operations - use local state in components instead
       const response = await authApi.login(credentials);
-      
+
       if (response.error) {
         return { success: false, error: response.error };
       }
@@ -73,20 +76,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           phone: response.phone,
           role: response.role,
         };
-        
+
         setUser(userData);
         setToken(response.token);
+        setMustChangePassword(response.mustChangePassword || false);
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('user_data', JSON.stringify(userData));
-        
-        return { success: true };
+
+        return { success: true, mustChangePassword: response.mustChangePassword };
       }
-      
+
       return { success: false, error: 'error.invalidResponse' };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'auth.loginFailed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'auth.loginFailed'
       };
     }
   };
@@ -144,6 +148,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token,
     isLoading,
     isAuthenticated,
+    mustChangePassword,
+    setMustChangePassword,
     login,
     register,
     logout,

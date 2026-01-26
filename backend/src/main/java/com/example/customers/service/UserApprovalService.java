@@ -294,10 +294,13 @@ public class UserApprovalService {
     String hashedPassword = passwordEncoder.encode(temporaryPassword);
     user.setPassword(hashedPassword);
 
+    // Set flag to force password change on next login
+    user.setMustChangePassword(true);
+
     // Save the updated user
     salesRepository.save(user);
 
-    log.info("Password reset for user {} by admin", userPhone);
+    log.info("Password reset for user {} by admin, must change password on next login", userPhone);
 
     return temporaryPassword;
   }

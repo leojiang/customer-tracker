@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContext';
-import { CheckCircle, XCircle, UserCheck, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle, XCircle, UserCheck, Users, Search, ChevronLeft, ChevronRight, Key } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
+import PasswordResetSuccessModal from '@/components/ui/PasswordResetSuccessModal';
 import { userApprovalApi } from '@/lib/api';
 import { UserApprovalDto, getTranslatedRoleName } from '@/types/auth';
 
@@ -36,6 +37,16 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   }>({
     isOpen: false,
     type: 'enable',
+    userPhone: ''
+  });
+
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState<{
+    isOpen: boolean;
+    temporaryPassword: string;
+    userPhone: string;
+  }>({
+    isOpen: false,
+    temporaryPassword: '',
     userPhone: ''
   });
 
@@ -137,6 +148,25 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
     });
   };
 
+  const handlePasswordReset = async (userPhone: string) => {
+    setActionLoading(userPhone);
+
+    try {
+      const response = await userApprovalApi.resetUserPassword(userPhone);
+      setPasswordResetSuccess({
+        isOpen: true,
+        temporaryPassword: response.temporaryPassword,
+        userPhone: response.userPhone
+      });
+      // Don't refresh the list - user should stay in the list
+    } catch (error) {
+      console.error('Failed to reset password:', error);
+      alert(`${t('approvals.approveFailed')}. ${t('customers.tryAgain')}.`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const closeModal = () => {
     setModalState({
       isOpen: false,
@@ -152,7 +182,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
     try {
       if (type === 'enable') {
         await userApprovalApi.enableUser(userPhone, reason);
-      } else {
+      } else if (type === 'disable') {
         await userApprovalApi.disableUser(userPhone, reason || 'No reason provided');
       }
 
@@ -331,15 +361,28 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         {user.isEnabled ? (
-                          <button
-                            type="button"
-                            onClick={() => openModal('disable', user.phone)}
-                            disabled={actionLoading === user.phone}
-                            className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                            title={t('userManagement.disableUser')}
-                          >
-                            <XCircle size={18} />
-                          </button>
+                          <>
+                            {user.role !== 'ADMIN' && (
+                              <button
+                                type="button"
+                                onClick={() => handlePasswordReset(user.phone)}
+                                disabled={actionLoading === user.phone}
+                                className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                                title={t('userManagement.resetPassword')}
+                              >
+                                <Key size={18} />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => openModal('disable', user.phone)}
+                              disabled={actionLoading === user.phone}
+                              className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
+                              title={t('userManagement.disableUser')}
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          </>
                         ) : (
                           <button
                             type="button"
@@ -477,6 +520,14 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
         type={modalState.type}
         userPhone={modalState.userPhone}
         loading={actionLoading === modalState.userPhone}
+      />
+
+      {/* Password Reset Success Modal */}
+      <PasswordResetSuccessModal
+        isOpen={passwordResetSuccess.isOpen}
+        onClose={() => setPasswordResetSuccess({ isOpen: false, temporaryPassword: '', userPhone: '' })}
+        temporaryPassword={passwordResetSuccess.temporaryPassword}
+        userPhone={passwordResetSuccess.userPhone}
       />
     </div>
   );

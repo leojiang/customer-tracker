@@ -5,29 +5,30 @@ import { Phone, Lock, LogIn, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LoginRequest } from '@/types/auth';
+import ChangePasswordForm from '@/components/ui/ChangePasswordForm';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
 }
 
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
-  
+
   const [formData, setFormData] = useState<LoginRequest>({
     phone: '',
     password: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { login } = useAuth();
+
+  const { login, mustChangePassword } = useAuth();
   const { t } = useLanguage();
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    
+
+
     if (!formData.phone.trim() || !formData.password.trim()) {
       setError(t('error.phonePasswordRequired'));
       return;
@@ -35,16 +36,17 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
     setIsLoading(true);
     setError(null); // Clear any previous errors
-    
+
     try {
       const result = await login(formData);
-      
+
       if (!result.success) {
         // Parse error message and provide user-friendly feedback
         const errorMessage = result.error || 'auth.loginFailed';
         // Always try to translate the error message
         setError(t(errorMessage));
       }
+      // Note: mustChangePassword is now handled by AuthContext and AuthPage
     } catch (error) {
       // Handle network errors or other unexpected issues
       if (error instanceof Error) {
@@ -184,9 +186,21 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     );
   };
 
+  const handlePasswordChangeSuccess = () => {
+    // Password changed successfully - will be redirected automatically by AuthPage
+    // since mustChangePassword will be false after successful change
+  };
+
   return (
     <div className="w-full max-w-md">
-      <div className="card-elevated">
+      {mustChangePassword ? (
+        <ChangePasswordForm
+          forcedPasswordChange={true}
+          currentPasswordValue={formData.password}
+          onSuccess={handlePasswordChangeSuccess}
+        />
+      ) : (
+        <div className="card-elevated">
         <div className="card-header text-center">
           <h1 className="text-headline-4">{t('auth.welcomeBack')}</h1>
           <p className="text-body-2 mt-2">{t('auth.signInToAccount')}</p>
@@ -252,6 +266,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

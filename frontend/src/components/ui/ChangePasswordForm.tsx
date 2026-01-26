@@ -9,6 +9,8 @@ import { getErrorMessage } from '@/lib/errorHandler';
 interface ChangePasswordFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  forcedPasswordChange?: boolean;
+  currentPasswordValue?: string;
 }
 
 interface ChangePasswordData {
@@ -24,12 +26,12 @@ interface FormErrors {
   general?: string;
 }
 
-export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswordFormProps) {
+export default function ChangePasswordForm({ onSuccess, onCancel, forcedPasswordChange, currentPasswordValue }: ChangePasswordFormProps) {
   const { t } = useLanguage();
-  const { user, token } = useAuth();
+  const { user, token, setMustChangePassword } = useAuth();
 
   const [formData, setFormData] = useState<ChangePasswordData>({
-    currentPassword: '',
+    currentPassword: currentPasswordValue || '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -44,7 +46,8 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.currentPassword.trim()) {
+    // Only validate current password if it's not a forced password change
+    if (!forcedPasswordChange && !formData.currentPassword.trim()) {
       newErrors.currentPassword = t('password.error.currentPasswordRequired');
     }
 
@@ -107,6 +110,10 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
           confirmPassword: ''
         });
         setSuccessMessage('');
+        // Clear the mustChangePassword flag
+        if (forcedPasswordChange) {
+          setMustChangePassword(false);
+        }
         onSuccess?.();
       }, 2000);
 
@@ -130,8 +137,14 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          {t('password.title')}
+          {forcedPasswordChange ? t('password.forcedTitle') : t('password.title')}
         </h2>
+
+        {forcedPasswordChange && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">{t('password.forcedChangeMessage')}</p>
+          </div>
+        )}
 
         {successMessage && (
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -146,36 +159,38 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Current Password */}
-          <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('password.label.currentPassword')}
-            </label>
-            <div className="relative">
-              <input
-                id="currentPassword"
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={formData.currentPassword}
-                onChange={handleInputChange('currentPassword')}
-                className={`block w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.currentPassword ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder={t('password.placeholder.currentPassword')}
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                disabled={loading}
-              >
-                {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+          {/* Current Password - only show for non-forced changes */}
+          {!forcedPasswordChange && (
+            <div>
+              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                {t('password.label.currentPassword')}
+              </label>
+              <div className="relative">
+                <input
+                  id="currentPassword"
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={formData.currentPassword}
+                  onChange={handleInputChange('currentPassword')}
+                  className={`block w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.currentPassword ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={t('password.placeholder.currentPassword')}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  disabled={loading}
+                >
+                  {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.currentPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.currentPassword}</p>
+              )}
             </div>
-            {errors.currentPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.currentPassword}</p>
-            )}
-          </div>
+          )}
 
           {/* New Password */}
           <div>
@@ -247,7 +262,7 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className={forcedPasswordChange ? "w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center" : "flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"}
             >
               {loading ? (
                 <>
@@ -255,11 +270,11 @@ export default function ChangePasswordForm({ onSuccess, onCancel }: ChangePasswo
                   {t('password.button.changing')}
                 </>
               ) : (
-                t('password.button.change')
+                forcedPasswordChange ? t('password.button.continue') : t('password.button.change')
               )}
             </button>
 
-            {onCancel && (
+            {!forcedPasswordChange && onCancel && (
               <button
                 type="button"
                 onClick={onCancel}

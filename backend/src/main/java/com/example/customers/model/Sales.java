@@ -87,6 +87,9 @@ public class Sales {
   @Column(name = "disabled_reason")
   private String disabledReason;
 
+  @Column(name = "must_change_password")
+  private Boolean mustChangePassword = false;
+
   public Sales() {}
 
   /**
@@ -242,6 +245,14 @@ public class Sales {
 
   public void setDisabledReason(String disabledReason) {
     this.disabledReason = disabledReason;
+  }
+
+  public Boolean getMustChangePassword() {
+    return mustChangePassword;
+  }
+
+  public void setMustChangePassword(Boolean mustChangePassword) {
+    this.mustChangePassword = mustChangePassword;
   }
 
   // Approval status helper methods

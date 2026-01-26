@@ -27,6 +27,7 @@ export interface AuthResponse {
   role?: SalesRole;
   error?: string;
   status?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface ValidateTokenRequest {
@@ -101,6 +102,11 @@ export interface ApprovalStatistics {
   rejectedCount: number;
   recentActivityCount: number;
   approvalRate: number;
+}
+
+export interface PasswordResetResponse {
+  temporaryPassword: string;
+  userPhone: string;
 }
 
 // Approval status translation keys mapping for use with translation function
