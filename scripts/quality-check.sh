@@ -7,7 +7,7 @@ echo "🚀 Customer Tracker - Quality Check"
 echo "=================================="
 
 # Check if we're in the right directory
-if [ ! -f "package.json" ] || [ ! -d "backend" ] || [ ! -d "frontend" ]; then
+if [ ! -d "backend" ] || [ ! -d "frontend" ]; then
     echo "❌ Please run this script from the project root directory"
     exit 1
 fi
