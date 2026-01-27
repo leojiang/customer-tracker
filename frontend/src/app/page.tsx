@@ -10,7 +10,7 @@ import SettingsModal from '@/components/ui/SettingsModal';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Shield, BarChart3, UserCheck, Settings, Users, Upload } from 'lucide-react';
+import { User, Shield, BarChart3, UserCheck, Settings, Users, Upload, Zap } from 'lucide-react';
 import AdminDashboard from '@/app/dashboard/admin/page';
 import UserManagementPage from '@/app/dashboard/admin/user-management/page';
 import SalesDashboardInline from '@/components/dashboard/SalesDashboardInline';
@@ -125,7 +125,7 @@ export default function HomePage() {
                   : 'text-surface-700 hover:bg-surface-100'
               }`}
             >
-              <BarChart3 size={20} />
+              <Zap size={20} />
               {!isSidebarCollapsed && <span className="font-medium">{t('landing.quickActions')}</span>}
             </button>
 
