@@ -52,21 +52,23 @@ public class CustomerService {
 
   /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
-    // Validate composite uniqueness (phone, certificate_type) only when both are present
-    if (customer.getPhone() != null && customer.getCertificateType() != null) {
+    // Validate composite uniqueness (name, phone, certificate_type) only when all three are present
+    if (customer.getName() != null && customer.getPhone() != null && customer.getCertificateType() != null) {
       Optional<Customer> existingCustomer =
-          customerRepository.findByPhoneAndCertificateType(
-              customer.getPhone(), customer.getCertificateType());
+          customerRepository.findByNameAndPhoneAndCertificateType(
+              customer.getName(), customer.getPhone(), customer.getCertificateType());
 
       if (existingCustomer.isPresent()) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with phone number '"
+            "A customer with name '"
+                + customer.getName()
+                + "', phone number '"
                 + customer.getPhone()
                 + "' already has a '"
                 + customer.getCertificateType()
                 + "' certificate. "
-                + "Each phone number can only have one certificate of each type. "
+                + "Each combination of name, phone number and certificate type must be unique. "
                 + "Please edit the existing customer or choose a different certificate type.");
       }
     }
@@ -114,30 +116,36 @@ public class CustomerService {
     boolean phoneChanged =
         !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
 
-    // Check composite uniqueness (phone, certificate_type) if both phone and certificate type are
-    // being changed
+    // Check if name is being changed
+    boolean nameChanged =
+        !java.util.Objects.equals(existingCustomer.getName(), updatedCustomer.getName());
+
+    // Check composite uniqueness (name, phone, certificate_type) if any of these are being changed
     // Use safe null comparisons to handle legacy data
     boolean certificateTypeChanged =
         !java.util.Objects.equals(
             existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
 
-    if ((phoneChanged || certificateTypeChanged)
+    if ((nameChanged || phoneChanged || certificateTypeChanged)
+        && updatedCustomer.getName() != null
         && updatedCustomer.getPhone() != null
         && updatedCustomer.getCertificateType() != null) {
 
       Optional<Customer> duplicateCustomer =
-          customerRepository.findByPhoneAndCertificateType(
-              updatedCustomer.getPhone(), updatedCustomer.getCertificateType());
+          customerRepository.findByNameAndPhoneAndCertificateType(
+              updatedCustomer.getName(), updatedCustomer.getPhone(), updatedCustomer.getCertificateType());
 
       if (duplicateCustomer.isPresent() && !duplicateCustomer.get().getId().equals(id)) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with phone number '"
+            "A customer with name '"
+                + updatedCustomer.getName()
+                + "', phone number '"
                 + updatedCustomer.getPhone()
                 + "' already has a '"
                 + updatedCustomer.getCertificateType()
                 + "' certificate. "
-                + "Each phone number can only have one certificate of each type. "
+                + "Each combination of name, phone number and certificate type must be unique. "
                 + "Please edit the existing customer or choose a different certificate type.");
       }
     }
@@ -371,17 +379,18 @@ public class CustomerService {
     return customerRepository.findAllByPhone(phone);
   }
 
-  /** Get certificate by phone and certificate type. */
+  /** Get certificate by name, phone and certificate type. */
   @Transactional(readOnly = true)
-  public Optional<Customer> getCertificateByPhoneAndType(
-      String phone, CertificateType certificateType) {
-    return customerRepository.findByPhoneAndCertificateType(phone, certificateType);
+  public Optional<Customer> getCertificateByNamePhoneAndType(
+      String name, String phone, CertificateType certificateType) {
+    return customerRepository.findByNameAndPhoneAndCertificateType(name, phone, certificateType);
   }
 
-  /** Check if a customer with the same phone and certificate type already exists. */
+  /** Check if a customer with the same name, phone and certificate type already exists. */
   @Transactional(readOnly = true)
-  public boolean existsByPhoneAndCertificateType(String phone, CertificateType certificateType) {
-    return customerRepository.findByPhoneAndCertificateType(phone, certificateType).isPresent();
+  public boolean existsByNamePhoneAndCertificateType(
+      String name, String phone, CertificateType certificateType) {
+    return customerRepository.findByNameAndPhoneAndCertificateType(name, phone, certificateType).isPresent();
   }
 
   // Private helper methods

@@ -54,7 +54,6 @@ public class CustomerStaging {
 
   private String address;
 
-  @IdCard(message = "Identity card must contain only digits and English letters")
   @Column(name = "id_card")
   private String idCard;
 

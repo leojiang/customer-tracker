@@ -3,7 +3,7 @@
 -- to store identity card numbers instead of price values
 
 -- Step 1: Add the new id_card column
-ALTER TABLE customers ADD COLUMN id_card VARCHAR(255) COMMENT 'Identity card number (allows digits and English letters only)';
+ALTER TABLE customers ADD COLUMN id_card VARCHAR(255) COMMENT 'Identity card number';
 
 -- Step 2: Copy data from price to id_card (convert DECIMAL to VARCHAR)
 -- This will convert existing price values to strings

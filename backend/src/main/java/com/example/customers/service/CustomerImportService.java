@@ -60,22 +60,36 @@ public class CustomerImportService {
     CERTIFICATE_TYPE_MAP = new HashMap<>();
     // Crane & Machinery Types (起重机械)
     CERTIFICATE_TYPE_MAP.put("Q1指挥", CertificateType.Q1_COMMAND);
+    CERTIFICATE_TYPE_MAP.put("Q1指挥证", CertificateType.Q1_COMMAND);
+    CERTIFICATE_TYPE_MAP.put("起重机Q1指挥", CertificateType.Q1_COMMAND);
+    CERTIFICATE_TYPE_MAP.put("指挥证Q1", CertificateType.Q1_COMMAND);
     CERTIFICATE_TYPE_MAP.put("Q2流动式", CertificateType.Q2_MOBILE_CRANE);
     CERTIFICATE_TYPE_MAP.put("Q2桥式", CertificateType.Q2_BRIDGE_CRANE);
+    CERTIFICATE_TYPE_MAP.put("桥式起重机Q2", CertificateType.Q2_BRIDGE_CRANE);
     CERTIFICATE_TYPE_MAP.put("Q2门式", CertificateType.Q2_GANTRY_CRANE);
+    CERTIFICATE_TYPE_MAP.put("Q2门式起重机司机", CertificateType.Q2_GANTRY_CRANE);
     CERTIFICATE_TYPE_MAP.put("Q2塔式", CertificateType.Q2_TOWER_CRANE);
     CERTIFICATE_TYPE_MAP.put("Q2升降机", CertificateType.Q2_HOIST);
     // Forklift & Industrial Vehicles
     CERTIFICATE_TYPE_MAP.put("N1叉车", CertificateType.N1_FORKLIFT);
     CERTIFICATE_TYPE_MAP.put("N2观光车", CertificateType.N2_SIGHTSEEING_CAR);
+    CERTIFICATE_TYPE_MAP.put("观光车N2", CertificateType.N2_SIGHTSEEING_CAR);
     // Boiler & Pressure Vessels (锅炉压力容器)
     CERTIFICATE_TYPE_MAP.put("G1工业锅炉", CertificateType.G1_INDUSTRIAL_BOILER);
     CERTIFICATE_TYPE_MAP.put("G3锅炉水处理", CertificateType.G3_BOILER_WATER_TREATMENT);
+    CERTIFICATE_TYPE_MAP.put("锅炉水处理G3", CertificateType.G3_BOILER_WATER_TREATMENT);
     CERTIFICATE_TYPE_MAP.put("R1快开门式压力容器", CertificateType.R1_QUICK_OPEN_PRESSURE_VESSEL);
+    CERTIFICATE_TYPE_MAP.put("快开门式压力容器操作R1", CertificateType.R1_QUICK_OPEN_PRESSURE_VESSEL);
+    CERTIFICATE_TYPE_MAP.put("压力容器操作证R1", CertificateType.R1_QUICK_OPEN_PRESSURE_VESSEL);
     CERTIFICATE_TYPE_MAP.put("R2移动式压力容器", CertificateType.R2_MOBILE_PRESSURE_VESSEL);
+    CERTIFICATE_TYPE_MAP.put("移动式气瓶充装R2", CertificateType.R2_MOBILE_PRESSURE_VESSEL);
     CERTIFICATE_TYPE_MAP.put("P气瓶充装", CertificateType.P_GAS_FILLING);
     // Safety Management
     CERTIFICATE_TYPE_MAP.put("A特种设备安全管理", CertificateType.A_SPECIAL_EQUIPMENT_SAFETY);
+    CERTIFICATE_TYPE_MAP.put("特种设备安全员证A", CertificateType.A_SPECIAL_EQUIPMENT_SAFETY);
+    CERTIFICATE_TYPE_MAP.put("特种设备安全管理A", CertificateType.A_SPECIAL_EQUIPMENT_SAFETY);
+    CERTIFICATE_TYPE_MAP.put("特种设备安全管理", CertificateType.A_SPECIAL_EQUIPMENT_SAFETY);
+    CERTIFICATE_TYPE_MAP.put("A 特种设备安全管理证", CertificateType.A_SPECIAL_EQUIPMENT_SAFETY);
     // Elevator Operations
     CERTIFICATE_TYPE_MAP.put("T电梯作业", CertificateType.T_ELEVATOR_OPERATION);
     // Construction Trades (建筑施工)
@@ -83,15 +97,20 @@ public class CustomerImportService {
     CERTIFICATE_TYPE_MAP.put("建筑焊工", CertificateType.CONSTRUCTION_WELDER);
     CERTIFICATE_TYPE_MAP.put("建筑架子工", CertificateType.CONSTRUCTION_SCAFFOLDER);
     CERTIFICATE_TYPE_MAP.put("建筑起重机械操作", CertificateType.CONSTRUCTION_LIFTING_EQUIPMENT);
+    CERTIFICATE_TYPE_MAP.put("建筑起重机械操作类", CertificateType.CONSTRUCTION_LIFTING_EQUIPMENT);
     CERTIFICATE_TYPE_MAP.put("建筑起重信号司索工", CertificateType.CONSTRUCTION_SIGNALMAN);
     CERTIFICATE_TYPE_MAP.put("建筑物料提升机司机", CertificateType.CONSTRUCTION_MATERIAL_HOIST_DRIVER);
     CERTIFICATE_TYPE_MAP.put("建筑吊篮安装拆卸工", CertificateType.CONSTRUCTION_GONDOLA_INSTALLER);
     // Electrical Operations (电工作业)
     CERTIFICATE_TYPE_MAP.put("低压电工作业", CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    CERTIFICATE_TYPE_MAP.put("低压电工作业证", CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    CERTIFICATE_TYPE_MAP.put("低压电工作业作业", CertificateType.LOW_VOLTAGE_ELECTRICIAN);
     CERTIFICATE_TYPE_MAP.put("焊接与热切割作业", CertificateType.WELDING_THERMAL_CUTTING);
+    CERTIFICATE_TYPE_MAP.put("焊接与热切割", CertificateType.WELDING_THERMAL_CUTTING);
     CERTIFICATE_TYPE_MAP.put("高压电工作业", CertificateType.HIGH_VOLTAGE_ELECTRICIAN);
     // High-Altitude Work (高处作业)
-    CERTIFICATE_TYPE_MAP.put("高处安装维护拆除作业", CertificateType.HIGH_ALTITUDE_INSTALLATION);
+    CERTIFICATE_TYPE_MAP.put("高处安装，维护，拆除作业", CertificateType.HIGH_ALTITUDE_INSTALLATION);
+    CERTIFICATE_TYPE_MAP.put("高处维护、安装、拆除作业", CertificateType.HIGH_ALTITUDE_INSTALLATION);
     CERTIFICATE_TYPE_MAP.put("登高架设作业", CertificateType.HIGH_ALTITUDE_SCAFFOLDING);
     // Specialized Operations
     CERTIFICATE_TYPE_MAP.put("制冷与空调作业", CertificateType.REFRIGERATION_AIR_CONDITIONING);
@@ -111,7 +130,7 @@ public class CustomerImportService {
     CERTIFICATE_ISSUER_MAP = new HashMap<>();
     CERTIFICATE_ISSUER_MAP.put("市场监督管理局", "MARKET_SUPERVISION_ADMINISTRATION");
     CERTIFICATE_ISSUER_MAP.put("住建局", "HOUSING_CONSTRUCTION_BUREAU");
-    CERTIFICATE_ISSUER_MAP.put("应急管理局", "EMERGENCY_MANAGEMENT_DEPARTMENT");
+    CERTIFICATE_ISSUER_MAP.put("应急管理厅", "EMERGENCY_MANAGEMENT_DEPARTMENT");
     CERTIFICATE_ISSUER_MAP.put("其它", "OTHER");
     CERTIFICATE_ISSUER_MAP.put("其他", "OTHER");
   }
@@ -308,8 +327,8 @@ public class CustomerImportService {
       } else if (staging.getImportStatus() == ImportStatus.UPDATE) {
         // Update existing customer
         Optional<Customer> existing =
-            customerRepository.findByPhoneAndCertificateType(
-                staging.getPhone(), staging.getCertificateType());
+            customerRepository.findByNameAndPhoneAndCertificateType(
+                staging.getName(), staging.getPhone(), staging.getCertificateType());
         if (existing.isPresent()) {
           staging.updateCustomer(existing.get());
           customerRepository.save(existing.get());
@@ -358,8 +377,7 @@ public class CustomerImportService {
       return;
     }
 
-    if (staging.getPhone() == null || staging.getPhone().trim().isEmpty()
-      || !staging.getPhone().matches("\\d+")) {
+    if (staging.getPhone() == null || staging.getPhone().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
       staging.setValidationMessage("Phone is required");
       return;
@@ -383,10 +401,10 @@ public class CustomerImportService {
       return;
     }
 
-    // Check if customer already exists (by phone + certificate type)
+    // Check if customer already exists (by name, phone + certificate type)
     Optional<Customer> existingOpt =
-        customerRepository.findByPhoneAndCertificateType(
-            staging.getPhone(), staging.getCertificateType());
+        customerRepository.findByNameAndPhoneAndCertificateType(
+            staging.getName(), staging.getPhone(), staging.getCertificateType());
 
     if (existingOpt.isPresent()) {
       Customer existing = existingOpt.get();

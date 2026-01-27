@@ -54,7 +54,6 @@ public class Customer {
   private String name;
 
   @NotBlank(message = "Phone number is required")
-  @PhoneNumber(message = "Phone number must contain only digits")
   @Column(nullable = false)
   private String phone;
 
@@ -76,7 +75,6 @@ public class Customer {
 
   private String address;
 
-  @IdCard(message = "Identity card must contain only digits and English letters")
   @Column(name = "id_card")
   private String idCard;
 

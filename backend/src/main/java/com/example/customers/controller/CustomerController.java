@@ -501,7 +501,6 @@ public class CustomerController {
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @PhoneNumber(message = "Phone number must contain only digits")
     private String phone;
 
     private String certificateIssuer;
@@ -512,7 +511,6 @@ public class CustomerController {
     private String gender;
     private String address;
 
-    @IdCard(message = "Identity card must contain only digits and English letters")
     private String idCard;
 
     private CustomerStatus currentStatus;
@@ -631,7 +629,6 @@ public class CustomerController {
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @PhoneNumber(message = "Phone number must contain only digits")
     private String phone;
 
     private String certificateIssuer;
@@ -642,7 +639,6 @@ public class CustomerController {
     private String gender;
     private String address;
 
-    @IdCard(message = "Identity card must contain only digits and English letters")
     private String idCard;
 
     private String certifiedAt;
