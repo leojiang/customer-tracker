@@ -4,7 +4,7 @@ import {useState, useEffect} from 'react';
 import {useLanguage} from '@/contexts/LanguageContext';
 import {useAuth} from '@/contexts/AuthContext';
 import {customerImportApi, ImportSummary, StagingStatistics} from '@/lib/api';
-import {Upload, FileSpreadsheet, CheckCircle, AlertCircle} from 'lucide-react';
+import {Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2} from 'lucide-react';
 import StagingList from '@/components/batch-import/StagingList';
 
 export default function BatchImportExportPage() {
@@ -17,6 +17,7 @@ export default function BatchImportExportPage() {
   const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [stagingRefreshTrigger, setStagingRefreshTrigger] = useState(0);
   const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [importResult, setImportResult] = useState<ImportSummary | null>(null);
   const [stagingStats, setStagingStats] = useState<StagingStatistics>({
     valid: 0,
@@ -85,6 +86,7 @@ export default function BatchImportExportPage() {
   const handleConfirmDialogYes = async () => {
     // User confirmed: cancel existing import and proceed with new file
     try {
+      setCancelling(true);
       await customerImportApi.cancelImport();
       setStagingRefreshTrigger(prev => prev + 1);
       setImportResult(null);
@@ -106,6 +108,8 @@ export default function BatchImportExportPage() {
       console.error('Failed to cancel import:', err);
       setPendingFile(null);
       setShowConfirmDialog(false);
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -191,6 +195,7 @@ export default function BatchImportExportPage() {
 
   const handleCancelImport = async () => {
     try {
+      setCancelling(true);
       await customerImportApi.cancelImport();
       setStagingRefreshTrigger(prev => prev + 1);
       setImportResult(null);
@@ -206,6 +211,8 @@ export default function BatchImportExportPage() {
       }
     } catch (err) {
       console.error('Failed to cancel import:', err);
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -419,6 +426,23 @@ export default function BatchImportExportPage() {
                 {t('batchImport.confirmNewFileYes')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {(uploading || confirming || cancelling) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-sm mx-4 flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+            <p className="text-lg font-semibold text-gray-900">
+              {uploading && t('batchImport.uploading')}
+              {confirming && t('batchImport.importing')}
+              {cancelling && t('batchImport.cancelling')}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {t('batchImport.pleaseWait')}
+            </p>
           </div>
         </div>
       )}
