@@ -352,7 +352,14 @@ public class CustomerImportService {
       return;
     }
 
-    if (staging.getPhone() == null || staging.getPhone().trim().isEmpty()) {
+    if (staging.getIdCard() == null || staging.getIdCard().trim().isEmpty()) {
+      staging.setImportStatus(ImportStatus.INVALID);
+      staging.setValidationMessage("Name is required");
+      return;
+    }
+
+    if (staging.getPhone() == null || staging.getPhone().trim().isEmpty()
+      || !staging.getPhone().matches("\\d+")) {
       staging.setImportStatus(ImportStatus.INVALID);
       staging.setValidationMessage("Phone is required");
       return;
@@ -364,13 +371,13 @@ public class CustomerImportService {
       return;
     }
 
-    if (staging.getCertificateIssuer() == null) {
+    if (staging.getCertificateIssuer() == null || staging.getCertificateIssuer().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
       staging.setValidationMessage("Certificate Issuer is required");
       return;
     }
 
-    if (staging.getCertifiedAt() == null) {
+    if (staging.getCertifiedAt() == null || staging.getCertifiedAt().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
       staging.setValidationMessage("Certificate time is required");
       return;

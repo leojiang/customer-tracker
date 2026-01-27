@@ -41,6 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.token && response.phone && response.role) {
             const userData: Sales = {
               phone: response.phone,
+              name: response.name || '',
               role: response.role,
             };
             setUser(userData);
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.token && response.phone && response.role) {
         const userData: Sales = {
           phone: response.phone,
+          name: response.name || '',
           role: response.role,
         };
 
@@ -110,9 +112,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (response.token) {
           const userData: Sales = {
             phone: response.phone,
+            name: response.name || '',
             role: response.role,
           };
-          
+
           setUser(userData);
           setToken(response.token);
           localStorage.setItem('auth_token', response.token);

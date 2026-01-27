@@ -6,6 +6,7 @@ export enum SalesRole {
 
 export interface Sales {
   phone: string;
+  name: string;
   role: SalesRole;
 }
 
@@ -16,6 +17,7 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   phone: string;
+  name: string;
   password: string;
   confirmPassword: string;
   role?: SalesRole;
@@ -24,6 +26,7 @@ export interface RegisterRequest {
 export interface AuthResponse {
   token?: string;
   phone?: string;
+  name?: string;
   role?: SalesRole;
   error?: string;
   status?: string;

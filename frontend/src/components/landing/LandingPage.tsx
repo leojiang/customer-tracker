@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Users, BarChart3, Upload, UserCheck, ArrowRight } from 'lucide-react';
+import { getTranslatedRoleName } from '@/types/auth';
 
 interface LandingPageProps {
   onNavigateToCustomers: () => void;
@@ -63,7 +64,7 @@ export default function LandingPage({
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {t('landing.welcome')}, {user?.phone}
+            {t('landing.welcome')}, {user?.name || user?.phone}
           </h1>
           <p className="text-gray-600 text-lg">
             {t('landing.welcomeMessage')}
@@ -91,7 +92,9 @@ export default function LandingPage({
                 <p className="text-green-100 text-sm font-medium mb-1">
                   {t('landing.yourRole')}
                 </p>
-                <h3 className="text-2xl font-bold capitalize">{user?.role}</h3>
+                <h3 className="text-2xl font-bold">
+                  {user?.role ? getTranslatedRoleName(user.role, t) : '-'}
+                </h3>
                 <p className="text-green-100 text-sm">{t('landing.accountStatus')}</p>
               </div>
               <BarChart3 size={48} className="text-green-200 opacity-50" />

@@ -38,8 +38,8 @@ import org.hibernate.annotations.Where;
     name = "customers",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "unique_phone_certificate_type",
-          columnNames = {"phone", "certificate_type"})
+          name = "unique_name_phone_certificate_type",
+          columnNames = {"name", "phone", "certificate_type"})
     })
 @SQLDelete(sql = "UPDATE customers SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")

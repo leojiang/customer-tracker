@@ -39,6 +39,9 @@ public class Sales {
   @Column(nullable = false, unique = true)
   private String phone;
 
+  @Column(name = "name", nullable = false, length = 100)
+  private String name;
+
   @NotBlank
   @Column(nullable = false)
   private String password;
@@ -93,14 +96,16 @@ public class Sales {
   public Sales() {}
 
   /**
-   * Constructor with phone, password and role.
+   * Constructor with phone, name, password and role.
    *
    * @param phone sales user phone
+   * @param name sales user name
    * @param password hashed password
    * @param role user role
    */
-  public Sales(String phone, String password, SalesRole role) {
+  public Sales(String phone, String name, String password, SalesRole role) {
     this.phone = phone;
+    this.name = name;
     this.password = password;
     this.role = role;
   }
@@ -120,6 +125,14 @@ public class Sales {
 
   public void setPhone(String phone) {
     this.phone = phone;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getPassword() {

@@ -53,13 +53,14 @@ public class AuthController {
               ? HttpStatus.FORBIDDEN
               : HttpStatus.UNAUTHORIZED;
       return ResponseEntity.status(status)
-          .body(new AuthResponse(null, null, null, result.getMessage(), result.getStatus(), false));
+          .body(new AuthResponse(null, null, null, null, result.getMessage(), result.getStatus(), false));
     }
 
     return ResponseEntity.ok(
         new AuthResponse(
             result.getToken(),
             result.getPhone(),
+            result.getName(),
             SalesRole.valueOf(result.getRole()),
             null,
             result.getStatus(),
@@ -77,18 +78,18 @@ public class AuthController {
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
     if (!request.getPassword().equals(request.getConfirmPassword())) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, "register.passwordsDontMatch", null));
+          .body(new AuthResponse(null, null, null, null, "register.passwordsDontMatch", null));
     }
 
     // Validate role selection - users cannot self-register as ADMIN
     if (request.getRole() == SalesRole.ADMIN) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, "register.cannotSelfRegisterAsAdmin", null));
+          .body(new AuthResponse(null, null, null, null, "register.cannotSelfRegisterAsAdmin", null));
     }
 
     try {
       AuthResult result =
-          authService.register(request.getPhone(), request.getPassword(), request.getRole());
+          authService.register(request.getPhone(), request.getName(), request.getPassword(), request.getRole());
 
       if (result.isSuccess()) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -96,17 +97,18 @@ public class AuthController {
                 new AuthResponse(
                     null,
                     result.getPhone(),
+                    result.getName(),
                     request.getRole(),
                     result.getMessage(),
                     result.getStatus()));
       }
 
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(new AuthResponse(null, null, null, "auth.registerFailed", null));
+          .body(new AuthResponse(null, null, null, null, "auth.registerFailed", null));
 
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, e.getMessage(), null));
+          .body(new AuthResponse(null, null, null, null, e.getMessage(), null));
     }
   }
 
@@ -125,11 +127,11 @@ public class AuthController {
     if (sales.isPresent()) {
       return ResponseEntity.ok(
           new AuthResponse(
-              request.getToken(), sales.get().getPhone(), sales.get().getRole(), null, null));
+              request.getToken(), sales.get().getPhone(), sales.get().getName(), sales.get().getRole(), null, null));
     }
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new AuthResponse(null, null, null, "error.invalidToken", null));
+        .body(new AuthResponse(null, null, null, null, "error.invalidToken", null));
   }
 
   /**
@@ -148,11 +150,11 @@ public class AuthController {
 
     if (result.isSuccess()) {
       return ResponseEntity.ok(
-          new AuthResponse(null, request.getPhone(), null, result.getMessage(), null));
+          new AuthResponse(null, request.getPhone(), null, null, result.getMessage(), null));
     }
 
     return ResponseEntity.badRequest()
-        .body(new AuthResponse(null, null, null, result.getMessage(), null));
+        .body(new AuthResponse(null, null, null, null, result.getMessage(), null));
   }
 
   // Request DTOs
@@ -186,6 +188,9 @@ public class AuthController {
     @NotBlank(message = "Phone number is required")
     private String phone;
 
+    @NotBlank(message = "Name is required")
+    private String name;
+
     @NotBlank(message = "Password is required")
     private String password;
 
@@ -200,6 +205,14 @@ public class AuthController {
 
     public void setPhone(String phone) {
       this.phone = phone;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
     }
 
     public String getPassword() {
@@ -282,6 +295,7 @@ public class AuthController {
   public static class AuthResponse {
     private String token;
     private String phone;
+    private String name;
     private SalesRole role;
     private String error;
     private String status;
@@ -292,13 +306,15 @@ public class AuthController {
      *
      * @param token JWT token
      * @param phone user phone number
+     * @param name user name
      * @param role user role
      * @param error error message if any
      * @param status approval status
      */
-    public AuthResponse(String token, String phone, SalesRole role, String error, String status) {
+    public AuthResponse(String token, String phone, String name, SalesRole role, String error, String status) {
       this.token = token;
       this.phone = phone;
+      this.name = name;
       this.role = role;
       this.error = error;
       this.status = status;
@@ -310,6 +326,7 @@ public class AuthController {
      *
      * @param token JWT token
      * @param phone user phone number
+     * @param name user name
      * @param role user role
      * @param error error message if any
      * @param status approval status
@@ -318,12 +335,14 @@ public class AuthController {
     public AuthResponse(
         String token,
         String phone,
+        String name,
         SalesRole role,
         String error,
         String status,
         Boolean mustChangePassword) {
       this.token = token;
       this.phone = phone;
+      this.name = name;
       this.role = role;
       this.error = error;
       this.status = status;
@@ -344,6 +363,14 @@ public class AuthController {
 
     public void setPhone(String phone) {
       this.phone = phone;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
     }
 
     public SalesRole getRole() {

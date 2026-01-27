@@ -35,7 +35,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     address: '',
     idCard: undefined,
     currentStatus: CustomerStatus.NEW,
-    customerAgent: '',
+    customerAgent: user?.name || '',
     certifiedAt: undefined,
   });
   const [loading, setLoading] = useState(false);

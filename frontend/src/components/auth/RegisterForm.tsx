@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, Lock, UserPlus, Eye, EyeOff, Shield } from 'lucide-react';
+import { Phone, Lock, UserPlus, Eye, EyeOff, Shield, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { RegisterRequest, SalesRole } from '@/types/auth';
@@ -14,6 +14,7 @@ interface RegisterFormProps {
 export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }: RegisterFormProps) {
   const [formData, setFormData] = useState<RegisterRequest>({
     phone: '',
+    name: '',
     password: '',
     confirmPassword: '',
     role: SalesRole.CUSTOMER_AGENT, // Default to Customer Agent
@@ -29,7 +30,7 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
     e.preventDefault();
     e.stopPropagation();
 
-    if (!formData.phone.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
+    if (!formData.phone.trim() || !formData.name.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
       setError(t('register.allFieldsRequired'));
       return;
     }
@@ -97,6 +98,21 @@ export default function RegisterForm({ onSwitchToLogin, onRegistrationSuccess }:
               </div>
             )}
 
+
+            <div>
+              <label className="input-label flex items-center gap-2">
+                <User size={18} className="text-surface-500" />
+                {t('customer.name')}
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className="input-field focus-ring"
+                placeholder={t('customers.form.name')}
+                required
+              />
+            </div>
 
             <div>
               <label className="input-label flex items-center gap-2">

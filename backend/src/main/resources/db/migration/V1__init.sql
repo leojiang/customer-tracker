@@ -238,12 +238,13 @@ CREATE INDEX idx_analytics_snapshots_type ON analytics_snapshots(metric_type);
 -- SECTION: INITIAL DATA
 -- ============================================================================
 
--- Insert hardcoded admin user with phone 18980994001 and password 123456
+-- Insert hardcoded admin user with phone 18980994196 and password 123456
 -- Password is BCrypt hash of '123456' with strength 10
+-- Note: name will be added in V8__add_name_to_sales.sql migration
 INSERT INTO sales (id, phone, password, role, approval_status, approved_at, status_updated_at, is_enabled)
 VALUES (
     UUID_TO_BIN(UUID()),
-    '18980994001',
+    '18980994196',
     '$2a$10$4KzCUhnd9TmmlpjKAvlsSegh0jvLsq5BEaognpyp/6thn1nbTUOAO',
     'ADMIN',
     'APPROVED',
@@ -256,9 +257,9 @@ VALUES (
 INSERT INTO user_approval_history (id, user_phone, action, admin_phone, reason, action_timestamp)
 VALUES (
     UUID_TO_BIN(UUID()),
-    '18980994001',
+    '18980994196',
     'APPROVED',
-    '18980994001',
+    '18980994196',
     'System initialization - admin account',
     CURRENT_TIMESTAMP
 );

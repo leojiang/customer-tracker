@@ -228,18 +228,24 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
 
       {/* Scrollable Table Area */}
       <div className="flex-1 overflow-auto">
-        <table className="divide-y divide-gray-300" style={{ minWidth: '1400px' }}>
+        <table className="divide-y divide-gray-300" style={{ minWidth: importStatusFilter === 'INVALID' ? '1000px' : '1400px' }}>
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.name')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28">{t('customers.form.gender')}</th>
+              {importStatusFilter !== 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28">{t('customers.form.gender')}</th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.phone')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-40">{t('customers.form.idCard')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customers.form.certifiedAt')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-56">{t('customers.form.certificateIssuer')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.form.certificateType')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-44">{t('customers.form.education')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customer.salesPerson')}</th>
+              {importStatusFilter !== 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-44">{t('customers.form.education')}</th>
+              )}
+              {importStatusFilter !== 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customer.salesPerson')}</th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28">{t('batchImport.status')}</th>
             </tr>
           </thead>
@@ -251,11 +257,13 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                     hasFieldChanged(record, 'name') ? 'text-red-600' : 'text-gray-900'
                   }`}>{record.name}</div>
                 </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm w-28 ${
-                  hasFieldChanged(record, 'gender') ? 'text-red-600' : 'text-gray-500'
-                }`}>
-                  {record.gender ? getLocalizedGender(record.gender) : '-'}
-                </td>
+                {importStatusFilter !== 'INVALID' && (
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm w-28 ${
+                    hasFieldChanged(record, 'gender') ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {record.gender ? getLocalizedGender(record.gender) : '-'}
+                  </td>
+                )}
                 <td className={`px-6 py-4 whitespace-nowrap text-sm w-32 ${
                   hasFieldChanged(record, 'phone') ? 'text-red-600' : 'text-gray-500'
                 }`}>
@@ -289,16 +297,20 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                 }`}>
                   {record.certificateType ? getCertificateTypeDisplayName(record.certificateType as CertificateType, t) : '-'}
                 </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm w-44 ${
-                  hasFieldChanged(record, 'education') ? 'text-red-600' : 'text-gray-500'
-                }`}>
-                  {record.education ? getTranslatedEducationLevelName(record.education as EducationLevel, t) : '-'}
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm w-36 ${
-                  hasFieldChanged(record, 'customerAgent') ? 'text-red-600' : 'text-gray-500'
-                }`}>
-                  {record.customerAgent || '-'}
-                </td>
+                {importStatusFilter !== 'INVALID' && (
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm w-44 ${
+                    hasFieldChanged(record, 'education') ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {record.education ? getTranslatedEducationLevelName(record.education as EducationLevel, t) : '-'}
+                  </td>
+                )}
+                {importStatusFilter !== 'INVALID' && (
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm w-36 ${
+                    hasFieldChanged(record, 'customerAgent') ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {record.customerAgent || '-'}
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap w-28">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(record.importStatus)}`}>
                     {getStatusIcon(record.importStatus)}
