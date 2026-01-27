@@ -235,7 +235,8 @@ public class AuthService {
       return new AuthResult(true, null, token, phone, name, role, "APPROVED", true);
     }
 
-    public static AuthResult successWithMessage(String message, String token, String phone, String name) {
+    public static AuthResult successWithMessage(
+        String message, String token, String phone, String name) {
       return new AuthResult(true, message, token, phone, name, null, null, false);
     }
 
@@ -243,7 +244,8 @@ public class AuthService {
       return new AuthResult(false, message, null, null, null, null, status, false);
     }
 
-    public static AuthResult registrationSuccess(String message, String phone, String name, String status) {
+    public static AuthResult registrationSuccess(
+        String message, String phone, String name, String status) {
       return new AuthResult(true, message, null, phone, name, null, status, false);
     }
 

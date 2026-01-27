@@ -53,7 +53,9 @@ public class CustomerService {
   /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
     // Validate composite uniqueness (name, phone, certificate_type) only when all three are present
-    if (customer.getName() != null && customer.getPhone() != null && customer.getCertificateType() != null) {
+    if (customer.getName() != null
+        && customer.getPhone() != null
+        && customer.getCertificateType() != null) {
       Optional<Customer> existingCustomer =
           customerRepository.findByNameAndPhoneAndCertificateType(
               customer.getName(), customer.getPhone(), customer.getCertificateType());
@@ -133,7 +135,9 @@ public class CustomerService {
 
       Optional<Customer> duplicateCustomer =
           customerRepository.findByNameAndPhoneAndCertificateType(
-              updatedCustomer.getName(), updatedCustomer.getPhone(), updatedCustomer.getCertificateType());
+              updatedCustomer.getName(),
+              updatedCustomer.getPhone(),
+              updatedCustomer.getCertificateType());
 
       if (duplicateCustomer.isPresent() && !duplicateCustomer.get().getId().equals(id)) {
         throw new BusinessException(
@@ -390,7 +394,9 @@ public class CustomerService {
   @Transactional(readOnly = true)
   public boolean existsByNamePhoneAndCertificateType(
       String name, String phone, CertificateType certificateType) {
-    return customerRepository.findByNameAndPhoneAndCertificateType(name, phone, certificateType).isPresent();
+    return customerRepository
+        .findByNameAndPhoneAndCertificateType(name, phone, certificateType)
+        .isPresent();
   }
 
   // Private helper methods

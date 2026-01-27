@@ -84,7 +84,9 @@ class CustomerServiceTest {
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     when(customerRepository.findByNameAndPhoneAndCertificateType(
-            "John Doe", "+1234567890", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+            "John Doe",
+            "+1234567890",
+            com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(testCustomer));
 
     // When & Then
@@ -192,7 +194,9 @@ class CustomerServiceTest {
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerRepository.findByNameAndPhoneAndCertificateType(
-            "Jane Smith", "+1111111111", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+            "Jane Smith",
+            "+1111111111",
+            com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(otherCustomer));
 
     // When & Then

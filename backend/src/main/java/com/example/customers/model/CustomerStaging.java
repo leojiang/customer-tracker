@@ -1,6 +1,5 @@
 package com.example.customers.model;
 
-import com.example.customers.validation.IdCard;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

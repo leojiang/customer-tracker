@@ -198,7 +198,8 @@ class AuthServiceTest {
     // When & Then
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> authService.register(testPhone, "Test User", testPassword));
+            IllegalArgumentException.class,
+            () -> authService.register(testPhone, "Test User", testPassword));
 
     assertEquals("error.phoneAlreadyExists", exception.getMessage());
 

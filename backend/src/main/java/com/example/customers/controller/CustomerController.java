@@ -8,8 +8,6 @@ import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.service.CustomerService;
-import com.example.customers.validation.IdCard;
-import com.example.customers.validation.PhoneNumber;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

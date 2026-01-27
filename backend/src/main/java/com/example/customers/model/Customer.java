@@ -1,7 +1,5 @@
 package com.example.customers.model;
 
-import com.example.customers.validation.IdCard;
-import com.example.customers.validation.PhoneNumber;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -53,7 +53,9 @@ public class AuthController {
               ? HttpStatus.FORBIDDEN
               : HttpStatus.UNAUTHORIZED;
       return ResponseEntity.status(status)
-          .body(new AuthResponse(null, null, null, null, result.getMessage(), result.getStatus(), false));
+          .body(
+              new AuthResponse(
+                  null, null, null, null, result.getMessage(), result.getStatus(), false));
     }
 
     return ResponseEntity.ok(
@@ -84,12 +86,14 @@ public class AuthController {
     // Validate role selection - users cannot self-register as ADMIN
     if (request.getRole() == SalesRole.ADMIN) {
       return ResponseEntity.badRequest()
-          .body(new AuthResponse(null, null, null, null, "register.cannotSelfRegisterAsAdmin", null));
+          .body(
+              new AuthResponse(null, null, null, null, "register.cannotSelfRegisterAsAdmin", null));
     }
 
     try {
       AuthResult result =
-          authService.register(request.getPhone(), request.getName(), request.getPassword(), request.getRole());
+          authService.register(
+              request.getPhone(), request.getName(), request.getPassword(), request.getRole());
 
       if (result.isSuccess()) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -127,7 +131,12 @@ public class AuthController {
     if (sales.isPresent()) {
       return ResponseEntity.ok(
           new AuthResponse(
-              request.getToken(), sales.get().getPhone(), sales.get().getName(), sales.get().getRole(), null, null));
+              request.getToken(),
+              sales.get().getPhone(),
+              sales.get().getName(),
+              sales.get().getRole(),
+              null,
+              null));
     }
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -311,7 +320,8 @@ public class AuthController {
      * @param error error message if any
      * @param status approval status
      */
-    public AuthResponse(String token, String phone, String name, SalesRole role, String error, String status) {
+    public AuthResponse(
+        String token, String phone, String name, SalesRole role, String error, String status) {
       this.token = token;
       this.phone = phone;
       this.name = name;
