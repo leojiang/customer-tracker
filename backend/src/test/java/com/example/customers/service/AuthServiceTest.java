@@ -167,7 +167,7 @@ class AuthServiceTest {
     when(salesRepository.save(any(Sales.class))).thenReturn(testSales);
 
     // When
-    AuthService.AuthResult result = authService.register(testPhone, testPassword);
+    AuthService.AuthResult result = authService.register(testPhone, "Test User", testPassword);
 
     // Then
     assertTrue(result.isSuccess());
@@ -198,7 +198,7 @@ class AuthServiceTest {
     // When & Then
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> authService.register(testPhone, testPassword));
+            IllegalArgumentException.class, () -> authService.register(testPhone, "Test User", testPassword));
 
     assertEquals("error.phoneAlreadyExists", exception.getMessage());
 

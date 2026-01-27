@@ -74,16 +74,17 @@ class CustomerServiceTest {
 
   @Test
   @DisplayName(
-      "Should throw exception when creating customer with duplicate phone and certificate type")
+      "Should throw exception when creating customer with duplicate name, phone and certificate type")
   void shouldThrowExceptionWhenCreatingCustomerWithDuplicatePhone() {
     // Given
     Customer newCustomer = new Customer();
+    newCustomer.setName("John Doe");
     newCustomer.setPhone("+1234567890");
     newCustomer.setCertificateType(
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
-    when(customerRepository.findByPhoneAndCertificateType(
-            "+1234567890", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+    when(customerRepository.findByNameAndPhoneAndCertificateType(
+            "John Doe", "+1234567890", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(testCustomer));
 
     // When & Then
@@ -173,23 +174,25 @@ class CustomerServiceTest {
 
   @Test
   @DisplayName(
-      "Should throw exception when updating customer with duplicate phone and certificate type")
+      "Should throw exception when updating customer with duplicate name, phone and certificate type")
   void shouldThrowExceptionWhenUpdatingCustomerWithDuplicatePhone() {
     // Given
     Customer otherCustomer = new Customer();
     otherCustomer.setId(UUID.randomUUID());
+    otherCustomer.setName("Jane Smith");
     otherCustomer.setPhone("+1111111111");
     otherCustomer.setCertificateType(
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     Customer updateData = new Customer();
+    updateData.setName("Jane Smith");
     updateData.setPhone("+1111111111");
     updateData.setCertificateType(
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerRepository.findByPhoneAndCertificateType(
-            "+1111111111", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+    when(customerRepository.findByNameAndPhoneAndCertificateType(
+            "Jane Smith", "+1111111111", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(otherCustomer));
 
     // When & Then
