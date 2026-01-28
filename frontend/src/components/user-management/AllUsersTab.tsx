@@ -197,7 +197,8 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   };
 
   const filteredUsers = users.filter(user =>
-    user.phone.toLowerCase().includes(searchTerm.toLowerCase())
+    user.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (!isActive) {
@@ -286,6 +287,9 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t('customers.name')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('approvals.phone')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -316,6 +320,9 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                 ) : filteredUsers.length > 0 ? (
                   filteredUsers.map((user) => (
                     <tr key={user.phone} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{user.name || '-'}</div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -400,7 +407,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="text-center py-12">
+                    <td colSpan={6} className="text-center py-12">
                       <Users className="mx-auto h-12 w-12 text-gray-400" />
                       <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
                       <p className="mt-1 text-sm text-gray-500">

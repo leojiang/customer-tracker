@@ -126,16 +126,8 @@ public class CustomerController {
       limit = 100; // Max limit as per plan
     }
 
-    // Determine sort order based on whether certificate time range is specified
-    Pageable pageable;
-    if ((certifiedStartDate != null && !certifiedStartDate.trim().isEmpty())
-        || (certifiedEndDate != null && !certifiedEndDate.trim().isEmpty())) {
-      // When certificate time range is specified, sort by certificate time DESC
-      pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").descending());
-    } else {
-      // Otherwise, sort by latest update time DESC
-      pageable = PageRequest.of(page - 1, limit, Sort.by("updatedAt").descending());
-    }
+    // Always sort by certificate time ASC regardless of filters
+    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").ascending());
 
     // Get current user's sales phone for filtering (non-admin users can only see their own
     // customers)

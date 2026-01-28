@@ -46,6 +46,7 @@ export enum ApprovalStatus {
 
 export interface UserApprovalDto {
   phone: string;
+  name?: string;
   role?: SalesRole;
   approvalStatus: ApprovalStatus;
   createdAt: string;

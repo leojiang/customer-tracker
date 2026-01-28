@@ -395,6 +395,7 @@ public class UserApprovalController {
     long daysWaiting = ChronoUnit.DAYS.between(user.getCreatedAt(), ZonedDateTime.now());
     return new UserApprovalDto(
         user.getPhone(),
+        user.getName(),
         user.getRole() != null ? user.getRole().name() : null,
         user.getApprovalStatus(),
         user.getCreatedAt(),
@@ -489,6 +490,7 @@ public class UserApprovalController {
   /** Response DTO for user approval information. */
   public static class UserApprovalDto {
     private String phone;
+    private String name;
     private String role;
     private ApprovalStatus approvalStatus;
     private ZonedDateTime createdAt;
@@ -504,6 +506,7 @@ public class UserApprovalController {
 
     public UserApprovalDto(
         String phone,
+        String name,
         String role,
         ApprovalStatus approvalStatus,
         ZonedDateTime createdAt,
@@ -517,6 +520,7 @@ public class UserApprovalController {
         String disabledByPhone,
         String disabledReason) {
       this.phone = phone;
+      this.name = name;
       this.role = role;
       this.approvalStatus = approvalStatus;
       this.createdAt = createdAt;
@@ -534,6 +538,10 @@ public class UserApprovalController {
     // Getters
     public String getPhone() {
       return phone;
+    }
+
+    public String getName() {
+      return name;
     }
 
     public String getRole() {
