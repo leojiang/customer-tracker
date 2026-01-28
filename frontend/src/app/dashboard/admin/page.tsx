@@ -67,17 +67,74 @@ export default function AdminDashboard() {
   const { user, token } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+
+  // Helper functions for localStorage (similar to customer list)
+  const STORAGE_KEY = 'adminDashboardFilters';
+
+  interface StoredFilters {
+    selectedYear: number;
+    selectedMonth: number | null;
+    trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
+    certificateTypes: string[]; // Array of selected certificate types
+  }
+
+  const loadStoredFilters = (): StoredFilters | null => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading filters from localStorage:', error);
+    }
+    return null;
+  };
+
+  const saveFiltersToStorage = useCallback((filters: StoredFilters) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    } catch (error) {
+      console.error('Error saving filters to localStorage:', error);
+    }
+  }, []);
+
+  const clearFiltersFromStorage = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing filters from localStorage:', error);
+    }
+  }, []);
+
+  // Initialize state from localStorage or defaults
+  const storedFilters = loadStoredFilters();
+  const initialSelectedYear = storedFilters?.selectedYear ?? new Date().getFullYear();
+  const initialSelectedMonth = storedFilters?.selectedMonth ?? null;
+  const initialTrendsViewOption = storedFilters?.trendsViewOption ?? 'newCertifications';
+  const initialCertificateTypes = storedFilters?.certificateTypes ?? [];
+
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // Individual loading states for each chart/data set
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [statusDistributionLoading, setStatusDistributionLoading] = useState(true);
+  const [trendsLoading, setTrendsLoading] = useState(true);
+  const [certificateTrendsLoading, setCertificateTrendsLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
-  // Leaderboard month selection state
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null); // Default to all months (null)
+  // Leaderboard month selection state (initialized from localStorage)
+  const [selectedYear, setSelectedYear] = useState<number>(initialSelectedYear);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(initialSelectedMonth);
+
+  // Chart filter states (initialized from localStorage)
+  const [trendsViewOption, setTrendsViewOption] = useState<string>(initialTrendsViewOption);
+  const [certificateTypes, setCertificateTypes] = useState<string[]>(initialCertificateTypes);
 
   // Fetch leaderboard by selected month (or year if month is null)
   const fetchLeaderboardByMonth = useCallback(async (year: number, month: number | null) => {
@@ -86,6 +143,8 @@ export default function AdminDashboard() {
     }
 
     try {
+      setLeaderboardLoading(true);
+
       // If month is null, fetch yearly ranking; otherwise fetch monthly ranking
       const url = month === null
         ? `${API_BASE_URL}/analytics/sales/leaderboard/yearly?year=${year}&metric=conversions`
@@ -101,10 +160,13 @@ export default function AdminDashboard() {
       if (response.ok) {
         const leaderboardData = await response.json();
         setLeaderboard(leaderboardData);
+        setLeaderboardLoading(false);
       } else {
+        setLeaderboardLoading(false);
         console.error('Failed to fetch leaderboard');
       }
     } catch (err) {
+      setLeaderboardLoading(false);
       console.error('Error fetching leaderboard:', err);
     }
   }, [token]);
@@ -114,11 +176,15 @@ export default function AdminDashboard() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
+    // Set loading states for all data fetches
+    setOverviewLoading(true);
+    setStatusDistributionLoading(true);
+    setTrendsLoading(true);
+    setCertificateTrendsLoading(true);
+    setError(null);
 
-      // Fetch all dashboard data in parallel (except leaderboard, which is fetched by month)
+    try {
+      // Fetch all dashboard data in parallel
       const [overviewRes, statusRes, trendsRes, certificateTrendsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
@@ -146,40 +212,52 @@ export default function AdminDashboard() {
         }),
       ]);
 
-      if (!overviewRes.ok || !statusRes.ok || !trendsRes.ok) {
-        throw new Error('Failed to fetch dashboard data');
+      // Process overview data
+      if (overviewRes.ok) {
+        const overviewData = await overviewRes.json();
+        setOverview(overviewData);
+        setOverviewLoading(false);
+      } else {
+        setOverviewLoading(false);
+        throw new Error('Failed to fetch overview data');
       }
 
-      // Allow certificate type trends to fail gracefully
-      const [overviewData, statusData, trendsData] = await Promise.all([
-        overviewRes.json(),
-        statusRes.json(),
-        trendsRes.json(),
-      ]);
-
-      setOverview(overviewData);
-      setStatusDistribution(statusData);
-      setTrends(trendsData);
-
-      // Handle certificate type trends separately
-      let certificateTrendsData = null;
-      if (certificateTrendsRes.ok) {
-        certificateTrendsData = await certificateTrendsRes.json();
-        setCertificateTrends(certificateTrendsData);
+      // Process status distribution data
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        setStatusDistribution(statusData);
+        setStatusDistributionLoading(false);
       } else {
+        setStatusDistributionLoading(false);
+        throw new Error('Failed to fetch status distribution');
+      }
+
+      // Process trends data
+      if (trendsRes.ok) {
+        const trendsData = await trendsRes.json();
+        setTrends(trendsData);
+        setTrendsLoading(false);
+      } else {
+        setTrendsLoading(false);
+        throw new Error('Failed to fetch trends');
+      }
+
+      // Handle certificate type trends separately (can fail gracefully)
+      if (certificateTrendsRes.ok) {
+        const certificateTrendsData = await certificateTrendsRes.json();
+        setCertificateTrends(certificateTrendsData);
+        setCertificateTrendsLoading(false);
+      } else {
+        setCertificateTrendsLoading(false);
         console.warn('Failed to fetch certificate type trends');
       }
-
-      // Debug logging
-      console.log('Overview:', overviewData);
-      console.log('Trends:', trendsData);
-      console.log('Certificate Trends:', certificateTrendsData);
-      console.log('Certificate Trends Keys:', certificateTrendsData ? Object.keys(certificateTrendsData.trendsByCertificateType || {}) : 'No data');
-      console.log('Certificate Trends Sample:', certificateTrendsData ? JSON.stringify(certificateTrendsData, null, 2) : 'No data');
     } catch (err) {
+      // Set all loading states to false on error
+      setOverviewLoading(false);
+      setStatusDistributionLoading(false);
+      setTrendsLoading(false);
+      setCertificateTrendsLoading(false);
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
     }
   }, [token]);
 
@@ -197,6 +275,24 @@ export default function AdminDashboard() {
     fetchDashboardData();
   }, [user, token, router, fetchDashboardData]);
 
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    const filters = {
+      selectedYear,
+      selectedMonth,
+      trendsViewOption,
+      certificateTypes,
+    };
+    saveFiltersToStorage(filters);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, saveFiltersToStorage]);
+
+  // Clear filters from storage when user logs out
+  useEffect(() => {
+    if (!user && !token) {
+      clearFiltersFromStorage();
+    }
+  }, [user, token, clearFiltersFromStorage]);
+
   // Fetch leaderboard when month/year changes
   useEffect(() => {
     if (token) {
@@ -204,17 +300,6 @@ export default function AdminDashboard() {
     }
   }, [token, selectedYear, selectedMonth, fetchLeaderboardByMonth]);
 
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t('dashboard.metrics.loadingDashboard')}</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -245,30 +330,30 @@ export default function AdminDashboard() {
             value={overview?.totalCustomers || 0}
             change={overview?.periodChange.totalCustomersChange}
             description={t('dashboard.metrics.fromLastPeriod')}
-            loading={loading}
+            loading={overviewLoading}
           />
-          
+
           <MetricCard
             title={t('dashboard.metrics.newCustomers30d')}
             value={overview?.newCustomersThisPeriod || 0}
             change={overview?.periodChange.newCustomersChange}
             description={t('dashboard.metrics.fromLastPeriod')}
-            loading={loading}
+            loading={overviewLoading}
           />
-          
+
           <MetricCard
             title={t('dashboard.metrics.activeCustomers')}
             value={overview?.activeCustomers || 0}
             description={t('dashboard.metrics.recentActivity')}
-            loading={loading}
+            loading={overviewLoading}
           />
-          
+
           <MetricCard
             title={t('dashboard.metrics.conversionRate')}
             value={overview?.conversionRate ? `${overview.conversionRate.toFixed(1)}%` : '0%'}
             change={overview?.periodChange.conversionRateChange}
             description={t('dashboard.metrics.fromLastPeriod')}
-            loading={loading}
+            loading={overviewLoading}
           />
         </div>
 
@@ -279,25 +364,29 @@ export default function AdminDashboard() {
             data={trends?.dataPoints || []}
             title={t('dashboard.charts.trends')}
             granularity={trends?.granularity || 'daily'}
-            loading={loading}
+            loading={trendsLoading}
             error={error}
+            viewOption={trendsViewOption}
+            onViewOptionChange={setTrendsViewOption}
           />
 
           {/* Certificate Type Trends Chart */}
           <CertificateTypeTrendsChart
             data={certificateTrends || { trendsByCertificateType: {}, totalDays: 30 }}
             title={t('dashboard.charts.certificateTypeTrends')}
-            loading={loading}
+            loading={certificateTrendsLoading}
             error={error}
+            selectedTypes={certificateTypes}
+            onSelectedTypesChange={setCertificateTypes}
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             {/* Status Distribution Chart */}
-            <StatusDistributionChart 
+            <StatusDistributionChart
               data={statusDistribution?.statusCounts || {}}
               totalCustomers={statusDistribution?.totalCustomers || 0}
               title={t('dashboard.charts.statusDistribution')}
-              loading={loading}
+              loading={statusDistributionLoading}
               error={error}
             />
 
@@ -342,7 +431,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex-1 px-6 pb-6">
-                {loading ? (
+                {leaderboardLoading ? (
                   <div className="animate-pulse h-full">
                     <div className="h-full overflow-y-auto">
                       {[1, 2, 3, 4, 5].map(i => (

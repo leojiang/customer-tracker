@@ -44,6 +44,8 @@ interface TrendLineChartProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
+  viewOption?: string;
+  onViewOptionChange?: (option: string) => void;
 }
 
 export default function TrendLineChart({
@@ -52,11 +54,24 @@ export default function TrendLineChart({
   granularity = "daily",
   className = "",
   loading = false,
-  error = null
+  error = null,
+  viewOption: controlledViewOption,
+  onViewOptionChange,
 }: TrendLineChartProps) {
   const { t, language } = useLanguage();
   const chartRef = useRef<ChartJS<'line'>>(null);
-  const [activeDataset, setActiveDataset] = useState('newCertifications');
+
+  // Use controlled prop if provided, otherwise use local state
+  const [internalViewOption, setInternalViewOption] = useState('newCertifications');
+  const activeDataset = controlledViewOption !== undefined ? controlledViewOption : internalViewOption;
+
+  const handleViewOptionChange = (newValue: string) => {
+    if (onViewOptionChange) {
+      onViewOptionChange(newValue);
+    } else {
+      setInternalViewOption(newValue);
+    }
+  };
 
   // Use default title if not provided
   const chartTitle = title || t('dashboard.charts.trends');
@@ -339,7 +354,7 @@ export default function TrendLineChart({
           <span className="text-sm text-gray-500">{t('dashboard.charts.view')}</span>
           <select
             value={activeDataset}
-            onChange={(e) => setActiveDataset(e.target.value)}
+            onChange={(e) => handleViewOptionChange(e.target.value)}
             className="text-sm border border-gray-300 rounded px-2 py-1"
           >
             <option value="newCertifications">{t('dashboard.charts.newCertifications')}</option>

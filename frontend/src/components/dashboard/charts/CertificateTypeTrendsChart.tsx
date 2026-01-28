@@ -48,6 +48,8 @@ interface CertificateTypeTrendsChartProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
+  selectedTypes?: string[];
+  onSelectedTypesChange?: (types: string[]) => void;
 }
 
 // Color palette for different certificate types
@@ -88,26 +90,35 @@ export default function CertificateTypeTrendsChart({
   title,
   className = "",
   loading = false,
-  error = null
+  error = null,
+  selectedTypes: controlledSelectedTypes,
+  onSelectedTypesChange,
 }: CertificateTypeTrendsChartProps) {
   const { t, language } = useLanguage();
   const chartRef = useRef<ChartJS<'line'>>(null);
-  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
-  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
+
+  // Convert array to Set for internal use
+  const [internalSelectedTypes, setInternalSelectedTypes] = useState<Set<string>>(new Set());
+
+  // Determine which state to use
+  const selectedTypesSet = controlledSelectedTypes !== undefined
+    ? new Set(controlledSelectedTypes)
+    : internalSelectedTypes;
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize with all certificate types selected
+  // Initialize with all certificate types selected (only for uncontrolled mode)
   useEffect(() => {
-    if (data && data.trendsByCertificateType) {
+    if (controlledSelectedTypes === undefined && data && data.trendsByCertificateType) {
       const allTypes = Object.keys(data.trendsByCertificateType).sort((a, b) => {
         const orderA = Object.keys(CertificateTypeTranslationKeys).indexOf(a);
         const orderB = Object.keys(CertificateTypeTranslationKeys).indexOf(b);
         return orderA - orderB;
       });
-      setSelectedTypes(new Set(allTypes));
+      setInternalSelectedTypes(new Set(allTypes));
     }
-  }, [data]);
+  }, [data, controlledSelectedTypes]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -125,23 +136,38 @@ export default function CertificateTypeTrendsChart({
 
   // Handle certificate type selection
   const handleTypeToggle = (type: string) => {
-    const newSelected = new Set(selectedTypes);
+    const newSelected = new Set(selectedTypesSet);
     if (newSelected.has(type)) {
       newSelected.delete(type);
     } else {
       newSelected.add(type);
     }
-    setSelectedTypes(newSelected);
+
+    if (onSelectedTypesChange) {
+      onSelectedTypesChange(Array.from(newSelected));
+    } else {
+      setInternalSelectedTypes(newSelected);
+    }
   };
 
   // Handle toggle all certificate types
   const handleToggleAll = () => {
-    if (selectedTypes.size === allTypes.length) {
+    if (selectedTypesSet.size === allTypes.length) {
       // If all are selected, deselect all
-      setSelectedTypes(new Set());
+      const newSet = new Set<string>();
+      if (onSelectedTypesChange) {
+        onSelectedTypesChange(Array.from(newSet));
+      } else {
+        setInternalSelectedTypes(newSet);
+      }
     } else {
       // Otherwise, select all
-      setSelectedTypes(new Set(allTypes));
+      const newSet = new Set(allTypes);
+      if (onSelectedTypesChange) {
+        onSelectedTypesChange(Array.from(newSet));
+      } else {
+        setInternalSelectedTypes(newSet);
+      }
     }
   };
 
@@ -152,18 +178,13 @@ export default function CertificateTypeTrendsChart({
     const orderB = Object.keys(CertificateTypeTranslationKeys).indexOf(b);
     return orderA - orderB;
   });
-  const selectedCount = selectedTypes.size;
+  const selectedCount = selectedTypesSet.size;
   const selectedText = selectedCount === allTypes.length
     ? t('dashboard.charts.allCertificateTypes')
     : `${selectedCount} ${t('dashboard.charts.certificateTypes')}`;
 
   // Filter certificate types based on selection and maintain order
-  const filteredCertificateTypes = allTypes.filter(type => selectedTypes.has(type));
-
-  // Debug logging
-  console.log('Certificate Type Trends Chart Data:', data);
-  console.log('Trends by Certificate Type:', data.trendsByCertificateType);
-  console.log('Number of certificate types:', Object.keys(data.trendsByCertificateType).length);
+  const filteredCertificateTypes = allTypes.filter(type => selectedTypesSet.has(type));
 
   // Use default title if not provided
   const chartTitle = title || t('dashboard.charts.certificateTypeTrends');
@@ -211,7 +232,7 @@ export default function CertificateTypeTrendsChart({
         pointBorderWidth: 2,
         pointBackgroundColor: 'white',
         fill: false,
-        hidden: hiddenTypes.has(type),
+        hidden: false,
       };
     }),
   };
@@ -401,7 +422,7 @@ export default function CertificateTypeTrendsChart({
                 <label className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200">
                   <input
                     type="checkbox"
-                    checked={selectedTypes.size === allTypes.length}
+                    checked={selectedTypesSet.size === allTypes.length}
                     onChange={handleToggleAll}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
@@ -419,13 +440,13 @@ export default function CertificateTypeTrendsChart({
                     >
                       <input
                         type="checkbox"
-                        checked={selectedTypes.has(type)}
+                        checked={selectedTypesSet.has(type)}
                         onChange={() => handleTypeToggle(type)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <span
                         className="ml-3 text-sm text-gray-700"
-                        style={{ color: selectedTypes.has(type) ? colors!.border : undefined }}
+                        style={{ color: selectedTypesSet.has(type) ? colors!.border : undefined }}
                       >
                         {localizedType}
                       </span>
