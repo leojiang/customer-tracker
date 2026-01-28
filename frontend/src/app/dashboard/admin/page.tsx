@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
+import CertificateTypeTrendsChart from '@/components/dashboard/charts/CertificateTypeTrendsChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
 
 interface DashboardOverview {
@@ -41,7 +42,7 @@ interface LeaderboardResponse {
 
 interface TrendDataPoint {
   date: string;
-  newCustomers: number;
+  newCustomers: number; // This now represents certifications based on certifiedAt
   totalCustomers: number;
   conversionRate: number;
 }
@@ -49,6 +50,11 @@ interface TrendDataPoint {
 interface TrendAnalysisResponse {
   dataPoints: TrendDataPoint[];
   granularity: string;
+  totalDays: number;
+}
+
+interface CertificateTypeTrendsResponse {
+  trendsByCertificateType: Record<string, TrendDataPoint[]>;
   totalDays: number;
 }
 
@@ -65,6 +71,7 @@ export default function AdminDashboard() {
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
+  const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +85,7 @@ export default function AdminDashboard() {
       setError(null);
 
       // Fetch all dashboard data in parallel
-      const [overviewRes, statusRes, leaderboardRes, trendsRes] = await Promise.all([
+      const [overviewRes, statusRes, leaderboardRes, trendsRes, certificateTrendsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -97,7 +104,13 @@ export default function AdminDashboard() {
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${API_BASE_URL}/analytics/customers/trends?days=30&granularity=daily`, {
+        fetch(`${API_BASE_URL}/analytics/customers/trends?days=2000&granularity=monthly`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${API_BASE_URL}/analytics/customers/trends-by-certificate-type?days=2000`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -109,6 +122,7 @@ export default function AdminDashboard() {
         throw new Error('Failed to fetch dashboard data');
       }
 
+      // Allow certificate type trends to fail gracefully
       const [overviewData, statusData, leaderboardData, trendsData] = await Promise.all([
         overviewRes.json(),
         statusRes.json(),
@@ -120,6 +134,22 @@ export default function AdminDashboard() {
       setStatusDistribution(statusData);
       setLeaderboard(leaderboardData);
       setTrends(trendsData);
+
+      // Handle certificate type trends separately
+      let certificateTrendsData = null;
+      if (certificateTrendsRes.ok) {
+        certificateTrendsData = await certificateTrendsRes.json();
+        setCertificateTrends(certificateTrendsData);
+      } else {
+        console.warn('Failed to fetch certificate type trends');
+      }
+
+      // Debug logging
+      console.log('Overview:', overviewData);
+      console.log('Trends:', trendsData);
+      console.log('Certificate Trends:', certificateTrendsData);
+      console.log('Certificate Trends Keys:', certificateTrendsData ? Object.keys(certificateTrendsData.trendsByCertificateType || {}) : 'No data');
+      console.log('Certificate Trends Sample:', certificateTrendsData ? JSON.stringify(certificateTrendsData, null, 2) : 'No data');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -193,7 +223,7 @@ export default function AdminDashboard() {
           />
           
           <MetricCard
-            title="Active Customers"
+            title={t('dashboard.metrics.activeCustomers')}
             value={overview?.activeCustomers || 0}
             description={t('dashboard.metrics.recentActivity')}
             loading={loading}
@@ -211,10 +241,18 @@ export default function AdminDashboard() {
         {/* Charts Section */}
         <div className="mt-8 space-y-8">
           {/* Customer Trends Chart */}
-          <TrendLineChart 
+          <TrendLineChart
             data={trends?.dataPoints || []}
             title={t('dashboard.charts.trends')}
             granularity={trends?.granularity || 'daily'}
+            loading={loading}
+            error={error}
+          />
+
+          {/* Certificate Type Trends Chart */}
+          <CertificateTypeTrendsChart
+            data={certificateTrends || { trendsByCertificateType: {}, totalDays: 30 }}
+            title={t('dashboard.charts.certificateTypeTrends')}
             loading={loading}
             error={error}
           />

@@ -218,10 +218,11 @@ public class AnalyticsService {
     String startDateStr = startDate.toLocalDate().toString();
     String endDateStr = endDate.toLocalDate().toString();
 
+    // Use monthly aggregation for certificate type trends
     List<Object[]> results =
         (salesPhone != null)
-            ? customerRepository.getCustomerTrendsByCertificateTypeForSales(salesPhone, startDateStr, endDateStr)
-            : customerRepository.getCustomerTrendsByCertificateType(startDateStr, endDateStr);
+            ? customerRepository.getCustomerTrendsByCertificateTypeByMonthForSales(salesPhone, startDateStr, endDateStr)
+            : customerRepository.getCustomerTrendsByCertificateTypeByMonth(startDateStr, endDateStr);
 
     // Group by certificate type and create trend data
     Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
@@ -229,7 +230,12 @@ public class AnalyticsService {
 
     // Initialize running totals for each certificate type
     for (Object[] row : results) {
-      String certificateType = (String) row[1];
+      String certificateType;
+      if (row[1] instanceof com.example.customers.model.CertificateType) {
+        certificateType = ((com.example.customers.model.CertificateType) row[1]).name();
+      } else {
+        certificateType = (String) row[1];
+      }
       runningTotals.put(certificateType, 0L);
     }
 
@@ -237,7 +243,15 @@ public class AnalyticsService {
     Map<String, Map<String, Long>> dailyCountsByType = new HashMap<>();
     for (Object[] row : results) {
       String dateStr = (String) row[0];
-      String certificateType = (String) row[1];
+
+      // Handle CertificateType enum conversion
+      String certificateType;
+      if (row[1] instanceof com.example.customers.model.CertificateType) {
+        certificateType = ((com.example.customers.model.CertificateType) row[1]).name();
+      } else {
+        certificateType = (String) row[1];
+      }
+
       Long count = ((Number) row[2]).longValue();
 
       dailyCountsByType
@@ -262,7 +276,17 @@ public class AnalyticsService {
             : 0L;
 
         runningTotal += dailyCount;
-        LocalDate date = LocalDate.parse(dateStr);
+
+        // Parse date based on format (YYYY-MM for monthly data)
+        LocalDate date;
+        if (dateStr.matches("\\d{4}-\\d{2}")) {
+          // Monthly format (YYYY-MM) - use first day of the month
+          String[] parts = dateStr.split("-");
+          date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+        } else {
+          // Daily format (YYYY-MM-DD)
+          date = LocalDate.parse(dateStr);
+        }
 
         // Use overall conversion rate for simplicity
         BigDecimal conversionRate = calculateConversionRate(salesPhone, runningTotal);

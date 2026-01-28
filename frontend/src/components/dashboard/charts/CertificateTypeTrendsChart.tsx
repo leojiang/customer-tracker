@@ -49,32 +49,37 @@ interface CertificateTypeTrendsChartProps {
   error?: string | null;
 }
 
-// Color scheme for different certificate types
-const CERTIFICATE_TYPE_COLORS: Record<string, { border: string; background: string }> = {
-  'BASIC': {
-    border: 'rgb(99, 102, 241)',     // indigo-500
-    background: 'rgba(99, 102, 241, 0.1)',
-  },
-  'STANDARD': {
-    border: 'rgb(34, 197, 94)',      // green-500
-    background: 'rgba(34, 197, 94, 0.1)',
-  },
-  'PREMIUM': {
-    border: 'rgb(234, 179, 8)',      // yellow-500
-    background: 'rgba(234, 179, 8, 0.1)',
-  },
-  'ENTERPRISE': {
-    border: 'rgb(239, 68, 68)',      // red-500
-    background: 'rgba(239, 68, 68, 0.1)',
-  },
-  'VIP': {
-    border: 'rgb(168, 85, 247)',     // purple-500
-    background: 'rgba(168, 85, 247, 0.1)',
-  },
-  'DEFAULT': {
-    border: 'rgb(107, 114, 128)',    // gray-500
-    background: 'rgba(107, 114, 128, 0.1)',
-  },
+// Color palette for different certificate types
+const COLOR_PALETTE = [
+  { border: 'rgb(99, 102, 241)', background: 'rgba(99, 102, 241, 0.1)' },     // indigo-500
+  { border: 'rgb(34, 197, 94)', background: 'rgba(34, 197, 94, 0.1)' },       // green-500
+  { border: 'rgb(234, 179, 8)', background: 'rgba(234, 179, 8, 0.1)' },       // yellow-500
+  { border: 'rgb(239, 68, 68)', background: 'rgba(239, 68, 68, 0.1)' },       // red-500
+  { border: 'rgb(168, 85, 247)', background: 'rgba(168, 85, 247, 0.1)' },     // purple-500
+  { border: 'rgb(6, 182, 212)', background: 'rgba(6, 182, 212, 0.1)' },       // cyan-500
+  { border: 'rgb(249, 115, 22)', background: 'rgba(249, 115, 22, 0.1)' },      // orange-500
+  { border: 'rgb(236, 72, 153)', background: 'rgba(236, 72, 153, 0.1)' },     // pink-500
+  { border: 'rgb(20, 184, 166)', background: 'rgba(20, 184, 166, 0.1)' },     // teal-500
+  { border: 'rgb(139, 92, 246)', background: 'rgba(139, 92, 246, 0.1)' },     // violet-500
+];
+
+// Function to get consistent color for certificate type based on hash
+const getColorForCertificateType = (certificateType: string, index: number) => {
+  return COLOR_PALETTE[index % COLOR_PALETTE.length];
+};
+
+// Function to convert enum name to translation key format
+const convertEnumToTranslationKey = (enumName: string): string => {
+  // Convert A_SPECIAL_EQUIPMENT_SAFETY to aSpecialEquipmentSafety
+  return enumName.toLowerCase().replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
+
+// Function to get localized certificate type name
+const getLocalizedCertificateTypeName = (certificateType: string, t: (key: string) => string) => {
+  const translationKey = `certificateType.${convertEnumToTranslationKey(certificateType)}`;
+  const translated = t(translationKey);
+  // If the translation key doesn't exist, return the original type name
+  return translated !== translationKey ? translated : certificateType;
 };
 
 export default function CertificateTypeTrendsChart({
@@ -84,9 +89,74 @@ export default function CertificateTypeTrendsChart({
   loading = false,
   error = null
 }: CertificateTypeTrendsChartProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const chartRef = useRef<ChartJS<'line'>>(null);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize with all certificate types selected
+  useEffect(() => {
+    if (data && data.trendsByCertificateType) {
+      const allTypes = Object.keys(data.trendsByCertificateType);
+      setSelectedTypes(new Set(allTypes));
+    }
+  }, [data]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle certificate type selection
+  const handleTypeToggle = (type: string) => {
+    const newSelected = new Set(selectedTypes);
+    if (newSelected.has(type)) {
+      newSelected.delete(type);
+    } else {
+      newSelected.add(type);
+    }
+    setSelectedTypes(newSelected);
+  };
+
+  // Handle toggle all certificate types
+  const handleToggleAll = () => {
+    const allTypes = Object.keys(data.trendsByCertificateType || {}).sort();
+    if (selectedTypes.size === allTypes.length) {
+      // If all are selected, deselect all
+      setSelectedTypes(new Set());
+    } else {
+      // Otherwise, select all
+      setSelectedTypes(new Set(allTypes));
+    }
+  };
+
+  // Get selected count text
+  const allTypes = Object.keys(data.trendsByCertificateType || {}).sort();
+  const selectedCount = selectedTypes.size;
+  const selectedText = selectedCount === allTypes.length
+    ? t('dashboard.charts.allCertificateTypes')
+    : `${selectedCount} ${t('dashboard.charts.certificateTypes')}`;
+
+  // Filter certificate types based on selection
+  const filteredCertificateTypes = Object.keys(data.trendsByCertificateType || {}).filter(
+    type => selectedTypes.has(type)
+  );
+
+  // Debug logging
+  console.log('Certificate Type Trends Chart Data:', data);
+  console.log('Trends by Certificate Type:', data.trendsByCertificateType);
+  console.log('Number of certificate types:', Object.keys(data.trendsByCertificateType).length);
 
   // Use default title if not provided
   const chartTitle = title || t('dashboard.charts.certificateTypeTrends');
@@ -99,16 +169,27 @@ export default function CertificateTypeTrendsChart({
   ).sort();
 
   // Prepare chart data with multiple datasets
-  const certificateTypes = Object.keys(data.trendsByCertificateType).sort();
+  const certificateTypes = filteredCertificateTypes.sort();
 
   const chartData = {
-    labels: allDates.map(date => new Date(date)),
+    labels: allDates.map(dateStr => {
+      // Handle both YYYY-MM and YYYY-MM-DD formats
+      if (/^\d{4}-\d{2}$/.test(dateStr)) {
+        // Monthly format: use first day of the month
+        const [year, month] = dateStr.split('-');
+        return new Date(parseInt(year), parseInt(month) - 1, 1);
+      } else {
+        // Daily format
+        return new Date(dateStr);
+      }
+    }),
     datasets: certificateTypes.map((type, index) => {
-      const colors = CERTIFICATE_TYPE_COLORS[type] || CERTIFICATE_TYPE_COLORS['DEFAULT'];
+      const colors = getColorForCertificateType(type, index);
       const typeData = data.trendsByCertificateType[type] || [];
+      const localizedType = getLocalizedCertificateTypeName(type, t);
 
       return {
-        label: type,
+        label: localizedType,
         data: allDates.map(date => {
           const dataPoint = typeData.find(point => point.date === date);
           return dataPoint ? dataPoint.newCustomers : 0;
@@ -135,46 +216,10 @@ export default function CertificateTypeTrendsChart({
     },
     plugins: {
       legend: {
-        display: true,
-        position: 'top' as const,
-        labels: {
-          font: {
-            size: 12,
-            family: 'Inter, sans-serif',
-          },
-          color: 'rgb(31, 41, 55)',
-          usePointStyle: true,
-          pointStyle: 'circle',
-          padding: 15,
-        },
-        onClick: (_event, legendItem, legend) => {
-          const index = legendItem.datasetIndex;
-          if (index !== undefined && certificateTypes[index]) {
-            const type = certificateTypes[index]!;
-            setHiddenTypes(prev => {
-              const newHidden = new Set(prev);
-              if (newHidden.has(type)) {
-                newHidden.delete(type);
-              } else {
-                newHidden.add(type);
-              }
-              return newHidden;
-            });
-          }
-        },
+        display: false, // Hide legend since we have the dropdown selector
       },
       title: {
-        display: !!chartTitle,
-        text: chartTitle,
-        font: {
-          size: 16,
-          weight: 'bold',
-          family: 'Inter, sans-serif',
-        },
-        color: 'rgb(31, 41, 55)',
-        padding: {
-          bottom: 20,
-        },
+        display: false, // Hide title since we have it above the chart
       },
       tooltip: {
         backgroundColor: 'rgba(31, 41, 55, 0.9)',
@@ -193,9 +238,10 @@ export default function CertificateTypeTrendsChart({
               const item = tooltipItems[0];
               if (item && typeof item.parsed.x === 'number') {
                 const date = new Date(item.parsed.x);
-                return date.toLocaleDateString('en-US', {
+                const localeCode = language === 'zh-CN' ? 'zh-CN' : 'en-US';
+                return date.toLocaleDateString(localeCode, {
                   year: 'numeric',
-                  month: 'short',
+                  month: 'long',
                   day: 'numeric'
                 });
               }
@@ -225,9 +271,9 @@ export default function CertificateTypeTrendsChart({
       x: {
         type: 'time' as const,
         time: {
-          unit: 'day',
+          unit: 'month',
           displayFormats: {
-            day: 'MMM dd',
+            month: 'MMM yyyy',
           },
         },
         grid: {
@@ -239,6 +285,17 @@ export default function CertificateTypeTrendsChart({
             family: 'Inter, sans-serif',
           },
           color: 'rgb(107, 114, 128)', // gray-500
+          callback: function(value) {
+            if (typeof value === 'number') {
+              const date = new Date(value);
+              const localeCode = language === 'zh-CN' ? 'zh-CN' : 'en-US';
+              return date.toLocaleDateString(localeCode, {
+                year: 'numeric',
+                month: 'short'
+              });
+            }
+            return value;
+          },
         },
       },
       y: {
@@ -302,8 +359,69 @@ export default function CertificateTypeTrendsChart({
     <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium text-gray-900">{chartTitle}</h3>
-        <div className="text-sm text-gray-500">
-          {t('dashboard.charts.lastDays', { days: data.totalDays })}
+
+        {/* Certificate Type Selector Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[200px]"
+          >
+            <span className="text-sm text-gray-700">{selectedText}</span>
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute z-10 right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="py-1">
+                {/* All toggle */}
+                <label className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.size === allTypes.length}
+                    onChange={handleToggleAll}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-3 text-sm font-medium text-gray-700">
+                    {t('dashboard.charts.all')}
+                  </span>
+                </label>
+                {allTypes.map((type) => {
+                  const colors = getColorForCertificateType(type, allTypes.indexOf(type));
+                  const localizedType = getLocalizedCertificateTypeName(type, t);
+                  return (
+                    <label
+                      key={type}
+                      className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTypes.has(type)}
+                        onChange={() => handleTypeToggle(type)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
+                      <span
+                        className="ml-3 text-sm text-gray-700"
+                        style={{ color: selectedTypes.has(type) ? colors!.border : undefined }}
+                      >
+                        {localizedType}
+                      </span>
+                      <div
+                        className="ml-auto w-3 h-3 rounded-full"
+                        style={{ backgroundColor: colors!.border }}
+                      />
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -313,11 +431,12 @@ export default function CertificateTypeTrendsChart({
 
       {/* Summary stats */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-        {certificateTypes.slice(0, 4).map(type => {
+        {filteredCertificateTypes.slice(0, 4).map((type, index) => {
           const typeData = data.trendsByCertificateType[type] || [];
           const latestData = typeData.length > 0 ? typeData[typeData.length - 1] : undefined;
           const total = typeData.reduce((sum, point) => sum + point.newCustomers, 0);
-          const colors = CERTIFICATE_TYPE_COLORS[type] || CERTIFICATE_TYPE_COLORS['DEFAULT'];
+          const colors = getColorForCertificateType(type, index);
+          const localizedType = getLocalizedCertificateTypeName(type, t);
 
           return (
             <div key={type} className="text-center">
@@ -327,7 +446,7 @@ export default function CertificateTypeTrendsChart({
               >
                 {latestData?.newCustomers.toLocaleString() || '0'}
               </div>
-              <div className="text-xs text-gray-500">{type}</div>
+              <div className="text-xs text-gray-500">{localizedType}</div>
               <div className="text-xs text-gray-400">
                 {t('dashboard.charts.total')}: {total.toLocaleString()}
               </div>

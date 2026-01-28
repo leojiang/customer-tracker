@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -367,21 +368,26 @@ public class AnalyticsController {
 
   /** DTO for individual trend data points. */
   public static class TrendDataPoint {
-    private LocalDate date;
+    private String date;
     private long newCustomers;
     private long totalCustomers;
     private BigDecimal conversionRate;
 
     public TrendDataPoint(
         LocalDate date, long newCustomers, long totalCustomers, BigDecimal conversionRate) {
-      this.date = date;
+      // Format: if date is first day of month, use YYYY-MM format, otherwise YYYY-MM-DD
+      if (date.getDayOfMonth() == 1) {
+        this.date = date.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+      } else {
+        this.date = date.toString();
+      }
       this.newCustomers = newCustomers;
       this.totalCustomers = totalCustomers;
       this.conversionRate = conversionRate;
     }
 
     // Getters
-    public LocalDate getDate() {
+    public String getDate() {
       return date;
     }
 
