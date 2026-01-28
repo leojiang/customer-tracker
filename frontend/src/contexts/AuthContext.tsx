@@ -138,9 +138,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setToken(null);
     authApi.logout();
-    // Clear customer list filters from localStorage
+
+    // Clear all filters from localStorage
     try {
+      // Clear customer list filters
       localStorage.removeItem('customerListFilters');
+
+      // Clear all admin dashboard filters
+      localStorage.removeItem('adminDashboardFilters');
+      localStorage.removeItem('admin_dashboard_overview');
+      localStorage.removeItem('admin_dashboard_status_distribution');
+      localStorage.removeItem('admin_dashboard_trends');
+      localStorage.removeItem('admin_dashboard_certificate_trends');
+      localStorage.removeItem('admin_dashboard_leaderboard');
+      localStorage.removeItem('admin_dashboard_certificate_type_selections');
+      localStorage.removeItem('admin_dashboard_state');
     } catch (error) {
       console.error('Error clearing filters from localStorage:', error);
     }

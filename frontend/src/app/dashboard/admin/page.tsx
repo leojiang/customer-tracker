@@ -108,14 +108,6 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  const clearFiltersFromStorage = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing filters from localStorage:', error);
-    }
-  }, []);
-
   // Initialize state from localStorage or defaults
   const storedFilters = loadStoredFilters();
   const initialSelectedYear = storedFilters?.selectedYear ?? new Date().getFullYear();
@@ -196,11 +188,8 @@ export default function AdminDashboard() {
 
     // If we have all the data cached and not forcing a refetch, skip fetching
     if (!forceRefetch && overview && statusDistribution && trends && certificateTrends) {
-      console.log('Using cached dashboard data - skipping API call');
       return;
     }
-
-    console.log('Fetching dashboard data from API...');
 
     // Set loading states for all data fetches
     setOverviewLoading(true);
@@ -279,7 +268,6 @@ export default function AdminDashboard() {
       }
 
       // Save data to localStorage will be handled by the saveFiltersToStorage effect
-      console.log('Dashboard data fetched and will be saved to localStorage');
     } catch (err) {
       // Set all loading states to false on error
       setOverviewLoading(false);
@@ -288,6 +276,7 @@ export default function AdminDashboard() {
       setCertificateTrendsLoading(false);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   useEffect(() => {
@@ -325,22 +314,7 @@ export default function AdminDashboard() {
     saveFiltersToStorage(filters);
   }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
 
-  // Clear filters from storage when user logs out
-  useEffect(() => {
-    if (!user && !token) {
-      clearFiltersFromStorage();
-    }
-  }, [user, token, clearFiltersFromStorage]);
-
-  // Refetch dashboard data when year/month filters change
-  useEffect(() => {
-    if (token && (selectedYear || selectedMonth !== null)) {
-      // Force refetch with new filters
-      fetchDashboardData(true);
-    }
-  }, [selectedYear, selectedMonth, token, fetchDashboardData]);
-
-  // Fetch leaderboard when month/year changes
+  // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {
     if (token) {
       fetchLeaderboardByMonth(selectedYear, selectedMonth);
