@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { CertificateTypeTranslationKeys } from '@/types/customer';
 import 'chartjs-adapter-date-fns';
 
 // Register Chart.js components
@@ -99,7 +100,11 @@ export default function CertificateTypeTrendsChart({
   // Initialize with all certificate types selected
   useEffect(() => {
     if (data && data.trendsByCertificateType) {
-      const allTypes = Object.keys(data.trendsByCertificateType);
+      const allTypes = Object.keys(data.trendsByCertificateType).sort((a, b) => {
+        const orderA = Object.keys(CertificateTypeTranslationKeys).indexOf(a);
+        const orderB = Object.keys(CertificateTypeTranslationKeys).indexOf(b);
+        return orderA - orderB;
+      });
       setSelectedTypes(new Set(allTypes));
     }
   }, [data]);
@@ -131,7 +136,6 @@ export default function CertificateTypeTrendsChart({
 
   // Handle toggle all certificate types
   const handleToggleAll = () => {
-    const allTypes = Object.keys(data.trendsByCertificateType || {}).sort();
     if (selectedTypes.size === allTypes.length) {
       // If all are selected, deselect all
       setSelectedTypes(new Set());
@@ -142,16 +146,19 @@ export default function CertificateTypeTrendsChart({
   };
 
   // Get selected count text
-  const allTypes = Object.keys(data.trendsByCertificateType || {}).sort();
+  // Order certificate types the same as in CustomerForm (using CertificateTypeTranslationKeys order)
+  const allTypes = Object.keys(data.trendsByCertificateType || {}).sort((a, b) => {
+    const orderA = Object.keys(CertificateTypeTranslationKeys).indexOf(a);
+    const orderB = Object.keys(CertificateTypeTranslationKeys).indexOf(b);
+    return orderA - orderB;
+  });
   const selectedCount = selectedTypes.size;
   const selectedText = selectedCount === allTypes.length
     ? t('dashboard.charts.allCertificateTypes')
     : `${selectedCount} ${t('dashboard.charts.certificateTypes')}`;
 
-  // Filter certificate types based on selection
-  const filteredCertificateTypes = Object.keys(data.trendsByCertificateType || {}).filter(
-    type => selectedTypes.has(type)
-  );
+  // Filter certificate types based on selection and maintain order
+  const filteredCertificateTypes = allTypes.filter(type => selectedTypes.has(type));
 
   // Debug logging
   console.log('Certificate Type Trends Chart Data:', data);
@@ -169,7 +176,7 @@ export default function CertificateTypeTrendsChart({
   ).sort();
 
   // Prepare chart data with multiple datasets
-  const certificateTypes = filteredCertificateTypes.sort();
+  const certificateTypes = filteredCertificateTypes;
 
   const chartData = {
     labels: allDates.map(dateStr => {
@@ -177,14 +184,16 @@ export default function CertificateTypeTrendsChart({
       if (/^\d{4}-\d{2}$/.test(dateStr)) {
         // Monthly format: use first day of the month
         const [year, month] = dateStr.split('-');
-        return new Date(parseInt(year), parseInt(month) - 1, 1);
+        return new Date(parseInt(year || '2024'), parseInt(month || '01') - 1, 1);
       } else {
         // Daily format
         return new Date(dateStr);
       }
     }),
-    datasets: certificateTypes.map((type, index) => {
-      const colors = getColorForCertificateType(type, index);
+    datasets: certificateTypes.map((type) => {
+      // Use the index from the full sorted list to ensure consistent colors
+      const colorIndex = allTypes.indexOf(type);
+      const colors = getColorForCertificateType(type, colorIndex);
       const typeData = data.trendsByCertificateType[type] || [];
       const localizedType = getLocalizedCertificateTypeName(type, t);
 
@@ -248,22 +257,30 @@ export default function CertificateTypeTrendsChart({
             }
             return '';
           },
-          label: function(context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y === null) {
-              return label + 'N/A';
-            }
-            const value = context.parsed.y;
-            if (typeof value === 'number') {
-              label += value.toLocaleString() + ' ' + t('dashboard.charts.newCertifications');
-            } else {
-              label += 'N/A';
-            }
-            return label;
+          beforeBody: function(tooltipItems) {
+            // Sort items by value in descending order
+            const sortedItems = tooltipItems
+              .filter(item => item.parsed.y !== null && item.parsed.y > 0)
+              .sort((a, b) => (b.parsed.y || 0) - (a.parsed.y || 0));
+
+            // Build the custom body
+            return sortedItems.map(item => {
+              const label = item.dataset.label || '';
+              const value = item.parsed.y;
+              if (typeof value === 'number') {
+                return `${label}: ${value.toLocaleString()} ${t('dashboard.charts.newCertifications')}`;
+              }
+              return `${label}: N/A`;
+            }).join('\n');
           },
+          label: function() {
+            // Return empty string to hide default labels since we're using beforeBody
+            return '';
+          },
+        },
+        // Custom filter to only show items with values > 0
+        filter: function(item) {
+          return item.parsed.y !== null && item.parsed.y > 0;
         },
       },
     },
@@ -427,32 +444,6 @@ export default function CertificateTypeTrendsChart({
 
       <div style={{ height: '350px' }}>
         <Line ref={chartRef} data={chartData} options={chartOptions} />
-      </div>
-
-      {/* Summary stats */}
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-        {filteredCertificateTypes.slice(0, 4).map((type, index) => {
-          const typeData = data.trendsByCertificateType[type] || [];
-          const latestData = typeData.length > 0 ? typeData[typeData.length - 1] : undefined;
-          const total = typeData.reduce((sum, point) => sum + point.newCustomers, 0);
-          const colors = getColorForCertificateType(type, index);
-          const localizedType = getLocalizedCertificateTypeName(type, t);
-
-          return (
-            <div key={type} className="text-center">
-              <div
-                className="text-lg font-semibold"
-                style={{ color: colors!.border }}
-              >
-                {latestData?.newCustomers.toLocaleString() || '0'}
-              </div>
-              <div className="text-xs text-gray-500">{localizedType}</div>
-              <div className="text-xs text-gray-400">
-                {t('dashboard.charts.total')}: {total.toLocaleString()}
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );

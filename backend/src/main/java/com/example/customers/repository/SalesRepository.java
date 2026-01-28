@@ -71,33 +71,102 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
   /** Get sales leaderboard data with customer and conversion metrics. */
   @Query(
       """
-    SELECT s.phone,
+    SELECT c.customerAgent,
            COUNT(DISTINCT c.id) as totalCustomers,
-           COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) as conversions,
+           COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) as conversions,
            CASE
              WHEN COUNT(DISTINCT c.id) > 0
-             THEN ROUND(COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id), 2)
+             THEN ROUND(COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id), 2)
              ELSE 0
            END as conversionRate
-    FROM Sales s
-    LEFT JOIN Customer c ON s.phone = c.salesPhone
-        AND c.createdAt >= :startDate
+    FROM Customer c
+    WHERE c.createdAt >= :startDate
         AND c.deletedAt IS NULL
-    WHERE s.role IN ('OFFICER', 'CUSTOMER_AGENT') AND s.approvalStatus = 'APPROVED'
-    GROUP BY s.phone
+        AND c.customerAgent IS NOT NULL
+    GROUP BY c.customerAgent
     ORDER BY
       CASE
         WHEN :metric = 'customers' THEN COUNT(DISTINCT c.id)
         WHEN :metric = 'rate' THEN
           CASE
             WHEN COUNT(DISTINCT c.id) > 0
-            THEN COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id)
+            THEN COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id)
             ELSE 0
           END
-        ELSE COUNT(DISTINCT CASE WHEN c.currentStatus = 'BUSINESS_DONE' THEN c.id END)
+        ELSE COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END)
       END DESC,
       COUNT(DISTINCT c.id) DESC
     """)
   List<Object[]> getSalesLeaderboardData(
       @Param("startDate") ZonedDateTime startDate, @Param("metric") String metric);
+
+  /** Get sales leaderboard data filtered by specific year (all months). */
+  @Query(
+      """
+    SELECT c.customerAgent,
+           COUNT(DISTINCT c.id) as totalCustomers,
+           COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) as conversions,
+           CASE
+             WHEN COUNT(DISTINCT c.id) > 0
+             THEN ROUND(COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id), 2)
+             ELSE 0
+           END as conversionRate
+    FROM Customer c
+    WHERE c.certifiedAt IS NOT NULL
+        AND SUBSTRING(c.certifiedAt, 1, 4) = :yearStr
+        AND c.deletedAt IS NULL
+        AND c.customerAgent IS NOT NULL
+    GROUP BY c.customerAgent
+    ORDER BY
+      CASE
+        WHEN :metric = 'customers' THEN COUNT(DISTINCT c.id)
+        WHEN :metric = 'rate' THEN
+          CASE
+            WHEN COUNT(DISTINCT c.id) > 0
+            THEN COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id)
+            ELSE 0
+          END
+        ELSE COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END)
+      END DESC,
+      COUNT(DISTINCT c.id) DESC
+    """)
+  List<Object[]> getSalesLeaderboardDataByYear(
+      @Param("yearStr") String yearStr,
+      @Param("metric") String metric);
+
+  /** Get sales leaderboard data filtered by specific year and month. */
+  @Query(
+      """
+    SELECT c.customerAgent,
+           COUNT(DISTINCT c.id) as totalCustomers,
+           COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) as conversions,
+           CASE
+             WHEN COUNT(DISTINCT c.id) > 0
+             THEN ROUND(COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id), 2)
+             ELSE 0
+           END as conversionRate
+    FROM Customer c
+    WHERE c.certifiedAt IS NOT NULL
+        AND SUBSTRING(c.certifiedAt, 1, 4) = :yearStr
+        AND SUBSTRING(c.certifiedAt, 6, 2) = :monthStr
+        AND c.deletedAt IS NULL
+        AND c.customerAgent IS NOT NULL
+    GROUP BY c.customerAgent
+    ORDER BY
+      CASE
+        WHEN :metric = 'customers' THEN COUNT(DISTINCT c.id)
+        WHEN :metric = 'rate' THEN
+          CASE
+            WHEN COUNT(DISTINCT c.id) > 0
+            THEN COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END) * 100.0 / COUNT(DISTINCT c.id)
+            ELSE 0
+          END
+        ELSE COUNT(DISTINCT CASE WHEN c.currentStatus = 'CERTIFIED' THEN c.id END)
+      END DESC,
+      COUNT(DISTINCT c.id) DESC
+    """)
+  List<Object[]> getSalesLeaderboardDataByMonth(
+      @Param("yearStr") String yearStr,
+      @Param("monthStr") String monthStr,
+      @Param("metric") String metric);
 }

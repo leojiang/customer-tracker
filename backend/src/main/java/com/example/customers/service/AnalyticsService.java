@@ -362,17 +362,82 @@ public class AnalyticsService {
     int rank = 1;
 
     for (Object[] row : results) {
-      String phone = (String) row[0];
+      String customerAgent = (String) row[0];
       Long totalCustomers = ((Number) row[1]).longValue();
       Long conversions = ((Number) row[2]).longValue();
       BigDecimal conversionRate =
           new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
 
       rankings.add(
-          new SalesPerformanceEntry(phone, totalCustomers, conversions, conversionRate, rank++));
+          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
     }
 
     return new LeaderboardResponse(rankings, days, metric);
+  }
+
+  /**
+   * Get sales team leaderboard for a specific year (Admin only).
+   *
+   * @param year Year for filtering (e.g., 2026)
+   * @param metric Ranking metric (customers, conversions, rate)
+   * @return Leaderboard data
+   */
+  public LeaderboardResponse getSalesLeaderboardByYear(int year, String metric) {
+    // Convert int year to string
+    String yearStr = String.valueOf(year);
+
+    List<Object[]> results = salesRepository.getSalesLeaderboardDataByYear(yearStr, metric);
+
+    List<SalesPerformanceEntry> rankings = new ArrayList<>();
+    int rank = 1;
+
+    for (Object[] row : results) {
+      String customerAgent = (String) row[0];
+      Long totalCustomers = ((Number) row[1]).longValue();
+      Long conversions = ((Number) row[2]).longValue();
+      BigDecimal conversionRate =
+          new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
+
+      rankings.add(
+          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
+    }
+
+    return new LeaderboardResponse(rankings, 0, metric);
+  }
+
+  /**
+   * Get sales team leaderboard for a specific month (Admin only).
+   *
+   * @param year Year for filtering (e.g., 2026)
+   * @param month Month for filtering (1-12)
+   * @param metric Ranking metric (customers, conversions, rate)
+   * @return Leaderboard data
+   */
+  public LeaderboardResponse getSalesLeaderboardByMonth(int year, int month, String metric) {
+    // Convert int year/month to strings with proper formatting
+    String yearStr = String.valueOf(year);
+    String monthStr = String.valueOf(month);
+    if (month < 10) {
+      monthStr = "0" + monthStr;  // Pad single digit months with leading zero
+    }
+
+    List<Object[]> results = salesRepository.getSalesLeaderboardDataByMonth(yearStr, monthStr, metric);
+
+    List<SalesPerformanceEntry> rankings = new ArrayList<>();
+    int rank = 1;
+
+    for (Object[] row : results) {
+      String customerAgent = (String) row[0];
+      Long totalCustomers = ((Number) row[1]).longValue();
+      Long conversions = ((Number) row[2]).longValue();
+      BigDecimal conversionRate =
+          new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
+
+      rankings.add(
+          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
+    }
+
+    return new LeaderboardResponse(rankings, 0, metric);
   }
 
   /**

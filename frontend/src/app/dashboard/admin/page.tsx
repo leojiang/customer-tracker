@@ -75,6 +75,40 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Leaderboard month selection state
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null); // Default to all months (null)
+
+  // Fetch leaderboard by selected month (or year if month is null)
+  const fetchLeaderboardByMonth = useCallback(async (year: number, month: number | null) => {
+    if (!token) {
+      return;
+    }
+
+    try {
+      // If month is null, fetch yearly ranking; otherwise fetch monthly ranking
+      const url = month === null
+        ? `${API_BASE_URL}/analytics/sales/leaderboard/yearly?year=${year}&metric=conversions`
+        : `${API_BASE_URL}/analytics/sales/leaderboard/monthly?year=${year}&month=${month + 1}&metric=conversions`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const leaderboardData = await response.json();
+        setLeaderboard(leaderboardData);
+      } else {
+        console.error('Failed to fetch leaderboard');
+      }
+    } catch (err) {
+      console.error('Error fetching leaderboard:', err);
+    }
+  }, [token]);
+
   const fetchDashboardData = useCallback(async () => {
     if (!token) {
       return;
@@ -84,8 +118,8 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
 
-      // Fetch all dashboard data in parallel
-      const [overviewRes, statusRes, leaderboardRes, trendsRes, certificateTrendsRes] = await Promise.all([
+      // Fetch all dashboard data in parallel (except leaderboard, which is fetched by month)
+      const [overviewRes, statusRes, trendsRes, certificateTrendsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -93,12 +127,6 @@ export default function AdminDashboard() {
           },
         }),
         fetch(`${API_BASE_URL}/analytics/customers/status-distribution`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${API_BASE_URL}/analytics/sales/leaderboard`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -118,21 +146,19 @@ export default function AdminDashboard() {
         }),
       ]);
 
-      if (!overviewRes.ok || !statusRes.ok || !leaderboardRes.ok || !trendsRes.ok) {
+      if (!overviewRes.ok || !statusRes.ok || !trendsRes.ok) {
         throw new Error('Failed to fetch dashboard data');
       }
 
       // Allow certificate type trends to fail gracefully
-      const [overviewData, statusData, leaderboardData, trendsData] = await Promise.all([
+      const [overviewData, statusData, trendsData] = await Promise.all([
         overviewRes.json(),
         statusRes.json(),
-        leaderboardRes.json(),
         trendsRes.json(),
       ]);
 
       setOverview(overviewData);
       setStatusDistribution(statusData);
-      setLeaderboard(leaderboardData);
       setTrends(trendsData);
 
       // Handle certificate type trends separately
@@ -170,6 +196,14 @@ export default function AdminDashboard() {
 
     fetchDashboardData();
   }, [user, token, router, fetchDashboardData]);
+
+  // Fetch leaderboard when month/year changes
+  useEffect(() => {
+    if (token) {
+      fetchLeaderboardByMonth(selectedYear, selectedMonth);
+    }
+  }, [token, selectedYear, selectedMonth, fetchLeaderboardByMonth]);
+
 
   if (loading) {
     return (
@@ -269,8 +303,43 @@ export default function AdminDashboard() {
 
             {/* Sales Leaderboard */}
             <div className="overflow-hidden rounded-lg bg-white shadow flex flex-col">
-              <div className="p-6 flex-shrink-0">
+              <div className="p-6 flex-shrink-0 flex items-center justify-between">
                 <h3 className="text-lg font-medium leading-6 text-gray-900">{t('dashboard.charts.leaderboard')}</h3>
+                <div className="flex items-center gap-2">
+                  {/* Year Selector */}
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    {Array.from({ length: 10 }, (_, i) => {
+                      const year = new Date().getFullYear() - i;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  {/* Month Selector */}
+                  <select
+                    value={selectedMonth === null ? 'all' : selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value === 'all' ? null : parseInt(e.target.value))}
+                    className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="all">{t('dashboard.charts.allMonths')}</option>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const monthKeys = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+                      const monthName = t(`dashboard.charts.months.${monthKeys[i]}`);
+                      return (
+                        <option key={i} value={i}>
+                          {monthName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
               </div>
               <div className="flex-1 px-6 pb-6">
                 {loading ? (
@@ -316,7 +385,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-medium text-gray-900">{entry.conversions} {t('dashboard.sales.conversions')}</p>
-                            <p className="text-sm text-gray-500">{entry.conversionRate.toFixed(1)}% {t('dashboard.sales.rate')}</p>
+                            <p className="text-sm text-gray-500">{entry.conversionRate.toFixed(1)}%</p>
                           </div>
                         </div>
                       ))}
@@ -324,7 +393,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="h-full flex items-center justify-center text-center text-gray-500">
-                    <p>No leaderboard data available</p>
+                    <p>{t('dashboard.charts.noLeaderboardData')}</p>
                   </div>
                 )}
               </div>

@@ -193,6 +193,59 @@ public class AnalyticsController {
   }
 
   @Operation(
+      summary = "Get sales team leaderboard by year (Admin only)",
+      description = "Retrieve sales team performance rankings for a specific year (all months)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Yearly leaderboard retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required")
+      })
+  @GetMapping("/sales/leaderboard/yearly")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<LeaderboardResponse> getSalesLeaderboardByYear(
+      @Parameter(description = "Year for filtering (e.g., 2026)", example = "2026")
+          @RequestParam
+          int year,
+      @Parameter(
+              description = "Ranking metric: customers, conversions, rate",
+              example = "conversions")
+          @RequestParam(defaultValue = "conversions")
+          String metric) {
+
+    LeaderboardResponse leaderboard = analyticsService.getSalesLeaderboardByYear(year, metric);
+    return ResponseEntity.ok(leaderboard);
+  }
+
+  @Operation(
+      summary = "Get sales team leaderboard by month (Admin only)",
+      description = "Retrieve sales team performance rankings for a specific month")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Monthly leaderboard retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required")
+      })
+  @GetMapping("/sales/leaderboard/monthly")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<LeaderboardResponse> getSalesLeaderboardByMonth(
+      @Parameter(description = "Year for filtering (e.g., 2026)", example = "2026")
+          @RequestParam
+          int year,
+      @Parameter(description = "Month for filtering (1-12)", example = "1")
+          @RequestParam
+          int month,
+      @Parameter(
+              description = "Ranking metric: customers, conversions, rate",
+              example = "conversions")
+          @RequestParam(defaultValue = "conversions")
+          String metric) {
+
+    LeaderboardResponse leaderboard = analyticsService.getSalesLeaderboardByMonth(year, month, metric);
+    return ResponseEntity.ok(leaderboard);
+  }
+
+  @Operation(
       summary = "Get real-time metrics",
       description = "Retrieve current real-time dashboard metrics and indicators")
   @ApiResponses(
