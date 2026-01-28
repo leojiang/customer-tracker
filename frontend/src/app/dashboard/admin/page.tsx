@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -68,6 +68,9 @@ export default function AdminDashboard() {
   const { t } = useLanguage();
   const router = useRouter();
 
+  // Track if initial data fetch has occurred
+  const hasFetchedInitialData = useRef(false);
+
   // Helper functions for localStorage (similar to customer list)
   const STORAGE_KEY = 'adminDashboardFilters';
 
@@ -76,6 +79,13 @@ export default function AdminDashboard() {
     selectedMonth: number | null;
     trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
+    // Store data along with filters
+    overview?: DashboardOverview;
+    statusDistribution?: StatusDistribution;
+    trends?: TrendAnalysisResponse;
+    certificateTrends?: CertificateTypeTrendsResponse;
+    leaderboard?: LeaderboardResponse;
+    lastFetchTime?: number; // Track when data was fetched
   }
 
   const loadStoredFilters = (): StoredFilters | null => {
@@ -113,18 +123,26 @@ export default function AdminDashboard() {
   const initialTrendsViewOption = storedFilters?.trendsViewOption ?? 'newCertifications';
   const initialCertificateTypes = storedFilters?.certificateTypes ?? [];
 
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
-  const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
-  const [trends, setTrends] = useState<TrendAnalysisResponse | null>(null);
-  const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(null);
+  // Check if we have cached data that matches current filters
+  const hasCachedData = storedFilters &&
+    storedFilters.overview &&
+    storedFilters.statusDistribution &&
+    storedFilters.trends &&
+    storedFilters.certificateTrends &&
+    storedFilters.leaderboard;
+
+  const [overview, setOverview] = useState<DashboardOverview | null>(storedFilters?.overview || null);
+  const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(storedFilters?.statusDistribution || null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(storedFilters?.leaderboard || null);
+  const [trends, setTrends] = useState<TrendAnalysisResponse | null>(storedFilters?.trends || null);
+  const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
 
   // Individual loading states for each chart/data set
-  const [overviewLoading, setOverviewLoading] = useState(true);
-  const [statusDistributionLoading, setStatusDistributionLoading] = useState(true);
-  const [trendsLoading, setTrendsLoading] = useState(true);
-  const [certificateTrendsLoading, setCertificateTrendsLoading] = useState(true);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [overviewLoading, setOverviewLoading] = useState<boolean>(!hasCachedData);
+  const [statusDistributionLoading, setStatusDistributionLoading] = useState<boolean>(!hasCachedData);
+  const [trendsLoading, setTrendsLoading] = useState<boolean>(!hasCachedData);
+  const [certificateTrendsLoading, setCertificateTrendsLoading] = useState<boolean>(!hasCachedData);
+  const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -171,10 +189,18 @@ export default function AdminDashboard() {
     }
   }, [token]);
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (forceRefetch = false) => {
     if (!token) {
       return;
     }
+
+    // If we have all the data cached and not forcing a refetch, skip fetching
+    if (!forceRefetch && overview && statusDistribution && trends && certificateTrends) {
+      console.log('Using cached dashboard data - skipping API call');
+      return;
+    }
+
+    console.log('Fetching dashboard data from API...');
 
     // Set loading states for all data fetches
     setOverviewLoading(true);
@@ -251,6 +277,9 @@ export default function AdminDashboard() {
         setCertificateTrendsLoading(false);
         console.warn('Failed to fetch certificate type trends');
       }
+
+      // Save data to localStorage will be handled by the saveFiltersToStorage effect
+      console.log('Dashboard data fetched and will be saved to localStorage');
     } catch (err) {
       // Set all loading states to false on error
       setOverviewLoading(false);
@@ -272,19 +301,29 @@ export default function AdminDashboard() {
       return;
     }
 
-    fetchDashboardData();
+    // Only fetch once on mount (use cached data if available)
+    if (!hasFetchedInitialData.current) {
+      fetchDashboardData(false);
+      hasFetchedInitialData.current = true;
+    }
   }, [user, token, router, fetchDashboardData]);
 
-  // Save filters to localStorage whenever they change
+  // Save filters AND data to localStorage whenever they change
   useEffect(() => {
     const filters = {
       selectedYear,
       selectedMonth,
       trendsViewOption,
       certificateTypes,
+      overview,
+      statusDistribution,
+      trends,
+      certificateTrends,
+      leaderboard,
+      lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
 
   // Clear filters from storage when user logs out
   useEffect(() => {
@@ -292,6 +331,14 @@ export default function AdminDashboard() {
       clearFiltersFromStorage();
     }
   }, [user, token, clearFiltersFromStorage]);
+
+  // Refetch dashboard data when year/month filters change
+  useEffect(() => {
+    if (token && (selectedYear || selectedMonth !== null)) {
+      // Force refetch with new filters
+      fetchDashboardData(true);
+    }
+  }, [selectedYear, selectedMonth, token, fetchDashboardData]);
 
   // Fetch leaderboard when month/year changes
   useEffect(() => {
@@ -309,7 +356,7 @@ export default function AdminDashboard() {
             <h3 className="text-sm font-medium text-red-800">{t('dashboard.metrics.errorLoadingDashboard')}</h3>
             <p className="mt-2 text-sm text-red-700">{error}</p>
             <button
-              onClick={() => fetchDashboardData()}
+              onClick={() => fetchDashboardData(true)}
               className="mt-3 text-sm font-medium text-red-600 hover:text-red-500"
             >
               {t('customers.tryAgain')}
