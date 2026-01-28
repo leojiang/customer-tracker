@@ -4,7 +4,6 @@ import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import jakarta.persistence.criteria.Predicate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
@@ -156,39 +155,19 @@ public class CustomerSpecifications {
       }
 
       // Certified date range filter
+      // Note: certifiedAt is stored as String in format YYYY-MM-DD
       if (certifiedStartDate != null && !certifiedStartDate.trim().isEmpty()) {
-        try {
-          ZonedDateTime startDate = ZonedDateTime.parse(certifiedStartDate);
-          predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
-          predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("certifiedAt"), startDate));
-        } catch (Exception e) {
-          // Try parsing as date without time
-          try {
-            ZonedDateTime startDate = ZonedDateTime.parse(certifiedStartDate + "T00:00:00Z");
-            predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
-            predicates.add(
-                criteriaBuilder.greaterThanOrEqualTo(root.get("certifiedAt"), startDate));
-          } catch (Exception e2) {
-            // Ignore invalid date format
-          }
-        }
+        // Extract just the date part (YYYY-MM-DD) from the input
+        String startDate = certifiedStartDate.split("T")[0].trim();
+        predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
+        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("certifiedAt"), startDate));
       }
 
       if (certifiedEndDate != null && !certifiedEndDate.trim().isEmpty()) {
-        try {
-          ZonedDateTime endDate = ZonedDateTime.parse(certifiedEndDate);
-          predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
-          predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("certifiedAt"), endDate));
-        } catch (Exception e) {
-          // Try parsing as date without time
-          try {
-            ZonedDateTime endDate = ZonedDateTime.parse(certifiedEndDate + "T23:59:59Z");
-            predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
-            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("certifiedAt"), endDate));
-          } catch (Exception e2) {
-            // Ignore invalid date format
-          }
-        }
+        // Extract just the date part (YYYY-MM-DD) from the input
+        String endDate = certifiedEndDate.split("T")[0].trim();
+        predicates.add(criteriaBuilder.isNotNull(root.get("certifiedAt")));
+        predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("certifiedAt"), endDate));
       }
 
       // Deleted status
