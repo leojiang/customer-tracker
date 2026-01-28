@@ -1,5 +1,6 @@
 package com.example.customers.service;
 
+import com.example.customers.controller.AnalyticsController.CertificateTypeTrendsResponse;
 import com.example.customers.controller.AnalyticsController.DashboardOverviewResponse;
 import com.example.customers.controller.AnalyticsController.LeaderboardResponse;
 import com.example.customers.controller.AnalyticsController.PeriodChange;
@@ -63,6 +64,12 @@ public class AnalyticsService {
     ZonedDateTime startDate = endDate.minusDays(days);
     ZonedDateTime previousStartDate = startDate.minusDays(days);
 
+    // Convert dates to String format for certifiedAt queries (YYYY-MM-DD)
+    String startDateStr = startDate.toLocalDate().toString();
+    String endDateStr = endDate.toLocalDate().toString();
+    String previousStartDateStr = previousStartDate.toLocalDate().toString();
+    String startDateComparisonStr = startDate.toLocalDate().toString();
+
     // Current period metrics
     long totalCustomers =
         (salesPhone != null)
@@ -71,8 +78,8 @@ public class AnalyticsService {
 
     long newCustomersThisPeriod =
         (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDate, endDate)
-            : customerRepository.countNewCustomersInPeriod(startDate, endDate);
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDateStr, endDateStr)
+            : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
     long activeCustomers = getActiveCustomers(salesPhone);
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
@@ -81,8 +88,8 @@ public class AnalyticsService {
     long newCustomersPreviousPeriod =
         (salesPhone != null)
             ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, previousStartDate, startDate)
-            : customerRepository.countNewCustomersInPeriod(previousStartDate, startDate);
+                salesPhone, previousStartDateStr, startDateComparisonStr)
+            : customerRepository.countNewCustomersInPeriod(previousStartDateStr, startDateComparisonStr);
 
     long previousTotalCustomers = totalCustomers - newCustomersThisPeriod;
     BigDecimal previousConversionRate = calculateConversionRate(salesPhone, previousTotalCustomers);
@@ -137,10 +144,33 @@ public class AnalyticsService {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
-    List<Object[]> results =
-        (salesPhone != null)
-            ? customerRepository.getCustomerTrendsByDateForSales(salesPhone, startDate, endDate)
-            : customerRepository.getCustomerTrendsByDate(startDate, endDate);
+    // Convert dates to String format for certifiedAt queries (YYYY-MM-DD)
+    String startDateStr = startDate.toLocalDate().toString();
+    String endDateStr = endDate.toLocalDate().toString();
+
+    // Debug: Check how many customers have certifiedAt dates
+    long totalCustomers = customerRepository.countTotalActiveCustomers();
+    System.out.println("DEBUG: Total active customers: " + totalCustomers);
+
+    // Choose query based on granularity
+    boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
+    List<Object[]> results;
+
+    if (isMonthly) {
+      results = (salesPhone != null)
+          ? customerRepository.getCustomerTrendsByMonthForSales(salesPhone, startDateStr, endDateStr)
+          : customerRepository.getCustomerTrendsByMonth(startDateStr, endDateStr);
+    } else {
+      results = (salesPhone != null)
+          ? customerRepository.getCustomerTrendsByDateForSales(salesPhone, startDateStr, endDateStr)
+          : customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
+    }
+
+    System.out.println("DEBUG: Trends Query - startDate: " + startDateStr + ", endDate: " + endDateStr + ", granularity: " + granularity);
+    System.out.println("DEBUG: Trends Query - results size: " + results.size());
+    for (Object[] row : results) {
+      System.out.println("DEBUG: Trends Query - period: " + row[0] + ", count: " + row[1]);
+    }
 
     List<TrendDataPoint> dataPoints = new ArrayList<>();
     long runningTotal =
@@ -149,9 +179,20 @@ public class AnalyticsService {
             : customerRepository.countCustomersCreatedBefore(startDate);
 
     for (Object[] row : results) {
-      LocalDate date = ((Date) row[0]).toLocalDate();
+      String periodStr = (String) row[0];
       Long newCustomers = ((Number) row[1]).longValue();
       runningTotal += newCustomers;
+
+      // Parse date based on granularity
+      LocalDate date;
+      if (isMonthly) {
+        // For monthly data (YYYY-MM format), use first day of the month
+        String[] parts = periodStr.split("-");
+        date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+      } else {
+        // For daily data (YYYY-MM-DD format)
+        date = LocalDate.parse(periodStr);
+      }
 
       // For simplicity, use overall conversion rate - could be enhanced to calculate per-date
       BigDecimal conversionRateAtDate = calculateConversionRate(salesPhone, runningTotal);
@@ -163,6 +204,78 @@ public class AnalyticsService {
   }
 
   /**
+   * Get customer certification trends by certificate type.
+   *
+   * @param salesPhone Sales phone for filtering (null for admin view)
+   * @param days Number of days for analysis
+   * @return Certificate type trends data
+   */
+  public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(String salesPhone, int days) {
+    ZonedDateTime endDate = ZonedDateTime.now();
+    ZonedDateTime startDate = endDate.minusDays(days);
+
+    // Convert dates to String format for certifiedAt queries (YYYY-MM-DD)
+    String startDateStr = startDate.toLocalDate().toString();
+    String endDateStr = endDate.toLocalDate().toString();
+
+    List<Object[]> results =
+        (salesPhone != null)
+            ? customerRepository.getCustomerTrendsByCertificateTypeForSales(salesPhone, startDateStr, endDateStr)
+            : customerRepository.getCustomerTrendsByCertificateType(startDateStr, endDateStr);
+
+    // Group by certificate type and create trend data
+    Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
+    Map<String, Long> runningTotals = new HashMap<>();
+
+    // Initialize running totals for each certificate type
+    for (Object[] row : results) {
+      String certificateType = (String) row[1];
+      runningTotals.put(certificateType, 0L);
+    }
+
+    // Process results grouped by date and certificate type
+    Map<String, Map<String, Long>> dailyCountsByType = new HashMap<>();
+    for (Object[] row : results) {
+      String dateStr = (String) row[0];
+      String certificateType = (String) row[1];
+      Long count = ((Number) row[2]).longValue();
+
+      dailyCountsByType
+          .computeIfAbsent(dateStr, k -> new HashMap<>())
+          .put(certificateType, count);
+    }
+
+    // Get all unique dates and sort them
+    List<String> sortedDates = dailyCountsByType.keySet().stream()
+        .sorted()
+        .toList();
+
+    // Build trend data points for each certificate type
+    for (String certificateType : runningTotals.keySet()) {
+      List<TrendDataPoint> typeDataPoints = new ArrayList<>();
+      long runningTotal = 0;
+
+      for (String dateStr : sortedDates) {
+        Map<String, Long> dailyData = dailyCountsByType.get(dateStr);
+        long dailyCount = dailyData != null && dailyData.containsKey(certificateType)
+            ? dailyData.get(certificateType)
+            : 0L;
+
+        runningTotal += dailyCount;
+        LocalDate date = LocalDate.parse(dateStr);
+
+        // Use overall conversion rate for simplicity
+        BigDecimal conversionRate = calculateConversionRate(salesPhone, runningTotal);
+        typeDataPoints.add(new TrendDataPoint(date, dailyCount, runningTotal, conversionRate));
+      }
+
+      trendsByType.put(certificateType, typeDataPoints);
+    }
+
+    return new CertificateTypeTrendsResponse(trendsByType, days);
+  }
+
+  /**
    * Get sales performance metrics.
    *
    * @param salesPhone Sales phone for filtering (null for admin view)
@@ -170,7 +283,12 @@ public class AnalyticsService {
    * @return Sales performance data
    */
   public SalesPerformanceResponse getSalesPerformance(String salesPhone, int days) {
-    ZonedDateTime startDate = ZonedDateTime.now().minusDays(days);
+    ZonedDateTime endDate = ZonedDateTime.now();
+    ZonedDateTime startDate = endDate.minusDays(days);
+
+    // Convert dates to String format for certifiedAt queries (YYYY-MM-DD)
+    String startDateStr = startDate.toLocalDate().toString();
+    String endDateStr = endDate.toLocalDate().toString();
 
     long totalCustomers =
         (salesPhone != null)
@@ -180,8 +298,8 @@ public class AnalyticsService {
     long newCustomers =
         (salesPhone != null)
             ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, startDate, ZonedDateTime.now())
-            : customerRepository.countNewCustomersInPeriod(startDate, ZonedDateTime.now());
+                salesPhone, startDateStr, endDateStr)
+            : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
     long conversions =
         (salesPhone != null)
@@ -240,18 +358,22 @@ public class AnalyticsService {
    * @return Real-time metrics data
    */
   public RealtimeMetricsResponse getRealtimeMetrics(String salesPhone) {
-    ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
-    ZonedDateTime now = ZonedDateTime.now();
+    LocalDate today = LocalDate.now();
+    String todayStr = today.toString();
 
     long activeCustomersToday =
         (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
-            : customerRepository.countNewCustomersInPeriod(startOfDay, now);
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, todayStr, todayStr)
+            : customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
 
     long newCustomersToday =
         (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startOfDay, now)
-            : customerRepository.countNewCustomersInPeriod(startOfDay, now);
+            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, todayStr, todayStr)
+            : customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
+
+    // Conversions are still based on createdAt since they represent status changes
+    ZonedDateTime startOfDay = today.atStartOfDay(ZoneId.systemDefault());
+    ZonedDateTime now = ZonedDateTime.now();
 
     long conversionsToday =
         (salesPhone != null)
@@ -292,15 +414,18 @@ public class AnalyticsService {
   }
 
   private long getActiveCustomers(String salesPhone) {
-    // Define active customers as those with recent status changes (last 30 days)
-    ZonedDateTime thirtyDaysAgo = ZonedDateTime.now().minusDays(30);
+    // Define active customers as those with recent certifications (last 30 days)
+    LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+    LocalDate today = LocalDate.now();
+    String thirtyDaysAgoStr = thirtyDaysAgo.toString();
+    String todayStr = today.toString();
 
-    // For now, use simplified logic - active customers are those created recently
+    // For now, use simplified logic - active customers are those certified recently
     // This could be enhanced with a proper StatusHistory repository method
     return (salesPhone != null)
         ? customerRepository.countNewCustomersInPeriodBySales(
-            salesPhone, thirtyDaysAgo, ZonedDateTime.now())
-        : customerRepository.countNewCustomersInPeriod(thirtyDaysAgo, ZonedDateTime.now());
+            salesPhone, thirtyDaysAgoStr, todayStr)
+        : customerRepository.countNewCustomersInPeriod(thirtyDaysAgoStr, todayStr);
   }
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {

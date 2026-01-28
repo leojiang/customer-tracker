@@ -77,19 +77,19 @@ public interface CustomerRepository
   @Query("SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone")
   long countTotalActiveCustomersBySales(@Param("salesPhone") String salesPhone);
 
-  /** Count new customers in date range. */
+  /** Count new customers in date range based on certifiedAt. */
   @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt BETWEEN :startDate AND :endDate")
+      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate")
   long countNewCustomersInPeriod(
-      @Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
+      @Param("startDate") String startDate, @Param("endDate") String endDate);
 
-  /** Count new customers in date range for specific sales person. */
+  /** Count new customers in date range for specific sales person based on certifiedAt. */
   @Query(
-      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate")
+      "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate")
   long countNewCustomersInPeriodBySales(
       @Param("salesPhone") String salesPhone,
-      @Param("startDate") ZonedDateTime startDate,
-      @Param("endDate") ZonedDateTime endDate);
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate);
 
   /** Count customers by status. */
   @Query(
@@ -127,25 +127,65 @@ public interface CustomerRepository
 
   /** Get customer acquisition trends by date. */
   @Query(
-      "SELECT DATE(c.createdAt) as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt BETWEEN :startDate AND :endDate GROUP BY DATE(c.createdAt) ORDER BY DATE(c.createdAt)")
+      "SELECT c.certifiedAt as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY c.certifiedAt ORDER BY c.certifiedAt")
   List<Object[]> getCustomerTrendsByDate(
-      @Param("startDate") ZonedDateTime startDate, @Param("endDate") ZonedDateTime endDate);
+      @Param("startDate") String startDate, @Param("endDate") String endDate);
 
-  /** Get customer acquisition trends by date for specific sales person. */
+  /** Get customer acquisition trends by month. */
   @Query(
-      "SELECT DATE(c.createdAt) as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt BETWEEN :startDate AND :endDate GROUP BY DATE(c.createdAt) ORDER BY DATE(c.createdAt)")
+      "SELECT DATE_FORMAT(c.certifiedAt, '%Y-%m') as month, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY DATE_FORMAT(c.certifiedAt, '%Y-%m') ORDER BY month")
+  List<Object[]> getCustomerTrendsByMonth(
+      @Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  /** Get customer certification trends by date for specific sales person. */
+  @Query(
+      "SELECT c.certifiedAt as date, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY c.certifiedAt ORDER BY c.certifiedAt")
   List<Object[]> getCustomerTrendsByDateForSales(
       @Param("salesPhone") String salesPhone,
-      @Param("startDate") ZonedDateTime startDate,
-      @Param("endDate") ZonedDateTime endDate);
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate);
+
+  /** Get customer certification trends by month for specific sales person. */
+  @Query(
+      "SELECT DATE_FORMAT(c.certifiedAt, '%Y-%m') as month, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY DATE_FORMAT(c.certifiedAt, '%Y-%m') ORDER BY month")
+  List<Object[]> getCustomerTrendsByMonthForSales(
+      @Param("salesPhone") String salesPhone,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate);
 
   /** Get customers created before specific date. */
   @Query("SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.createdAt < :date")
   long countCustomersCreatedBefore(@Param("date") ZonedDateTime date);
+
+  /** Debug: Get sample certified dates from database. */
+  @Query("SELECT c.certifiedAt FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL ORDER BY c.certifiedAt DESC LIMIT 20")
+  java.util.List<String> findSampleCertifiedDates();
+
+  /** Debug: Get minimum certified date. */
+  @Query("SELECT MIN(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
+  String findMinCertifiedDate();
+
+  /** Debug: Get maximum certified date. */
+  @Query("SELECT MAX(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
+  String findMaxCertifiedDate();
 
   /** Get customers created before specific date for sales person. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.createdAt < :date")
   long countCustomersCreatedBeforeForSales(
       @Param("salesPhone") String salesPhone, @Param("date") ZonedDateTime date);
+
+  /** Get customer certification trends by certificate type and date. */
+  @Query(
+      "SELECT c.certifiedAt as date, c.certificateType as type, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY c.certifiedAt, c.certificateType ORDER BY c.certifiedAt, c.certificateType")
+  List<Object[]> getCustomerTrendsByCertificateType(
+      @Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  /** Get customer certification trends by certificate type and date for specific sales person. */
+  @Query(
+      "SELECT c.certifiedAt as date, c.certificateType as type, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY c.certifiedAt, c.certificateType ORDER BY c.certifiedAt, c.certificateType")
+  List<Object[]> getCustomerTrendsByCertificateTypeForSales(
+      @Param("salesPhone") String salesPhone,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate);
 }

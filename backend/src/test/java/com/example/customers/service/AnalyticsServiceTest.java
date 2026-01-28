@@ -156,8 +156,8 @@ class AnalyticsServiceTest {
   void shouldGetCustomerTrendsForAdmin() {
     // Given
     List<Object[]> mockResults = new ArrayList<>();
-    mockResults.add(new Object[] {Date.valueOf(LocalDate.now().minusDays(2)), 5L});
-    mockResults.add(new Object[] {Date.valueOf(LocalDate.now().minusDays(1)), 3L});
+    mockResults.add(new Object[] {LocalDate.now().minusDays(2).toString(), 5L});
+    mockResults.add(new Object[] {LocalDate.now().minusDays(1).toString(), 3L});
 
     when(customerRepository.getCustomerTrendsByDate(any(), any())).thenReturn(mockResults);
     when(customerRepository.countCustomersCreatedBefore(any())).thenReturn(50L);
@@ -182,7 +182,7 @@ class AnalyticsServiceTest {
   void shouldGetCustomerTrendsForSalesUser() {
     // Given
     List<Object[]> mockResults = new ArrayList<>();
-    mockResults.add(new Object[] {Date.valueOf(LocalDate.now().minusDays(1)), 2L});
+    mockResults.add(new Object[] {LocalDate.now().minusDays(1).toString(), 2L});
 
     when(customerRepository.getCustomerTrendsByDateForSales(eq(testSalesPhone), any(), any()))
         .thenReturn(mockResults);
@@ -307,10 +307,11 @@ class AnalyticsServiceTest {
   @DisplayName("Should get real-time metrics for admin")
   void shouldGetRealtimeMetricsForAdmin() {
     // Given
-    ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
-    when(customerRepository.countNewCustomersInPeriod(eq(startOfDay), any())).thenReturn(5L);
+    LocalDate today = LocalDate.now();
+    String todayStr = today.toString();
+    when(customerRepository.countNewCustomersInPeriod(eq(todayStr), eq(todayStr))).thenReturn(5L);
     when(customerRepository.countConversionsInPeriod(
-            eq(CustomerStatus.CERTIFIED), eq(startOfDay), any()))
+            eq(CustomerStatus.CERTIFIED), any(), any()))
         .thenReturn(2L);
 
     // When
@@ -323,21 +324,22 @@ class AnalyticsServiceTest {
     assertEquals(2L, response.getConversionsToday());
     assertNotNull(response.getLastUpdated());
 
-    verify(customerRepository, times(2)).countNewCustomersInPeriod(eq(startOfDay), any());
+    verify(customerRepository, times(2)).countNewCustomersInPeriod(eq(todayStr), eq(todayStr));
     verify(customerRepository)
-        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), eq(startOfDay), any());
+        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
   }
 
   @Test
   @DisplayName("Should get real-time metrics for sales user")
   void shouldGetRealtimeMetricsForSalesUser() {
     // Given
-    ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
+    LocalDate today = LocalDate.now();
+    String todayStr = today.toString();
     when(customerRepository.countNewCustomersInPeriodBySales(
-            eq(testSalesPhone), eq(startOfDay), any()))
+            eq(testSalesPhone), eq(todayStr), eq(todayStr)))
         .thenReturn(3L);
     when(customerRepository.countConversionsInPeriodBySales(
-            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), eq(startOfDay), any()))
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), any(), any()))
         .thenReturn(1L);
 
     // When
@@ -351,10 +353,10 @@ class AnalyticsServiceTest {
     assertNotNull(response.getLastUpdated());
 
     verify(customerRepository, times(2))
-        .countNewCustomersInPeriodBySales(eq(testSalesPhone), eq(startOfDay), any());
+        .countNewCustomersInPeriodBySales(eq(testSalesPhone), eq(todayStr), eq(todayStr));
     verify(customerRepository)
         .countConversionsInPeriodBySales(
-            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), eq(startOfDay), any());
+            eq(CustomerStatus.CERTIFIED), eq(testSalesPhone), any(), any());
   }
 
   @Test

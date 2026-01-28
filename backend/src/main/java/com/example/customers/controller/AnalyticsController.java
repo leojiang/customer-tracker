@@ -2,6 +2,7 @@ package com.example.customers.controller;
 
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
+import com.example.customers.repository.CustomerRepository;
 import com.example.customers.service.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,10 +43,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnalyticsController {
 
   private final AnalyticsService analyticsService;
+  private final CustomerRepository customerRepository;
 
   @Autowired
-  public AnalyticsController(AnalyticsService analyticsService) {
+  public AnalyticsController(AnalyticsService analyticsService, CustomerRepository customerRepository) {
     this.analyticsService = analyticsService;
+    this.customerRepository = customerRepository;
   }
 
   @Operation(
@@ -103,8 +106,8 @@ public class AnalyticsController {
   @GetMapping("/customers/trends")
   @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<TrendAnalysisResponse> getCustomerTrends(
-      @Parameter(description = "Number of days for analysis", example = "90")
-          @RequestParam(defaultValue = "90")
+      @Parameter(description = "Number of days for analysis", example = "365")
+          @RequestParam(defaultValue = "365")
           int days,
       @Parameter(description = "Data granularity: daily, weekly", example = "daily")
           @RequestParam(defaultValue = "daily")
@@ -113,6 +116,29 @@ public class AnalyticsController {
     String salesPhone = getCurrentUserSalesPhone();
     TrendAnalysisResponse trends =
         analyticsService.getCustomerTrends(salesPhone, days, granularity);
+    return ResponseEntity.ok(trends);
+  }
+
+  @Operation(
+      summary = "Get customer certification trends by certificate type",
+      description = "Retrieve customer certification trends broken down by certificate type with different colors for visualization")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Certificate type trends retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+      })
+  @GetMapping("/customers/trends-by-certificate-type")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
+  public ResponseEntity<CertificateTypeTrendsResponse> getCustomerTrendsByCertificateType(
+      @Parameter(description = "Number of days for analysis", example = "90")
+          @RequestParam(defaultValue = "90")
+          int days) {
+
+    String salesPhone = getCurrentUserSalesPhone();
+    CertificateTypeTrendsResponse trends =
+        analyticsService.getCustomerTrendsByCertificateType(salesPhone, days);
     return ResponseEntity.ok(trends);
   }
 
@@ -182,6 +208,28 @@ public class AnalyticsController {
     String salesPhone = getCurrentUserSalesPhone();
     RealtimeMetricsResponse metrics = analyticsService.getRealtimeMetrics(salesPhone);
     return ResponseEntity.ok(metrics);
+  }
+
+  @Operation(
+      summary = "Debug endpoint to check certified dates in database",
+      description = "Returns sample of certified_at dates to understand data distribution")
+  @GetMapping("/debug/certified-dates")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<Map<String, Object>> getCertifiedDatesDebug() {
+    Map<String, Object> debug = new java.util.HashMap<>();
+
+    // Get sample dates from database
+    java.util.List<String> sampleDates = customerRepository.findSampleCertifiedDates();
+    debug.put("sampleCertifiedDates", sampleDates);
+    debug.put("sampleCount", sampleDates.size());
+
+    // Get date range
+    String minDate = customerRepository.findMinCertifiedDate();
+    String maxDate = customerRepository.findMaxCertifiedDate();
+    debug.put("minDate", minDate);
+    debug.put("maxDate", maxDate);
+
+    return ResponseEntity.ok(debug);
   }
 
   // Helper methods for authorization
@@ -501,6 +549,26 @@ public class AnalyticsController {
 
     public String getLastUpdated() {
       return lastUpdated;
+    }
+  }
+
+  /** Response DTO for certificate type trends analysis. */
+  public static class CertificateTypeTrendsResponse {
+    private java.util.Map<String, List<TrendDataPoint>> trendsByCertificateType;
+    private int totalDays;
+
+    public CertificateTypeTrendsResponse(
+        java.util.Map<String, List<TrendDataPoint>> trendsByCertificateType, int totalDays) {
+      this.trendsByCertificateType = trendsByCertificateType;
+      this.totalDays = totalDays;
+    }
+
+    public java.util.Map<String, List<TrendDataPoint>> getTrendsByCertificateType() {
+      return trendsByCertificateType;
+    }
+
+    public int getTotalDays() {
+      return totalDays;
     }
   }
 }
