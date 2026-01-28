@@ -80,11 +80,11 @@ export default function AdminDashboard() {
     trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
     // Store data along with filters
-    overview?: DashboardOverview;
-    statusDistribution?: StatusDistribution;
-    trends?: TrendAnalysisResponse;
-    certificateTrends?: CertificateTypeTrendsResponse;
-    leaderboard?: LeaderboardResponse;
+    overview?: DashboardOverview | null;
+    statusDistribution?: StatusDistribution | null;
+    trends?: TrendAnalysisResponse | null;
+    certificateTrends?: CertificateTypeTrendsResponse | null;
+    leaderboard?: LeaderboardResponse | null;
     lastFetchTime?: number; // Track when data was fetched
   }
 
