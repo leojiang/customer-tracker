@@ -16,7 +16,6 @@ import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -78,7 +77,8 @@ public class AnalyticsService {
 
     long newCustomersThisPeriod =
         (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, startDateStr, endDateStr)
+            ? customerRepository.countNewCustomersInPeriodBySales(
+                salesPhone, startDateStr, endDateStr)
             : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
     long activeCustomers = getActiveCustomers(salesPhone);
@@ -89,7 +89,8 @@ public class AnalyticsService {
         (salesPhone != null)
             ? customerRepository.countNewCustomersInPeriodBySales(
                 salesPhone, previousStartDateStr, startDateComparisonStr)
-            : customerRepository.countNewCustomersInPeriod(previousStartDateStr, startDateComparisonStr);
+            : customerRepository.countNewCustomersInPeriod(
+                previousStartDateStr, startDateComparisonStr);
 
     long previousTotalCustomers = totalCustomers - newCustomersThisPeriod;
     BigDecimal previousConversionRate = calculateConversionRate(salesPhone, previousTotalCustomers);
@@ -157,16 +158,26 @@ public class AnalyticsService {
     List<Object[]> results;
 
     if (isMonthly) {
-      results = (salesPhone != null)
-          ? customerRepository.getCustomerTrendsByMonthForSales(salesPhone, startDateStr, endDateStr)
-          : customerRepository.getCustomerTrendsByMonth(startDateStr, endDateStr);
+      results =
+          (salesPhone != null)
+              ? customerRepository.getCustomerTrendsByMonthForSales(
+                  salesPhone, startDateStr, endDateStr)
+              : customerRepository.getCustomerTrendsByMonth(startDateStr, endDateStr);
     } else {
-      results = (salesPhone != null)
-          ? customerRepository.getCustomerTrendsByDateForSales(salesPhone, startDateStr, endDateStr)
-          : customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
+      results =
+          (salesPhone != null)
+              ? customerRepository.getCustomerTrendsByDateForSales(
+                  salesPhone, startDateStr, endDateStr)
+              : customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
     }
 
-    System.out.println("DEBUG: Trends Query - startDate: " + startDateStr + ", endDate: " + endDateStr + ", granularity: " + granularity);
+    System.out.println(
+        "DEBUG: Trends Query - startDate: "
+            + startDateStr
+            + ", endDate: "
+            + endDateStr
+            + ", granularity: "
+            + granularity);
     System.out.println("DEBUG: Trends Query - results size: " + results.size());
     for (Object[] row : results) {
       System.out.println("DEBUG: Trends Query - period: " + row[0] + ", count: " + row[1]);
@@ -210,7 +221,8 @@ public class AnalyticsService {
    * @param days Number of days for analysis
    * @return Certificate type trends data
    */
-  public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(String salesPhone, int days) {
+  public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(
+      String salesPhone, int days) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
@@ -221,8 +233,10 @@ public class AnalyticsService {
     // Use monthly aggregation for certificate type trends
     List<Object[]> results =
         (salesPhone != null)
-            ? customerRepository.getCustomerTrendsByCertificateTypeByMonthForSales(salesPhone, startDateStr, endDateStr)
-            : customerRepository.getCustomerTrendsByCertificateTypeByMonth(startDateStr, endDateStr);
+            ? customerRepository.getCustomerTrendsByCertificateTypeByMonthForSales(
+                salesPhone, startDateStr, endDateStr)
+            : customerRepository.getCustomerTrendsByCertificateTypeByMonth(
+                startDateStr, endDateStr);
 
     // Group by certificate type and create trend data
     Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
@@ -254,15 +268,11 @@ public class AnalyticsService {
 
       Long count = ((Number) row[2]).longValue();
 
-      dailyCountsByType
-          .computeIfAbsent(dateStr, k -> new HashMap<>())
-          .put(certificateType, count);
+      dailyCountsByType.computeIfAbsent(dateStr, k -> new HashMap<>()).put(certificateType, count);
     }
 
     // Get all unique dates and sort them
-    List<String> sortedDates = dailyCountsByType.keySet().stream()
-        .sorted()
-        .toList();
+    List<String> sortedDates = dailyCountsByType.keySet().stream().sorted().toList();
 
     // Build trend data points for each certificate type
     for (String certificateType : runningTotals.keySet()) {
@@ -271,9 +281,10 @@ public class AnalyticsService {
 
       for (String dateStr : sortedDates) {
         Map<String, Long> dailyData = dailyCountsByType.get(dateStr);
-        long dailyCount = dailyData != null && dailyData.containsKey(certificateType)
-            ? dailyData.get(certificateType)
-            : 0L;
+        long dailyCount =
+            dailyData != null && dailyData.containsKey(certificateType)
+                ? dailyData.get(certificateType)
+                : 0L;
 
         runningTotal += dailyCount;
 
@@ -369,7 +380,8 @@ public class AnalyticsService {
           new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
 
       rankings.add(
-          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
+          new SalesPerformanceEntry(
+              customerAgent, totalCustomers, conversions, conversionRate, rank++));
     }
 
     return new LeaderboardResponse(rankings, days, metric);
@@ -399,7 +411,8 @@ public class AnalyticsService {
           new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
 
       rankings.add(
-          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
+          new SalesPerformanceEntry(
+              customerAgent, totalCustomers, conversions, conversionRate, rank++));
     }
 
     return new LeaderboardResponse(rankings, 0, metric);
@@ -418,10 +431,11 @@ public class AnalyticsService {
     String yearStr = String.valueOf(year);
     String monthStr = String.valueOf(month);
     if (month < 10) {
-      monthStr = "0" + monthStr;  // Pad single digit months with leading zero
+      monthStr = "0" + monthStr; // Pad single digit months with leading zero
     }
 
-    List<Object[]> results = salesRepository.getSalesLeaderboardDataByMonth(yearStr, monthStr, metric);
+    List<Object[]> results =
+        salesRepository.getSalesLeaderboardDataByMonth(yearStr, monthStr, metric);
 
     List<SalesPerformanceEntry> rankings = new ArrayList<>();
     int rank = 1;
@@ -434,7 +448,8 @@ public class AnalyticsService {
           new BigDecimal(((Number) row[3]).doubleValue()).setScale(2, RoundingMode.HALF_UP);
 
       rankings.add(
-          new SalesPerformanceEntry(customerAgent, totalCustomers, conversions, conversionRate, rank++));
+          new SalesPerformanceEntry(
+              customerAgent, totalCustomers, conversions, conversionRate, rank++));
     }
 
     return new LeaderboardResponse(rankings, 0, metric);

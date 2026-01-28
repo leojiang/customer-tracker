@@ -16,9 +16,7 @@ import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -310,8 +308,7 @@ class AnalyticsServiceTest {
     LocalDate today = LocalDate.now();
     String todayStr = today.toString();
     when(customerRepository.countNewCustomersInPeriod(eq(todayStr), eq(todayStr))).thenReturn(5L);
-    when(customerRepository.countConversionsInPeriod(
-            eq(CustomerStatus.CERTIFIED), any(), any()))
+    when(customerRepository.countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any()))
         .thenReturn(2L);
 
     // When
@@ -325,8 +322,7 @@ class AnalyticsServiceTest {
     assertNotNull(response.getLastUpdated());
 
     verify(customerRepository, times(2)).countNewCustomersInPeriod(eq(todayStr), eq(todayStr));
-    verify(customerRepository)
-        .countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
+    verify(customerRepository).countConversionsInPeriod(eq(CustomerStatus.CERTIFIED), any(), any());
   }
 
   @Test

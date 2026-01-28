@@ -131,8 +131,7 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
       COUNT(DISTINCT c.id) DESC
     """)
   List<Object[]> getSalesLeaderboardDataByYear(
-      @Param("yearStr") String yearStr,
-      @Param("metric") String metric);
+      @Param("yearStr") String yearStr, @Param("metric") String metric);
 
   /** Get sales leaderboard data filtered by specific year and month. */
   @Query(

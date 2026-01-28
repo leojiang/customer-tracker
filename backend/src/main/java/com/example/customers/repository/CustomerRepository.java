@@ -158,15 +158,18 @@ public interface CustomerRepository
   long countCustomersCreatedBefore(@Param("date") ZonedDateTime date);
 
   /** Debug: Get sample certified dates from database. */
-  @Query("SELECT c.certifiedAt FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL ORDER BY c.certifiedAt DESC LIMIT 20")
+  @Query(
+      "SELECT c.certifiedAt FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL ORDER BY c.certifiedAt DESC LIMIT 20")
   java.util.List<String> findSampleCertifiedDates();
 
   /** Debug: Get minimum certified date. */
-  @Query("SELECT MIN(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
+  @Query(
+      "SELECT MIN(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
   String findMinCertifiedDate();
 
   /** Debug: Get maximum certified date. */
-  @Query("SELECT MAX(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
+  @Query(
+      "SELECT MAX(c.certifiedAt) FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL")
   String findMaxCertifiedDate();
 
   /** Get customers created before specific date for sales person. */
