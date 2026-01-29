@@ -1,16 +1,5 @@
-audit log for user login, creation, customer deletion etc.
-
-
 add report:
 issuer 
-
-refactor AuthResult : password related error should define customized error code.
-
-db backup and restore scripts
-
-token expiration time, refresh mechanism, etc.
-
-serch bar responsive
 
 
 Q1指挥
