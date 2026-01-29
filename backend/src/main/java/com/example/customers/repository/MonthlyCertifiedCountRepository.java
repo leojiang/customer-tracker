@@ -1,30 +1,30 @@
 package com.example.customers.repository;
 
 import com.example.customers.entity.MonthlyCertifiedCount;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
  * Repository for MonthlyCertifiedCount entity.
  *
  * <p>Provides methods for managing monthly certification counts with thread-safe atomic operations.
  */
-public interface MonthlyCertifiedCountRepository extends JpaRepository<MonthlyCertifiedCount, String> {
+public interface MonthlyCertifiedCountRepository
+    extends JpaRepository<MonthlyCertifiedCount, String> {
 
   /**
    * Increment certified count for a specific month.
    *
-   * <p>If a record doesn't exist for the given month, creates a new one with count = 1.
-   * If a record exists, increments the count by 1.
+   * <p>If a record doesn't exist for the given month, creates a new one with count = 1. If a record
+   * exists, increments the count by 1.
    *
-   * <p>This operation is atomic and thread-safe due to the use of
-   * INSERT ... ON DUPLICATE KEY UPDATE.
+   * <p>This operation is atomic and thread-safe due to the use of INSERT ... ON DUPLICATE KEY
+   * UPDATE.
    *
    * @param month The month in 'yyyy-MM' format (e.g., '2024-01')
    */

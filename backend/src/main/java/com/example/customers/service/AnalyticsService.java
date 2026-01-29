@@ -157,9 +157,7 @@ public class AnalyticsService {
     return getTrendsFromCustomerTable(salesPhone, days, granularity);
   }
 
-  /**
-   * Get monthly trends from the monthly_certified_count table (simplified, fast query).
-   */
+  /** Get monthly trends from the monthly_certified_count table (simplified, fast query). */
   private TrendAnalysisResponse getMonthlyTrendsFromNewTable() {
     List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
         monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
@@ -179,7 +177,8 @@ public class AnalyticsService {
       // Calculate conversion rate
       BigDecimal conversionRateAtDate = calculateConversionRate(null, runningTotal);
 
-      dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate));
+      dataPoints.add(
+          new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate));
     }
 
     return new TrendAnalysisResponse(dataPoints, "monthly", 0);
@@ -188,7 +187,8 @@ public class AnalyticsService {
   /**
    * Get trends from the customers table (complex query, used for sales users or daily granularity).
    */
-  private TrendAnalysisResponse getTrendsFromCustomerTable(String salesPhone, int days, String granularity) {
+  private TrendAnalysisResponse getTrendsFromCustomerTable(
+      String salesPhone, int days, String granularity) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
@@ -551,21 +551,21 @@ public class AnalyticsService {
   private long getUnsettledCustomers(String salesPhone) {
     // Get customers NOT in CERTIFIED status
     // (i.e., customers still in process: NEW, NOTIFIED, ABORTED, SUBMITTED, CERTIFIED_ELSEWHERE)
-    long totalCustomers = (salesPhone != null)
-        ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-        : customerRepository.countTotalActiveCustomers();
+    long totalCustomers =
+        (salesPhone != null)
+            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
+            : customerRepository.countTotalActiveCustomers();
 
-    long certifiedCustomers = (salesPhone != null)
-        ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.CERTIFIED, salesPhone)
-        : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
+    long certifiedCustomers =
+        (salesPhone != null)
+            ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
+                CustomerStatus.CERTIFIED, salesPhone)
+            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
 
     long unsettledCustomers = totalCustomers - certifiedCustomers;
 
     return unsettledCustomers;
   }
-
-
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {
     List<Object[]> results =

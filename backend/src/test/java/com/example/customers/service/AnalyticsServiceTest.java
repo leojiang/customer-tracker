@@ -68,9 +68,15 @@ class AnalyticsServiceTest {
     assertEquals(85L, response.getUnsettledCustomers()); // 100 total - 15 certified = 85 unsettled
     assertEquals(new BigDecimal("15.00"), response.getConversionRate());
 
-    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
-    verify(customerRepository, times(2)).countNewCustomersInPeriod(any(), any()); // Called for current and previous period
-    verify(customerRepository, times(3)).countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate twice (current + previous period = 2)
+    verify(customerRepository, times(2))
+        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(2))
+        .countNewCustomersInPeriod(any(), any()); // Called for current and previous period
+    verify(customerRepository, times(3))
+        .countByCurrentStatusAndDeletedAtIsNull(
+            CustomerStatus
+                .CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate
+    // twice (current + previous period = 2)
   }
 
   @Test
@@ -94,12 +100,17 @@ class AnalyticsServiceTest {
     assertEquals(42L, response.getUnsettledCustomers()); // 50 total - 8 certified = 42 unsettled
     assertEquals(new BigDecimal("16.00"), response.getConversionRate());
 
-    verify(customerRepository, times(2)).countTotalActiveCustomersBySales(testSalesPhone); // Called in getDashboardOverview and getUnsettledCustomers
     verify(customerRepository, times(2))
-        .countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any()); // Called for current and previous period
+        .countTotalActiveCustomersBySales(
+            testSalesPhone); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(2))
+        .countNewCustomersInPeriodBySales(
+            eq(testSalesPhone), any(), any()); // Called for current and previous period
     verify(customerRepository, times(3))
         .countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.CERTIFIED, testSalesPhone); // Called in getUnsettledCustomers and calculateConversionRate (twice for current/previous period)
+            CustomerStatus.CERTIFIED,
+            testSalesPhone); // Called in getUnsettledCustomers and calculateConversionRate (twice
+    // for current/previous period)
   }
 
   @Test
@@ -369,7 +380,8 @@ class AnalyticsServiceTest {
     assertEquals(0L, response.getTotalCustomers());
     assertEquals(BigDecimal.ZERO, response.getConversionRate());
 
-    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(2))
+        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
   }
 
   @Test
@@ -448,7 +460,12 @@ class AnalyticsServiceTest {
     assertNotNull(periodChange.getNewCustomersChange());
     assertNotNull(periodChange.getConversionRateChange());
 
-    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
-    verify(customerRepository, times(3)).countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate twice (current + previous period = 2)
+    verify(customerRepository, times(2))
+        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(3))
+        .countByCurrentStatusAndDeletedAtIsNull(
+            CustomerStatus
+                .CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate
+    // twice (current + previous period = 2)
   }
 }

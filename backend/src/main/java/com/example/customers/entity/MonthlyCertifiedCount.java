@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 /**
  * Entity representing monthly certified customer count.
  *
- * <p>Tracks the number of customers who transitioned to CERTIFIED status in each month.
- * The primary key is the month in 'yyyy-MM' format.
+ * <p>Tracks the number of customers who transitioned to CERTIFIED status in each month. The primary
+ * key is the month in 'yyyy-MM' format.
  */
 @Entity
 @Table(name = "monthly_certified_count")
