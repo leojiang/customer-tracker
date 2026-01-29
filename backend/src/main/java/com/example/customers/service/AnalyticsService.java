@@ -12,6 +12,7 @@ import com.example.customers.controller.AnalyticsController.TrendAnalysisRespons
 import com.example.customers.controller.AnalyticsController.TrendDataPoint;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.repository.CustomerRepository;
+import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import java.math.BigDecimal;
@@ -40,15 +41,18 @@ public class AnalyticsService {
   private final CustomerRepository customerRepository;
   private final SalesRepository salesRepository;
   private final StatusHistoryRepository statusHistoryRepository;
+  private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
 
   @Autowired
   public AnalyticsService(
       CustomerRepository customerRepository,
       SalesRepository salesRepository,
-      StatusHistoryRepository statusHistoryRepository) {
+      StatusHistoryRepository statusHistoryRepository,
+      MonthlyCertifiedCountRepository monthlyCertifiedCountRepository) {
     this.customerRepository = customerRepository;
     this.salesRepository = salesRepository;
     this.statusHistoryRepository = statusHistoryRepository;
+    this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
   }
 
   /**
@@ -142,6 +146,49 @@ public class AnalyticsService {
    * @return Trend analysis data
    */
   public TrendAnalysisResponse getCustomerTrends(String salesPhone, int days, String granularity) {
+    boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
+
+    // Use the new monthly_certified_count table for admin monthly trends (much simpler and faster)
+    if (isMonthly && salesPhone == null) {
+      return getMonthlyTrendsFromNewTable();
+    }
+
+    // For sales users or daily granularity, use the existing complex queries
+    return getTrendsFromCustomerTable(salesPhone, days, granularity);
+  }
+
+  /**
+   * Get monthly trends from the monthly_certified_count table (simplified, fast query).
+   */
+  private TrendAnalysisResponse getMonthlyTrendsFromNewTable() {
+    List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
+        monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
+
+    List<TrendDataPoint> dataPoints = new ArrayList<>();
+    long runningTotal = 0;
+
+    for (com.example.customers.entity.MonthlyCertifiedCount monthlyCount : monthlyCounts) {
+      String monthStr = monthlyCount.getMonth();
+      Long newCertifications = monthlyCount.getCertifiedCount().longValue();
+      runningTotal += newCertifications;
+
+      // Parse month (YYYY-MM) to date (first day of month)
+      String[] parts = monthStr.split("-");
+      LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+
+      // Calculate conversion rate
+      BigDecimal conversionRateAtDate = calculateConversionRate(null, runningTotal);
+
+      dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate));
+    }
+
+    return new TrendAnalysisResponse(dataPoints, "monthly", 0);
+  }
+
+  /**
+   * Get trends from the customers table (complex query, used for sales users or daily granularity).
+   */
+  private TrendAnalysisResponse getTrendsFromCustomerTable(String salesPhone, int days, String granularity) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 

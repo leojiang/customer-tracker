@@ -78,6 +78,7 @@ export default function AdminDashboard() {
   interface StoredFilters {
     selectedYear: number;
     selectedMonth: number | null;
+    trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
     // Store data along with filters
     overview?: DashboardOverview | null;
@@ -112,6 +113,7 @@ export default function AdminDashboard() {
   const storedFilters = loadStoredFilters();
   const initialSelectedYear = storedFilters?.selectedYear ?? new Date().getFullYear();
   const initialSelectedMonth = storedFilters?.selectedMonth ?? null;
+  const initialTrendsViewOption = storedFilters?.trendsViewOption ?? 'newCertifications';
   const initialCertificateTypes = storedFilters?.certificateTypes ?? [];
 
   // Check if we have cached data that matches current filters
@@ -143,6 +145,7 @@ export default function AdminDashboard() {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(initialSelectedMonth);
 
   // Chart filter states (initialized from localStorage)
+  const [trendsViewOption, setTrendsViewOption] = useState<string>(initialTrendsViewOption);
   const [certificateTypes, setCertificateTypes] = useState<string[]>(initialCertificateTypes);
 
   // Fetch leaderboard by selected month (or year if month is null)
@@ -310,6 +313,7 @@ export default function AdminDashboard() {
     const filters = {
       selectedYear,
       selectedMonth,
+      trendsViewOption,
       certificateTypes,
       overview,
       statusDistribution,
@@ -319,7 +323,7 @@ export default function AdminDashboard() {
       lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
 
   // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {
@@ -423,6 +427,8 @@ export default function AdminDashboard() {
             granularity={trends?.granularity || 'daily'}
             loading={trendsLoading}
             error={error}
+            viewOption={trendsViewOption}
+            onViewOptionChange={setTrendsViewOption}
           />
 
           {/* Certificate Type Trends Chart */}

@@ -7,6 +7,7 @@ import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerSpecifications;
+import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
@@ -31,6 +32,7 @@ public class CustomerService {
 
   private final CustomerRepository customerRepository;
   private final StatusHistoryRepository statusHistoryRepository;
+  private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
   private final StatusTransitionValidator transitionValidator;
 
   /**
@@ -38,15 +40,18 @@ public class CustomerService {
    *
    * @param customerRepository customer data repository
    * @param statusHistoryRepository status history repository
+   * @param monthlyCertifiedCountRepository monthly certified count repository
    * @param transitionValidator status transition validator
    */
   @Autowired
   public CustomerService(
       CustomerRepository customerRepository,
       StatusHistoryRepository statusHistoryRepository,
+      MonthlyCertifiedCountRepository monthlyCertifiedCountRepository,
       StatusTransitionValidator transitionValidator) {
     this.customerRepository = customerRepository;
     this.statusHistoryRepository = statusHistoryRepository;
+    this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
     this.transitionValidator = transitionValidator;
   }
 
@@ -199,6 +204,10 @@ public class CustomerService {
     // Set certifiedAt to current date when transitioning to CERTIFIED status
     if (toStatus == CustomerStatus.CERTIFIED) {
       customer.setCertifiedAt(java.time.LocalDate.now().toString());
+
+      // Increment monthly certified count
+      String month = extractMonthFromDate(customer.getCertifiedAt());
+      monthlyCertifiedCountRepository.incrementCertifiedCount(month);
     }
 
     Customer savedCustomer = customerRepository.save(customer);
@@ -411,6 +420,20 @@ public class CustomerService {
       Customer customer, CustomerStatus fromStatus, CustomerStatus toStatus, String reason) {
     StatusHistory history = new StatusHistory(customer, fromStatus, toStatus, reason);
     statusHistoryRepository.save(history);
+  }
+
+  /**
+   * Extract month (yyyy-MM) from date string (yyyy-MM-dd).
+   *
+   * @param dateStr Date string in 'yyyy-MM-dd' format
+   * @return Month in 'yyyy-MM' format
+   * @throws IllegalArgumentException if date string is invalid
+   */
+  private String extractMonthFromDate(String dateStr) {
+    if (dateStr == null || dateStr.length() < 7) {
+      throw new IllegalArgumentException("Invalid date format: " + dateStr);
+    }
+    return dateStr.substring(0, 7); // Returns "yyyy-MM" from "yyyy-MM-dd"
   }
 
   // Inner class for statistics
