@@ -38,21 +38,21 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
   const loadStoredFilters = (): StoredFilters | null => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Error loading filters from localStorage:', error);
+      console.error('Error loading filters from sessionStorage:', error);
     }
     return null;
   };
 
   const saveFiltersToStorage = useCallback((filters: StoredFilters) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
     } catch (error) {
-      console.error('Error saving filters to localStorage:', error);
+      console.error('Error saving filters to sessionStorage:', error);
     }
   }, []);
 
@@ -254,13 +254,13 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   return (
     <div className="flex flex-col h-full">
       {/* Fixed Top Bar: Search & Filters */}
-      <div className="px-8 py-4 flex-shrink-0">
-        <form onSubmit={handleSearch}>
-          {/* Row 1: Search Input + Status + Certificate Type + Clear Button */}
-          <div className="flex gap-3 mb-3 items-end">
-            <div className="grid grid-cols-12 gap-3 flex-1">
-              {/* Search Input - 5 columns (same as certificate issuer) */}
-              <div className="col-span-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0">
+        <form onSubmit={handleSearch} className="space-y-3">
+          {/* Row 1: Search Input + Status + Customer Agent + Clear Button */}
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 flex-1">
+              {/* Search Input - full width on mobile, 5 columns on desktop */}
+              <div className="sm:col-span-2 lg:col-span-5">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.name')} / {t('customers.phone')}</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400" size={18} />
@@ -274,8 +274,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </div>
               </div>
 
-              {/* Status Filter - 2 columns */}
-              <div className="col-span-2">
+              {/* Status Filter - full width on mobile, 2 columns on desktop */}
+              <div className="sm:col-span-1 lg:col-span-2">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.searchStatus')}</label>
                 <select
                   value={selectedStatus}
@@ -291,9 +291,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </select>
               </div>
 
-              {/* Customer Agent - 2 columns (conditional for Admin/Officer) */}
+              {/* Customer Agent - full width on mobile, 2 columns on desktop (conditional for Admin/Officer) */}
               {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER) && (
-                <div className="col-span-2">
+                <div className="sm:col-span-1 lg:col-span-2">
                   <label className="block text-xs text-gray-600 mb-1">{t('customers.form.customerAgent')}</label>
                   <input
                     type="text"
@@ -306,22 +306,22 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               )}
             </div>
 
-            {/* Clear Button - at the end of row 1 - wider */}
+            {/* Clear Button - full width on mobile, fixed width on desktop */}
             <button
               type="button"
               onClick={handleClearAllFilters}
-              className="btn-secondary flex items-center justify-center gap-2 px-8 py-2 flex-shrink-0 w-[140px]"
+              className="btn-secondary flex items-center justify-center gap-2 px-6 py-2 lg:w-[140px] w-full"
             >
               <X size={16} />
               <span>{t('customers.clear')}</span>
             </button>
           </div>
 
-          {/* Row 2: Certificate Issuer + Customer Agent + Start Date + End Date + Search Button */}
-          <div className="flex gap-3 items-end">
-            <div className="grid grid-cols-12 gap-3 flex-1">
-              {/* Certificate Issuer - 5 columns (expanded) */}
-              <div className="col-span-5">
+          {/* Row 2: Certificate Issuer + Certificate Type + Start Date + End Date + Search Button */}
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-end">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-12 gap-3 flex-1">
+              {/* Certificate Issuer - full width on mobile, spans 2 on sm, 5 columns on desktop */}
+              <div className="col-span-2 sm:col-span-3 lg:col-span-5">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateIssuer')}</label>
                 <select
                   value={certificateIssuer}
@@ -337,8 +337,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </select>
               </div>
 
-              {/* Certificate Type Filter - 2 columns */}
-              <div className="col-span-2">
+              {/* Certificate Type Filter - 1 column on mobile, 1 on sm, 2 columns on desktop */}
+              <div className="col-span-1 sm:col-span-1 lg:col-span-2">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateType')}</label>
                 <select
                   value={selectedCertificateType}
@@ -354,8 +354,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 </select>
               </div>
 
-              {/* Start Date - 2 columns */}
-              <div className="col-span-2">
+              {/* Start Date - 1 column on mobile/tablet, 2 columns on desktop */}
+              <div className="col-span-1 lg:col-span-2">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-gray-600">{t('customers.startDate')}</label>
                   {certifiedStartDate && (
@@ -377,8 +377,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                 />
               </div>
 
-              {/* End Date - 2 columns */}
-              <div className="col-span-2">
+              {/* End Date - 1 column on mobile/tablet, 2 columns on desktop */}
+              <div className="col-span-1 lg:col-span-2">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-gray-600">{t('customers.endDate')}</label>
                   {certifiedEndDate && (
@@ -401,10 +401,10 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               </div>
             </div>
 
-            {/* Search Button - at the end of row 2 - wider */}
+            {/* Search Button - full width on mobile, fixed width on desktop */}
             <button
               type="submit"
-              className="btn-primary flex items-center justify-center gap-2 px-8 py-2 flex-shrink-0 w-[140px]"
+              className="btn-primary flex items-center justify-center gap-2 px-6 py-2 lg:w-[140px] w-full"
             >
               <Search size={16} />
               <span>{t('customers.search')}</span>
@@ -425,7 +425,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       )}
 
       {/* Scrollable Customer List */}
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col px-8">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col px-4 sm:px-6 lg:px-8">
         {loading ? (
           <div className="card-elevated">
             <div className="card-content text-center py-12">
@@ -556,7 +556,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
       {/* Fixed Pagination at Bottom */}
       {!loading && customers.length > 0 && (
-        <div className="px-8 py-4 flex-shrink-0">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0">
           {/* Results Info and Page Size Selector */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-4">
