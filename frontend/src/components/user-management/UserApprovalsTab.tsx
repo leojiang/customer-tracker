@@ -94,10 +94,6 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
     }
   }, [currentPage, isActive, selectedStatus, pageSize, fetchData]);
 
-  const handleStatusChange = (status: ApprovalStatus) => {
-    setSelectedStatus(status);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -221,23 +217,59 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Statistics Cards */}
+      {/* Statistics Cards - Clickable to filter */}
       {statistics && (
         <div className="flex-shrink-0 mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-            <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.pending')}</dt>
+          <button
+            type="button"
+            onClick={() => setSelectedStatus(ApprovalStatus.PENDING)}
+            className={`overflow-hidden rounded-lg px-4 py-5 shadow sm:p-6 text-left transition-all duration-200 hover:shadow-lg ${
+              selectedStatus === ApprovalStatus.PENDING
+                ? 'ring-2 ring-yellow-500 bg-yellow-50'
+                : 'bg-white hover:bg-gray-50'
+            }`}
+          >
+            <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
+              <Clock size={16} />
+              {t('approvals.pending')}
+            </dt>
             <dd className="mt-1 text-3xl font-semibold text-yellow-600">{statistics.pendingCount}</dd>
-          </div>
-          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-            <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.approved')}</dt>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedStatus(ApprovalStatus.APPROVED)}
+            className={`overflow-hidden rounded-lg px-4 py-5 shadow sm:p-6 text-left transition-all duration-200 hover:shadow-lg ${
+              selectedStatus === ApprovalStatus.APPROVED
+                ? 'ring-2 ring-green-500 bg-green-50'
+                : 'bg-white hover:bg-gray-50'
+            }`}
+          >
+            <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
+              <CheckCircle size={16} />
+              {t('approvals.approved')}
+            </dt>
             <dd className="mt-1 text-3xl font-semibold text-green-600">{statistics.approvedCount}</dd>
-          </div>
-          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-            <dt className="text-sm font-medium text-gray-500 truncate">{t('approvals.rejected')}</dt>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedStatus(ApprovalStatus.REJECTED)}
+            className={`overflow-hidden rounded-lg px-4 py-5 shadow sm:p-6 text-left transition-all duration-200 hover:shadow-lg ${
+              selectedStatus === ApprovalStatus.REJECTED
+                ? 'ring-2 ring-red-500 bg-red-50'
+                : 'bg-white hover:bg-gray-50'
+            }`}
+          >
+            <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
+              <XCircle size={16} />
+              {t('approvals.rejected')}
+            </dt>
             <dd className="mt-1 text-3xl font-semibold text-red-600">{statistics.rejectedCount}</dd>
-          </div>
-          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-            <dt className="text-sm font-medium text-gray-500 truncate">{t('dashboard.metrics.conversionRate')}</dt>
+          </button>
+          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 opacity-75 cursor-default">
+            <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
+              <Users size={16} />
+              {t('dashboard.metrics.conversionRate')}
+            </dt>
             <dd className="mt-1 text-3xl font-semibold text-indigo-600">
               {statistics.approvalRate.toFixed(1)}%
             </dd>
@@ -245,46 +277,21 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
         </div>
       )}
 
-      {/* Status Filters and Search */}
-      <div className="flex-shrink-0 mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex gap-2">
-          {Object.values(ApprovalStatus).map((status) => (
-            <button
-              key={status}
-              type="button"
-              onClick={() => handleStatusChange(status)}
-              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                selectedStatus === status
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'bg-white text-gray-500 hover:text-gray-700'
-              } border border-gray-300`}
-            >
-              {getStatusIcon(status)}
-              <span className="ml-2">{getTranslatedApprovalStatusName(status, t)}</span>
-              {statistics && (
-                <span className="ml-2 bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full">
-                  {status === ApprovalStatus.PENDING
-                    ? statistics.pendingCount
-                    : status === ApprovalStatus.APPROVED
-                    ? statistics.approvedCount
-                    : statistics.rejectedCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+      {/* Search Bar - Only */}
+      <div className="flex-shrink-0">
+        <div className="mt-8 flex justify-end">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder={`${t('approvals.phone')}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
           </div>
-          <input
-            type="text"
-            placeholder={`${t('approvals.phone')}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
         </div>
       </div>
 
