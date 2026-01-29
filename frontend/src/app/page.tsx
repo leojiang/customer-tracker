@@ -34,10 +34,6 @@ export default function HomePage() {
   };
 
   const handleCreateCustomer = () => {
-    // Prevent CUSTOMER_AGENT from accessing create view
-    if (user?.role === 'CUSTOMER_AGENT') {
-      return;
-    }
     setCurrentView('create');
   };
 
