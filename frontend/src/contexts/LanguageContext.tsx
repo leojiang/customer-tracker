@@ -36,6 +36,7 @@ const translations = {
     'status.aborted': 'Aborted',
     'status.submitted': 'Submitted',
     'status.certified': 'Certified',
+    'status.certifiedElsewhere': 'Certified Elsewhere/Review',
 
     // Approval Status
     'approvalStatus.pending': 'Pending',
@@ -610,6 +611,7 @@ const translations = {
     'status.aborted': '客户放弃',
     'status.submitted': '已提交资料',
     'status.certified': '已发证',
+    'status.certifiedElsewhere': '已在别处办证/复审',
 
     // Approval Status
     'approvalStatus.pending': '待审批',

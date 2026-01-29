@@ -29,6 +29,7 @@ class StatusTransitionValidatorTest {
     assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
     assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
     assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED_ELSEWHERE));
   }
 
   @Test
@@ -170,6 +171,39 @@ class StatusTransitionValidatorTest {
   }
 
   @Test
+  @DisplayName("Should allow transitions from CERTIFIED_ELSEWHERE to non-NEW statuses")
+  void shouldAllowTransitionsFromCertifiedElsewhereToNonNew() {
+    // Given
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED_ELSEWHERE;
+
+    // When & Then - Can transition to any non-NEW status
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.NOTIFIED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.ABORTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.SUBMITTED));
+    assertTrue(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED));
+  }
+
+  @Test
+  @DisplayName("Should reject transition from CERTIFIED_ELSEWHERE to NEW")
+  void shouldRejectTransitionFromCertifiedElsewhereToNew() {
+    // Given
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED_ELSEWHERE;
+
+    // When & Then - Cannot return to NEW
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.NEW));
+  }
+
+  @Test
+  @DisplayName("Should reject transition from CERTIFIED_ELSEWHERE to CERTIFIED_ELSEWHERE")
+  void shouldRejectTransitionFromCertifiedElsewhereToCertifiedElsewhere() {
+    // Given
+    CustomerStatus fromStatus = CustomerStatus.CERTIFIED_ELSEWHERE;
+
+    // When & Then - Cannot stay in same status
+    assertFalse(validator.isValidTransition(fromStatus, CustomerStatus.CERTIFIED_ELSEWHERE));
+  }
+
+  @Test
   @DisplayName("Should reject null status transitions")
   void shouldRejectNullStatusTransitions() {
     // Given
@@ -191,11 +225,12 @@ class StatusTransitionValidatorTest {
     Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
 
     // Then - Should include all non-NEW statuses
-    assertEquals(4, validTransitions.size());
+    assertEquals(5, validTransitions.size());
     assertTrue(validTransitions.contains(CustomerStatus.NOTIFIED));
     assertTrue(validTransitions.contains(CustomerStatus.ABORTED));
     assertTrue(validTransitions.contains(CustomerStatus.SUBMITTED));
     assertTrue(validTransitions.contains(CustomerStatus.CERTIFIED));
+    assertTrue(validTransitions.contains(CustomerStatus.CERTIFIED_ELSEWHERE));
   }
 
   @Test
@@ -206,13 +241,14 @@ class StatusTransitionValidatorTest {
       CustomerStatus.NOTIFIED,
       CustomerStatus.ABORTED,
       CustomerStatus.SUBMITTED,
-      CustomerStatus.CERTIFIED
+      CustomerStatus.CERTIFIED,
+      CustomerStatus.CERTIFIED_ELSEWHERE
     };
 
     // When & Then - All non-NEW statuses should have same valid transitions
     for (CustomerStatus fromStatus : nonNewStatuses) {
       Set<CustomerStatus> validTransitions = validator.getValidTransitions(fromStatus);
-      assertEquals(4, validTransitions.size());
+      assertEquals(5, validTransitions.size());
       assertFalse(validTransitions.contains(CustomerStatus.NEW));
     }
   }
@@ -275,7 +311,8 @@ class StatusTransitionValidatorTest {
       CustomerStatus.NOTIFIED,
       CustomerStatus.ABORTED,
       CustomerStatus.SUBMITTED,
-      CustomerStatus.CERTIFIED
+      CustomerStatus.CERTIFIED,
+      CustomerStatus.CERTIFIED_ELSEWHERE
     };
 
     // When & Then - All non-NEW statuses can transition to each other

@@ -2,6 +2,9 @@ add report:
 issuer 
 
 
+user can only log in on one device
+
+
 Q1指挥
 Q2流动式
 Q2桥式

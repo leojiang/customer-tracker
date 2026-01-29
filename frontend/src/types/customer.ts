@@ -3,7 +3,8 @@ export enum CustomerStatus {
   NOTIFIED = 'NOTIFIED',
   ABORTED = 'ABORTED',
   SUBMITTED = 'SUBMITTED',
-  CERTIFIED = 'CERTIFIED'
+  CERTIFIED = 'CERTIFIED',
+  CERTIFIED_ELSEWHERE = 'CERTIFIED_ELSEWHERE'
 }
 
 export enum EducationLevel {
@@ -177,6 +178,7 @@ export const CustomerStatusTranslationKeys: Record<CustomerStatus, string> = {
   [CustomerStatus.ABORTED]: 'status.aborted',
   [CustomerStatus.SUBMITTED]: 'status.submitted',
   [CustomerStatus.CERTIFIED]: 'status.certified',
+  [CustomerStatus.CERTIFIED_ELSEWHERE]: 'status.certifiedElsewhere',
 };
 
 // Education level translation keys mapping for use with translation function

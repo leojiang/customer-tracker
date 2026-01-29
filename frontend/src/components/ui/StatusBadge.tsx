@@ -14,6 +14,7 @@ const statusStyles = {
   [CustomerStatus.ABORTED]: 'status-aborted',
   [CustomerStatus.SUBMITTED]: 'status-submitted',
   [CustomerStatus.CERTIFIED]: 'status-certified',
+  [CustomerStatus.CERTIFIED_ELSEWHERE]: 'status-certified-elsewhere',
 };
 
 const statusTranslationKeys = {
@@ -22,6 +23,7 @@ const statusTranslationKeys = {
   [CustomerStatus.ABORTED]: 'status.aborted',
   [CustomerStatus.SUBMITTED]: 'status.submitted',
   [CustomerStatus.CERTIFIED]: 'status.certified',
+  [CustomerStatus.CERTIFIED_ELSEWHERE]: 'status.certifiedElsewhere',
 };
 
 export default function StatusBadge({ status, className = '' }: StatusBadgeProps) {
