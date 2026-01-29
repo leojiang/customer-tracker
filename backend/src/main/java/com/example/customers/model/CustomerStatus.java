@@ -13,7 +13,8 @@ package com.example.customers.model;
  *   <li>ABORTED - Customer abandoned the process, cannot return to NEW
  *   <li>SUBMITTED - Customer has submitted documents, cannot return to NEW
  *   <li>CERTIFIED - Certificate has been issued, cannot return to NEW
- *   <li>CERTIFIED_ELSEWHERE - Customer has been certified at another location or is under review, cannot return to NEW
+ *   <li>CERTIFIED_ELSEWHERE - Customer has been certified at another location or is under review,
+ *       cannot return to NEW
  * </ul>
  *
  * <p>Transition Rules:
@@ -24,7 +25,8 @@ package com.example.customers.model;
  *   <li>ABORTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE (not NEW)
  *   <li>SUBMITTED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE (not NEW)
  *   <li>CERTIFIED → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE (not NEW)
- *   <li>CERTIFIED_ELSEWHERE → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE (not NEW)
+ *   <li>CERTIFIED_ELSEWHERE → NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE (not
+ *       NEW)
  * </ul>
  */
 public enum CustomerStatus {

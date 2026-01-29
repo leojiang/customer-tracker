@@ -12,12 +12,18 @@ import org.springframework.stereotype.Component;
  * <p>Business rules:
  *
  * <ul>
- *   <li>NEW → Can transition to any status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
- *   <li>NOTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
- *   <li>ABORTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
- *   <li>SUBMITTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
- *   <li>CERTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
- *   <li>CERTIFIED_ELSEWHERE → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED, CERTIFIED_ELSEWHERE)
+ *   <li>NEW → Can transition to any status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED,
+ *       CERTIFIED_ELSEWHERE)
+ *   <li>NOTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED,
+ *       CERTIFIED_ELSEWHERE)
+ *   <li>ABORTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED,
+ *       CERTIFIED_ELSEWHERE)
+ *   <li>SUBMITTED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED,
+ *       CERTIFIED_ELSEWHERE)
+ *   <li>CERTIFIED → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED, CERTIFIED,
+ *       CERTIFIED_ELSEWHERE)
+ *   <li>CERTIFIED_ELSEWHERE → Can transition to any non-NEW status (NOTIFIED, ABORTED, SUBMITTED,
+ *       CERTIFIED, CERTIFIED_ELSEWHERE)
  * </ul>
  *
  * <p>Key rule: Once a customer leaves NEW status, they can never return to NEW.
@@ -41,7 +47,8 @@ public class StatusTransitionValidator {
           CustomerStatus.ABORTED, NON_NEW_STATUSES, // Can transition to any non-NEW status
           CustomerStatus.SUBMITTED, NON_NEW_STATUSES, // Can transition to any non-NEW status
           CustomerStatus.CERTIFIED, NON_NEW_STATUSES, // Can transition to any non-NEW status
-          CustomerStatus.CERTIFIED_ELSEWHERE, NON_NEW_STATUSES // Can transition to any non-NEW status
+          CustomerStatus.CERTIFIED_ELSEWHERE,
+              NON_NEW_STATUSES // Can transition to any non-NEW status
           );
 
   /**

@@ -195,6 +195,12 @@ public class CustomerService {
 
     // Update customer status
     customer.setCurrentStatus(toStatus);
+
+    // Set certifiedAt to current date when transitioning to CERTIFIED status
+    if (toStatus == CustomerStatus.CERTIFIED) {
+      customer.setCertifiedAt(java.time.LocalDate.now().toString());
+    }
+
     Customer savedCustomer = customerRepository.save(customer);
 
     // Create status history
