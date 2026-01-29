@@ -120,7 +120,7 @@ public class CustomerDeleteRequestController {
   @Operation(
       summary = "Create a delete request for a customer",
       description =
-          "Admins, Officers, and Customer Agents can request customer deletion. Admins will review and approve/reject.")
+          "Admins and Customer Agents can request customer deletion. Admins will review and approve/reject.")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -134,16 +134,14 @@ public class CustomerDeleteRequestController {
         @ApiResponse(responseCode = "404", description = "Customer not found")
       })
   @PostMapping
-  @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
+  @PreAuthorize("hasAnyAuthority('ADMIN', 'CUSTOMER_AGENT')")
   public ResponseEntity<?> createDeleteRequest(
       @RequestBody DeleteRequestRequest request, Authentication authentication) {
 
     Sales requester = (Sales) authentication.getPrincipal();
 
-    // Admins, Officers, and Customer Agents can create delete requests
-    if (requester.getRole() != SalesRole.OFFICER
-        && requester.getRole() != SalesRole.ADMIN
-        && requester.getRole() != SalesRole.CUSTOMER_AGENT) {
+    // Admins and Customer Agents can create delete requests
+    if (requester.getRole() != SalesRole.ADMIN && requester.getRole() != SalesRole.CUSTOMER_AGENT) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
