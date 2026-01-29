@@ -183,6 +183,7 @@ const translations = {
     'customers.name': 'Name',
     'customers.phone': 'Phone',
     'customers.cancel': 'Cancel',
+    'customers.close': 'Close',
     'customers.ok': 'OK',
     'customers.detail.customer': 'Customer',
 
@@ -758,6 +759,7 @@ const translations = {
     'customers.name': '姓名',
     'customers.phone': '电话',
     'customers.cancel': '取消',
+    'customers.close': '关闭',
     'customers.ok': '确定',
     'customers.detail.customer': '客户',
 
