@@ -82,3 +82,9 @@ application-dev.yml
 *.swp
 *.swo
 *~
+
+# Database backups
+backups/
+*.sql.gz
+backup.log
+restore.log
