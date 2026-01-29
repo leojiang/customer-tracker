@@ -458,11 +458,7 @@ const translations = {
 
     // Permission Errors
     'error.permissionDenied': 'Permission Denied',
-    'error.onlyAdminCanDelete': 'Only Admins can delete customers directly',
-    'error.officerMustRequestDelete': 'Officers must request customer deletion from Admin',
-    'error.customerAgentReadOnly': 'Business Managers have read-only access',
-    'error.onlyAdminOfficerCanEdit': 'Only Admins and Officers can edit customers',
-    'error.onlyAdminOfficerCanAdd': 'Only Admins and Officers can add customers',
+    'error.onlyAdminAndAgentCanAdd': 'Only Admins and Officers can add customers',
 
     // Registration Success
     'register.success.title': 'Registration Successful!',
@@ -1034,11 +1030,7 @@ const translations = {
 
     // Permission Errors
     'error.permissionDenied': '权限不足',
-    'error.onlyAdminCanDelete': '只有管理员可以直接删除客户',
-    'error.officerMustRequestDelete': '文员必须向管理员请求删除客户',
-    'error.customerAgentReadOnly': '业务经理只有只读权限',
-    'error.onlyAdminOfficerCanEdit': '只有管理员和文员可以编辑客户',
-    'error.onlyAdminOfficerCanAdd': '只有管理员和文员可以添加客户',
+    'error.onlyAdminAndAgentCanAdd': '只有管理员和业务经理可以添加客户',
 
     // Registration Success
     'register.success.title': '注册成功！',

@@ -174,7 +174,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               {t('error.permissionDenied')}
             </h3>
             <p className="text-sm text-gray-500 mb-6">
-              {t('error.onlyAdminOfficerCanAdd')}
+              {t('error.onlyAdminAndAgentCanAdd')}
             </p>
             <button
               onClick={onClose}
