@@ -90,21 +90,21 @@ export default function AdminDashboard() {
 
   const loadStoredFilters = (): StoredFilters | null => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Error loading filters from localStorage:', error);
+      console.error('Error loading filters from sessionStorage:', error);
     }
     return null;
   };
 
   const saveFiltersToStorage = useCallback((filters: StoredFilters) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
     } catch (error) {
-      console.error('Error saving filters to localStorage:', error);
+      console.error('Error saving filters to sessionStorage:', error);
     }
   }, []);
 

@@ -1171,18 +1171,18 @@ interface LanguageProviderProps {
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguageState] = useState<Language>('zh-CN');
 
-  // Load language from localStorage on mount
+  // Load language from sessionStorage on mount
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') as Language;
+    const savedLanguage = sessionStorage.getItem('language') as Language;
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'zh-CN')) {
       setLanguageState(savedLanguage);
     }
   }, []);
 
-  // Save language to localStorage when it changes
+  // Save language to sessionStorage when it changes
   const setLanguage = (newLanguage: Language) => {
     setLanguageState(newLanguage);
-    localStorage.setItem('language', newLanguage);
+    sessionStorage.setItem('language', newLanguage);
   };
 
   // Translation function with parameter support

@@ -38,9 +38,9 @@ class ApiError extends Error {
 
 async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
-  // Get token from localStorage for authentication
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+  // Get token from sessionStorage for authentication
+  const token = typeof window !== 'undefined' ? sessionStorage.getItem('auth_token') : null;
   
   const config: RequestInit = {
     headers: {
@@ -193,8 +193,8 @@ export const authApi = {
 
   logout: () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_data');
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('user_data');
     }
   },
 };
@@ -354,7 +354,7 @@ export const customerImportApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('auth_token') : null;
 
     const response = await fetch(`${API_BASE_URL}/customers/import/upload`, {
       method: 'POST',

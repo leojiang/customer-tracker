@@ -35,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const storedToken = localStorage.getItem('auth_token');
+        const storedToken = sessionStorage.getItem('auth_token');
         if (storedToken) {
           const response = await authApi.validateToken({ token: storedToken });
           if (response.token && response.phone && response.role) {
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             };
             setUser(userData);
             setToken(storedToken);
-            localStorage.setItem('user_data', JSON.stringify(userData));
+            sessionStorage.setItem('user_data', JSON.stringify(userData));
           } else {
             // Invalid token, clear it
             authApi.logout();
@@ -82,8 +82,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(userData);
         setToken(response.token);
         setMustChangePassword(response.mustChangePassword || false);
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('user_data', JSON.stringify(userData));
+        sessionStorage.setItem('auth_token', response.token);
+        sessionStorage.setItem('user_data', JSON.stringify(userData));
 
         return { success: true, mustChangePassword: response.mustChangePassword };
       }
@@ -118,8 +118,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           setUser(userData);
           setToken(response.token);
-          localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('user_data', JSON.stringify(userData));
+          sessionStorage.setItem('auth_token', response.token);
+          sessionStorage.setItem('user_data', JSON.stringify(userData));
         }
         // If no token but has phone/role, user is pending approval
         return { success: true };
@@ -139,22 +139,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null);
     authApi.logout();
 
-    // Clear all filters from localStorage
+    // Clear all filters from sessionStorage
     try {
       // Clear customer list filters
-      localStorage.removeItem('customerListFilters');
+      sessionStorage.removeItem('customerListFilters');
 
       // Clear all admin dashboard filters
-      localStorage.removeItem('adminDashboardFilters');
-      localStorage.removeItem('admin_dashboard_overview');
-      localStorage.removeItem('admin_dashboard_status_distribution');
-      localStorage.removeItem('admin_dashboard_trends');
-      localStorage.removeItem('admin_dashboard_certificate_trends');
-      localStorage.removeItem('admin_dashboard_leaderboard');
-      localStorage.removeItem('admin_dashboard_certificate_type_selections');
-      localStorage.removeItem('admin_dashboard_state');
+      sessionStorage.removeItem('adminDashboardFilters');
+      sessionStorage.removeItem('admin_dashboard_overview');
+      sessionStorage.removeItem('admin_dashboard_status_distribution');
+      sessionStorage.removeItem('admin_dashboard_trends');
+      sessionStorage.removeItem('admin_dashboard_certificate_trends');
+      sessionStorage.removeItem('admin_dashboard_leaderboard');
+      sessionStorage.removeItem('admin_dashboard_certificate_type_selections');
+      sessionStorage.removeItem('admin_dashboard_state');
+
+      // Clear language preference
+      sessionStorage.removeItem('language');
     } catch (error) {
-      console.error('Error clearing filters from localStorage:', error);
+      console.error('Error clearing filters from sessionStorage:', error);
     }
   };
 
