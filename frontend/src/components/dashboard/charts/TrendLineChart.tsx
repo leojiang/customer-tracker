@@ -1,19 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
   ChartOptions,
   TimeScale,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { useLanguage } from '@/contexts/LanguageContext';
 import 'chartjs-adapter-date-fns';
 
@@ -21,8 +20,7 @@ import 'chartjs-adapter-date-fns';
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -44,8 +42,6 @@ interface TrendLineChartProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
-  viewOption?: string;
-  onViewOptionChange?: (option: string) => void;
 }
 
 export default function TrendLineChart({
@@ -55,63 +51,31 @@ export default function TrendLineChart({
   className = "",
   loading = false,
   error = null,
-  viewOption: controlledViewOption,
-  onViewOptionChange,
 }: TrendLineChartProps) {
   const { t, language } = useLanguage();
-  const chartRef = useRef<ChartJS<'line'>>(null);
-
-  // Use controlled prop if provided, otherwise use local state
-  const [internalViewOption, setInternalViewOption] = useState('newCertifications');
-  const activeDataset = controlledViewOption !== undefined ? controlledViewOption : internalViewOption;
-
-  const handleViewOptionChange = (newValue: string) => {
-    if (onViewOptionChange) {
-      onViewOptionChange(newValue);
-    } else {
-      setInternalViewOption(newValue);
-    }
-  };
+  const chartRef = useRef<ChartJS<'bar'>>(null);
 
   // Use default title if not provided
   const chartTitle = title || t('dashboard.charts.trends');
 
-  // Prepare chart data - only new certifications and total customers
+  // Prepare chart data - only new certifications
   const chartData = {
     labels: data.map(point => new Date(point.date)),
     datasets: [
       {
         label: t('dashboard.charts.newCertifications'),
         data: data.map(point => point.newCustomers),
+        backgroundColor: 'rgba(99, 102, 241, 0.8)', // indigo-500 with opacity
         borderColor: 'rgb(99, 102, 241)', // indigo-500
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBorderWidth: 2,
-        pointBackgroundColor: 'white',
-        fill: true,
-        hidden: activeDataset !== 'newCertifications',
-      },
-      {
-        label: t('dashboard.charts.totalCustomers'),
-        data: data.map(point => point.totalCustomers),
-        borderColor: 'rgb(34, 197, 94)', // green-500
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBorderWidth: 2,
-        pointBackgroundColor: 'white',
-        fill: false,
-        yAxisID: 'y1',
-        hidden: activeDataset !== 'totalCustomers',
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.7,
       },
     ],
   };
 
   // Chart options
-  const options: ChartOptions<'line'> = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -234,7 +198,7 @@ export default function TrendLineChart({
       },
       y: {
         type: 'linear' as const,
-        display: activeDataset === 'newCertifications',
+        display: true,
         position: 'left' as const,
         grid: {
           color: 'rgba(107, 114, 128, 0.1)',
@@ -255,36 +219,10 @@ export default function TrendLineChart({
           color: 'rgb(107, 114, 128)',
         },
       },
-      y1: {
-        type: 'linear' as const,
-        display: activeDataset === 'totalCustomers',
-        position: 'right' as const,
-        grid: {
-          drawOnChartArea: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-            family: 'Inter, sans-serif',
-          },
-          color: 'rgb(107, 114, 128)',
-          callback: function(value) {
-            return Number(value).toLocaleString();
-          },
-        },
-        title: {
-          display: true,
-          text: t('dashboard.charts.totalCustomers'),
-          color: 'rgb(107, 114, 128)',
-        },
-      },
     },
     elements: {
-      point: {
-        hoverRadius: 8,
-      },
-      line: {
-        borderWidth: 3,
+      bar: {
+        borderRadius: 4,
       },
     },
   };
@@ -353,38 +291,28 @@ export default function TrendLineChart({
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-500">{t('dashboard.charts.view')}</span>
           <select
-            value={activeDataset}
-            onChange={(e) => handleViewOptionChange(e.target.value)}
+            value={t('dashboard.charts.newCertifications')}
             className="text-sm border border-gray-300 rounded px-2 py-1"
           >
             <option value="newCertifications">{t('dashboard.charts.newCertifications')}</option>
-            <option value="totalCustomers">{t('dashboard.charts.totalCustomers')}</option>
           </select>
         </div>
       </div>
 
       <div className="relative h-80">
-        <Line
+        <Bar
           ref={chartRef}
           data={chartData}
           options={options}
         />
       </div>
 
-      {/* Summary stats */}
-      <div className="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-        <div className="text-center">
-          <div className="text-lg font-semibold text-indigo-600">
-            {data[data.length - 1]?.newCustomers.toLocaleString() || '0'}
-          </div>
-          <div className="text-xs text-gray-500">{t('dashboard.charts.latestNew')}</div>
+      {/* Summary stats - only new certifications */}
+      <div className="mt-4 text-center pt-4 border-t border-gray-200">
+        <div className="text-lg font-semibold text-indigo-600">
+          {data[data.length - 1]?.newCustomers.toLocaleString() || '0'}
         </div>
-        <div className="text-center">
-          <div className="text-lg font-semibold text-green-600">
-            {data[data.length - 1]?.totalCustomers.toLocaleString() || '0'}
-          </div>
-          <div className="text-xs text-gray-500">{t('dashboard.charts.totalNow')}</div>
-        </div>
+        <div className="text-xs text-gray-500">{t('dashboard.charts.latestNew')}</div>
       </div>
     </div>
   );

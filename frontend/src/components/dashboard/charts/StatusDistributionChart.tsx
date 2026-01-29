@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { RefreshCw } from 'lucide-react';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -22,15 +23,19 @@ interface StatusDistributionChartProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export default function StatusDistributionChart({ 
-  data, 
-  totalCustomers, 
+export default function StatusDistributionChart({
+  data,
+  totalCustomers,
   title,
   className = "",
   loading = false,
-  error = null
+  error = null,
+  onRefresh,
+  refreshing = false
 }: StatusDistributionChartProps) {
   const { t } = useLanguage();
   const chartRef = useRef<ChartJS<'doughnut'>>(null);
@@ -223,13 +228,26 @@ export default function StatusDistributionChart({
     <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-6 ${className}`}>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-900">{chartTitle}</h3>
-        <div className="px-3 py-1 bg-gray-100 rounded-full">
-          <span className="text-sm font-medium text-gray-700">
-            {totalCustomers.toLocaleString()} {t('dashboard.charts.total')}
-          </span>
+        <div className="flex items-center gap-3">
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={() => !refreshing && onRefresh()}
+              disabled={refreshing}
+              className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={t('dashboard.charts.refresh')}
+            >
+              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+          )}
+          <div className="px-3 py-1 bg-gray-100 rounded-full">
+            <span className="text-sm font-medium text-gray-700">
+              {totalCustomers.toLocaleString()} {t('dashboard.charts.total')}
+            </span>
+          </div>
         </div>
       </div>
-      
+
       <div className="flex flex-col lg:flex-row items-center gap-8">
         {/* Chart Container */}
         <div className="relative w-80 h-80 mx-auto lg:mx-0">

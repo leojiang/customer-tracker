@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -12,7 +13,7 @@ import MetricCard from '@/components/dashboard/widgets/MetricCard';
 interface DashboardOverview {
   totalCustomers: number;
   newCustomersThisPeriod: number;
-  activeCustomers: number;
+  unsettledCustomers: number;
   conversionRate: number;
   periodChange: {
     totalCustomersChange: number;
@@ -77,7 +78,6 @@ export default function AdminDashboard() {
   interface StoredFilters {
     selectedYear: number;
     selectedMonth: number | null;
-    trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
     // Store data along with filters
     overview?: DashboardOverview | null;
@@ -112,7 +112,6 @@ export default function AdminDashboard() {
   const storedFilters = loadStoredFilters();
   const initialSelectedYear = storedFilters?.selectedYear ?? new Date().getFullYear();
   const initialSelectedMonth = storedFilters?.selectedMonth ?? null;
-  const initialTrendsViewOption = storedFilters?.trendsViewOption ?? 'newCertifications';
   const initialCertificateTypes = storedFilters?.certificateTypes ?? [];
 
   // Check if we have cached data that matches current filters
@@ -135,6 +134,7 @@ export default function AdminDashboard() {
   const [trendsLoading, setTrendsLoading] = useState<boolean>(!hasCachedData);
   const [certificateTrendsLoading, setCertificateTrendsLoading] = useState<boolean>(!hasCachedData);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -143,7 +143,6 @@ export default function AdminDashboard() {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(initialSelectedMonth);
 
   // Chart filter states (initialized from localStorage)
-  const [trendsViewOption, setTrendsViewOption] = useState<string>(initialTrendsViewOption);
   const [certificateTypes, setCertificateTypes] = useState<string[]>(initialCertificateTypes);
 
   // Fetch leaderboard by selected month (or year if month is null)
@@ -279,6 +278,15 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  const handleRefresh = useCallback(async () => {
+    if (refreshing) {
+      return;
+    }
+    setRefreshing(true);
+    await fetchDashboardData(true);
+    setRefreshing(false);
+  }, [refreshing, fetchDashboardData]);
+
   useEffect(() => {
     if (!user || !token) {
       router.push('/auth');
@@ -302,7 +310,6 @@ export default function AdminDashboard() {
     const filters = {
       selectedYear,
       selectedMonth,
-      trendsViewOption,
       certificateTypes,
       overview,
       statusDistribution,
@@ -312,7 +319,7 @@ export default function AdminDashboard() {
       lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
 
   // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {
@@ -320,6 +327,20 @@ export default function AdminDashboard() {
       fetchLeaderboardByMonth(selectedYear, selectedMonth);
     }
   }, [token, selectedYear, selectedMonth, fetchLeaderboardByMonth]);
+
+  // Auto-select all certificate types that have data when data is first loaded
+  useEffect(() => {
+    // Only auto-select if:
+    // 1. Certificate trends data is loaded
+    // 2. No types are currently selected
+    // 3. We're not loading from stored filters (initialCertificateTypes is empty)
+    if (certificateTrends && certificateTypes.length === 0 && initialCertificateTypes.length === 0) {
+      const typesWithData = Object.keys(certificateTrends.trendsByCertificateType || {});
+      if (typesWithData.length > 0) {
+        setCertificateTypes(typesWithData);
+      }
+    }
+  }, [certificateTrends, certificateTypes.length, initialCertificateTypes.length]);
 
 
   if (error) {
@@ -343,6 +364,21 @@ export default function AdminDashboard() {
 
   return (
     <div className="px-8 py-6 space-y-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">{t('nav.adminDashboard')}</h1>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          title={t('dashboard.charts.refresh')}
+        >
+          <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+          <span className="text-sm font-medium text-gray-700">{t('dashboard.charts.refresh')}</span>
+        </button>
+      </div>
+
       <div>
         {/* KPI Cards */}
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -363,8 +399,8 @@ export default function AdminDashboard() {
           />
 
           <MetricCard
-            title={t('dashboard.metrics.activeCustomers')}
-            value={overview?.activeCustomers || 0}
+            title={t('dashboard.metrics.unsettled')}
+            value={overview?.unsettledCustomers || 0}
             description={t('dashboard.metrics.recentActivity')}
             loading={overviewLoading}
           />
@@ -387,8 +423,6 @@ export default function AdminDashboard() {
             granularity={trends?.granularity || 'daily'}
             loading={trendsLoading}
             error={error}
-            viewOption={trendsViewOption}
-            onViewOptionChange={setTrendsViewOption}
           />
 
           {/* Certificate Type Trends Chart */}

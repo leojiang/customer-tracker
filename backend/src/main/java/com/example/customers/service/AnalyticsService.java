@@ -81,7 +81,7 @@ public class AnalyticsService {
                 salesPhone, startDateStr, endDateStr)
             : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
-    long activeCustomers = getActiveCustomers(salesPhone);
+    long unsettledCustomers = getUnsettledCustomers(salesPhone);
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
     // Previous period metrics for comparison
@@ -105,7 +105,7 @@ public class AnalyticsService {
             previousConversionRate);
 
     return new DashboardOverviewResponse(
-        totalCustomers, newCustomersThisPeriod, activeCustomers, conversionRate, periodChange);
+        totalCustomers, newCustomersThisPeriod, unsettledCustomers, conversionRate, periodChange);
   }
 
   /**
@@ -149,10 +149,6 @@ public class AnalyticsService {
     String startDateStr = startDate.toLocalDate().toString();
     String endDateStr = endDate.toLocalDate().toString();
 
-    // Debug: Check how many customers have certifiedAt dates
-    long totalCustomers = customerRepository.countTotalActiveCustomers();
-    System.out.println("DEBUG: Total active customers: " + totalCustomers);
-
     // Choose query based on granularity
     boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
     List<Object[]> results;
@@ -169,18 +165,6 @@ public class AnalyticsService {
               ? customerRepository.getCustomerTrendsByDateForSales(
                   salesPhone, startDateStr, endDateStr)
               : customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
-    }
-
-    System.out.println(
-        "DEBUG: Trends Query - startDate: "
-            + startDateStr
-            + ", endDate: "
-            + endDateStr
-            + ", granularity: "
-            + granularity);
-    System.out.println("DEBUG: Trends Query - results size: " + results.size());
-    for (Object[] row : results) {
-      System.out.println("DEBUG: Trends Query - period: " + row[0] + ", count: " + row[1]);
     }
 
     List<TrendDataPoint> dataPoints = new ArrayList<>();
@@ -465,7 +449,7 @@ public class AnalyticsService {
     LocalDate today = LocalDate.now();
     String todayStr = today.toString();
 
-    long activeCustomersToday =
+    long unsettledCustomersToday =
         (salesPhone != null)
             ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, todayStr, todayStr)
             : customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
@@ -489,7 +473,7 @@ public class AnalyticsService {
     String lastUpdated = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
     return new RealtimeMetricsResponse(
-        activeCustomersToday, newCustomersToday, conversionsToday, lastUpdated);
+        unsettledCustomersToday, newCustomersToday, conversionsToday, lastUpdated);
   }
 
   // Scheduled job to generate daily analytics snapshots
@@ -517,20 +501,24 @@ public class AnalyticsService {
         .divide(BigDecimal.valueOf(totalCustomers), 2, RoundingMode.HALF_UP);
   }
 
-  private long getActiveCustomers(String salesPhone) {
-    // Define active customers as those with recent certifications (last 30 days)
-    LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
-    LocalDate today = LocalDate.now();
-    String thirtyDaysAgoStr = thirtyDaysAgo.toString();
-    String todayStr = today.toString();
+  private long getUnsettledCustomers(String salesPhone) {
+    // Get customers NOT in CERTIFIED status
+    // (i.e., customers still in process: NEW, NOTIFIED, ABORTED, SUBMITTED, CERTIFIED_ELSEWHERE)
+    long totalCustomers = (salesPhone != null)
+        ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
+        : customerRepository.countTotalActiveCustomers();
 
-    // For now, use simplified logic - active customers are those certified recently
-    // This could be enhanced with a proper StatusHistory repository method
-    return (salesPhone != null)
-        ? customerRepository.countNewCustomersInPeriodBySales(
-            salesPhone, thirtyDaysAgoStr, todayStr)
-        : customerRepository.countNewCustomersInPeriod(thirtyDaysAgoStr, todayStr);
+    long certifiedCustomers = (salesPhone != null)
+        ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
+            CustomerStatus.CERTIFIED, salesPhone)
+        : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
+
+    long unsettledCustomers = totalCustomers - certifiedCustomers;
+
+    return unsettledCustomers;
   }
+
+
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {
     List<Object[]> results =

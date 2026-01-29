@@ -12,7 +12,7 @@ import { SalesRole } from '@/types/auth';
 interface DashboardOverview {
   totalCustomers: number;
   newCustomersThisPeriod: number;
-  activeCustomers: number;
+  unsettledCustomers: number;
   conversionRate: number;
   periodChange: {
     totalCustomersChange: number;
@@ -209,8 +209,8 @@ export default function SalesDashboard() {
           />
           
           <MetricCard
-            title={t('dashboard.metrics.activeCustomers')}
-            value={overview?.activeCustomers || 0}
+            title={t('dashboard.metrics.unsettled')}
+            value={overview?.unsettledCustomers || 0}
             description={t('dashboard.metrics.recentActivity')}
             loading={loading}
           />

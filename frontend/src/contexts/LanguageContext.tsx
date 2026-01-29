@@ -123,6 +123,7 @@ const translations = {
     'error.contactSupport': 'Contact support if the problem persists',
 
     // Navigation
+    'nav.adminDashboard': 'Admin Dashboard',
     'nav.dashboard': 'Reports',
     'nav.customers': 'Customers',
     'nav.batchImport': 'Batch Import',
@@ -480,11 +481,11 @@ const translations = {
     // Dashboard - Metrics
     'dashboard.metrics.totalCustomers': 'Total Customers',
     'dashboard.metrics.newCustomers': 'New Certifications',
-    'dashboard.metrics.activeCustomers': 'Active Customers',
+    'dashboard.metrics.unsettled': 'Unsettled',
     'dashboard.metrics.conversionRate': 'Conversion Rate',
-    'dashboard.metrics.newCustomers30d': 'New Certifications (30d)',
+    'dashboard.metrics.newCustomers30d': 'Certified this month',
     'dashboard.metrics.fromLastPeriod': 'from last period',
-    'dashboard.metrics.recentActivity': 'Recent certifications in last 30 days',
+    'dashboard.metrics.recentActivity': 'Customers not yet certified',
     'dashboard.metrics.loadingDashboard': 'Loading reports...',
     'dashboard.metrics.errorLoadingDashboard': 'Error loading reports',
     'dashboard.metrics.viewCustomers': 'View Customers',
@@ -496,6 +497,7 @@ const translations = {
     'dashboard.charts.noData': 'No data available',
     'dashboard.charts.error': 'Error',
     'dashboard.charts.errorLoading': 'Error loading chart',
+    'dashboard.charts.refresh': 'Refresh',
     'dashboard.charts.total': 'total',
     'dashboard.charts.totalCustomers': 'Total Customers',
     'dashboard.charts.customers': 'customers',
@@ -504,7 +506,7 @@ const translations = {
     'dashboard.charts.highestCount': 'Highest Count',
     'dashboard.charts.statusTypes': 'Status Types',
     'dashboard.charts.dataWillAppear': 'Customer status data will appear here when available',
-    'dashboard.charts.newCertifications': 'New Certifications',
+    'dashboard.charts.newCertifications': 'Certified Monthly',
     'dashboard.charts.conversionRate': 'Conversion Rate (%)',
     'dashboard.charts.leaderboard': 'Customer Agent Leaderboard',
     'dashboard.charts.certificateTypeTrends': 'Certificate Type Trends',
@@ -673,7 +675,7 @@ const translations = {
     'error.connectionError': '连接错误',
     'error.dismissMessage': '关闭错误消息',
     'error.phoneAlreadyExists': '手机号码已存在',
-    'error.duplicateCustomerCertificate': '该手机号码已经有此类型的证书，请编辑现有客户资料或选择不同的证书类型。',
+    'error.duplicateCustomerCertificate': '该手机号码已经有此类型的证件，请编辑现有客户资料或选择不同的证件类型。',
     'error.invalidToken': '无效或过期的令牌',
     'error.invalidResponse': '服务器响应无效',
     'error.updateFailed': '更新失败',
@@ -695,6 +697,7 @@ const translations = {
     'error.contactSupport': '如果问题持续存在，请联系技术支持',
 
     // Navigation
+    'nav.adminDashboard': '管理报表',
     'nav.dashboard': '统计报表',
     'nav.customers': '客户',
     'nav.batchImport': '批量导入',
@@ -765,7 +768,7 @@ const translations = {
     'customers.form.phone': '手机号码',
     'customers.form.certificateIssuer': '发证机关',
     'customers.form.businessReq': '备注',
-    'customers.form.certificateType': '证书类型',
+    'customers.form.certificateType': '证件类型',
     'customers.form.age': '年龄',
     'customers.form.education': '教育程度',
     'customers.form.gender': '性别',
@@ -863,7 +866,7 @@ const translations = {
 
     // Other types for backward compatibility
     'certificateType.others': '其它',
-    'customers.form.selectCertificateType': '选择证书类型',
+    'customers.form.selectCertificateType': '选择证件类型',
     'certificateIssuer.marketSupervisionAdministration': '市场监督管理局',
     'certificateIssuer.housingConstructionBureau': '住建局',
     'certificateIssuer.emergencyManagementDepartment': '应急管理厅',
@@ -905,7 +908,7 @@ const translations = {
     'dashboard.sales.conversionProgress': '转化进度',
     'dashboard.sales.conversionRate': '转化率',
     'dashboard.sales.keyMetrics': '关键指标',
-    'dashboard.sales.newCustomers': '新客户',
+    'dashboard.sales.newCustomers': '每月业务量',
     'dashboard.sales.conversions': '成交',
     'dashboard.sales.rate': '率',
     'dashboard.sales.quickActions': '快速操作',
@@ -1040,7 +1043,7 @@ const translations = {
     'register.success.backToLogin': '返回登录',
 
     // Validation messages
-    'validation.certificateTypeRequired': '证书类型为必填项',
+    'validation.certificateTypeRequired': '证件类型为必填项',
 
     // Common actions
 
@@ -1050,13 +1053,13 @@ const translations = {
     // Dashboard - Sales
 
     // Dashboard - Metrics
-    'dashboard.metrics.totalCustomers': '总客户数',
-    'dashboard.metrics.newCustomers': '新客户',
-    'dashboard.metrics.activeCustomers': '活跃客户',
+    'dashboard.metrics.totalCustomers': '总业务量',
+    'dashboard.metrics.newCustomers': '每月业务量',
+    'dashboard.metrics.unsettled': '未成交业务',
     'dashboard.metrics.conversionRate': '转化率',
-    'dashboard.metrics.newCustomers30d': '新客户（30天）',
+    'dashboard.metrics.newCustomers30d': '当月成交总量',
     'dashboard.metrics.fromLastPeriod': '对比上期',
-    'dashboard.metrics.recentActivity': '最近30天认证活跃度',
+    'dashboard.metrics.recentActivity': '尚未发证或已在别处办理',
     'dashboard.metrics.loadingDashboard': '正在加载报表...',
     'dashboard.metrics.errorLoadingDashboard': '加载报表时出错',
     'dashboard.metrics.viewCustomers': '查看客户',
@@ -1064,25 +1067,26 @@ const translations = {
 
     // Dashboard - Charts
     'dashboard.charts.statusDistribution': '客户状态分布',
-    'dashboard.charts.trends': '业务量趋势',
+    'dashboard.charts.trends': '成交量趋势',
     'dashboard.charts.noData': '暂无数据',
     'dashboard.charts.error': '错误',
     'dashboard.charts.errorLoading': '图表加载出错',
+    'dashboard.charts.refresh': '刷新',
     'dashboard.charts.total': '总计',
-    'dashboard.charts.totalCustomers': '客户总数',
+    'dashboard.charts.totalCustomers': '总成交量',
     'dashboard.charts.customers': '客户',
     'dashboard.charts.ofTotal': '占总数',
     'dashboard.charts.quickStats': '快速统计',
     'dashboard.charts.highestCount': '最高数量',
     'dashboard.charts.statusTypes': '状态类型',
     'dashboard.charts.dataWillAppear': '客户状态数据可用时将显示在此处',
-    'dashboard.charts.newCertifications': '新客户',
+    'dashboard.charts.newCertifications': '月成交量',
     'dashboard.charts.conversionRate': '转化率 (%)',
     'dashboard.charts.leaderboard': '业务经理业绩榜单',
-    'dashboard.charts.certificateTypeTrends': '证书类型趋势',
-    'dashboard.charts.selectCertificateTypes': '选择证书类型',
-    'dashboard.charts.allCertificateTypes': '所有证书类型',
-    'dashboard.charts.certificateTypes': '证书类型',
+    'dashboard.charts.certificateTypeTrends': '证件类型趋势',
+    'dashboard.charts.selectCertificateTypes': '选择证件类型',
+    'dashboard.charts.allCertificateTypes': '所有证件类型',
+    'dashboard.charts.certificateTypes': '证件类型',
     'dashboard.charts.lastDays': '最近 {days} 天',
     'dashboard.charts.myPipeline': '我的管道状态',
     'dashboard.charts.performanceSummary': '绩效摘要',

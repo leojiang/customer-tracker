@@ -309,19 +309,19 @@ public class AnalyticsController {
   public static class DashboardOverviewResponse {
     private long totalCustomers;
     private long newCustomersThisPeriod;
-    private long activeCustomers;
+    private long unsettledCustomers;
     private BigDecimal conversionRate;
     private PeriodChange periodChange;
 
     public DashboardOverviewResponse(
         long totalCustomers,
         long newCustomersThisPeriod,
-        long activeCustomers,
+        long unsettledCustomers,
         BigDecimal conversionRate,
         PeriodChange periodChange) {
       this.totalCustomers = totalCustomers;
       this.newCustomersThisPeriod = newCustomersThisPeriod;
-      this.activeCustomers = activeCustomers;
+      this.unsettledCustomers = unsettledCustomers;
       this.conversionRate = conversionRate;
       this.periodChange = periodChange;
     }
@@ -335,8 +335,8 @@ public class AnalyticsController {
       return newCustomersThisPeriod;
     }
 
-    public long getActiveCustomers() {
-      return activeCustomers;
+    public long getUnsettledCustomers() {
+      return unsettledCustomers;
     }
 
     public BigDecimal getConversionRate() {
@@ -580,25 +580,25 @@ public class AnalyticsController {
 
   /** Response DTO for real-time metrics. */
   public static class RealtimeMetricsResponse {
-    private long activeCustomersToday;
+    private long unsettledCustomersToday;
     private long newCustomersToday;
     private long conversionsToday;
     private String lastUpdated;
 
     public RealtimeMetricsResponse(
-        long activeCustomersToday,
+        long unsettledCustomersToday,
         long newCustomersToday,
         long conversionsToday,
         String lastUpdated) {
-      this.activeCustomersToday = activeCustomersToday;
+      this.unsettledCustomersToday = unsettledCustomersToday;
       this.newCustomersToday = newCustomersToday;
       this.conversionsToday = conversionsToday;
       this.lastUpdated = lastUpdated;
     }
 
     // Getters
-    public long getActiveCustomersToday() {
-      return activeCustomersToday;
+    public long getUnsettledCustomersToday() {
+      return unsettledCustomersToday;
     }
 
     public long getNewCustomersToday() {

@@ -65,13 +65,12 @@ class AnalyticsServiceTest {
     assertNotNull(response);
     assertEquals(100L, response.getTotalCustomers());
     assertEquals(20L, response.getNewCustomersThisPeriod());
-    assertEquals(20L, response.getActiveCustomers()); // Simplified logic
+    assertEquals(85L, response.getUnsettledCustomers()); // 100 total - 15 certified = 85 unsettled
     assertEquals(new BigDecimal("15.00"), response.getConversionRate());
 
-    verify(customerRepository).countTotalActiveCustomers();
-    verify(customerRepository, times(3)).countNewCustomersInPeriod(any(), any());
-    verify(customerRepository, times(2))
-        .countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
+    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(2)).countNewCustomersInPeriod(any(), any()); // Called for current and previous period
+    verify(customerRepository, times(3)).countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate twice (current + previous period = 2)
   }
 
   @Test
@@ -92,15 +91,15 @@ class AnalyticsServiceTest {
     assertNotNull(response);
     assertEquals(50L, response.getTotalCustomers());
     assertEquals(10L, response.getNewCustomersThisPeriod());
-    assertEquals(10L, response.getActiveCustomers());
+    assertEquals(42L, response.getUnsettledCustomers()); // 50 total - 8 certified = 42 unsettled
     assertEquals(new BigDecimal("16.00"), response.getConversionRate());
 
-    verify(customerRepository).countTotalActiveCustomersBySales(testSalesPhone);
-    verify(customerRepository, times(3))
-        .countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any());
+    verify(customerRepository, times(2)).countTotalActiveCustomersBySales(testSalesPhone); // Called in getDashboardOverview and getUnsettledCustomers
     verify(customerRepository, times(2))
+        .countNewCustomersInPeriodBySales(eq(testSalesPhone), any(), any()); // Called for current and previous period
+    verify(customerRepository, times(3))
         .countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-            CustomerStatus.CERTIFIED, testSalesPhone);
+            CustomerStatus.CERTIFIED, testSalesPhone); // Called in getUnsettledCustomers and calculateConversionRate (twice for current/previous period)
   }
 
   @Test
@@ -316,7 +315,7 @@ class AnalyticsServiceTest {
 
     // Then
     assertNotNull(response);
-    assertEquals(5L, response.getActiveCustomersToday());
+    assertEquals(5L, response.getUnsettledCustomersToday());
     assertEquals(5L, response.getNewCustomersToday());
     assertEquals(2L, response.getConversionsToday());
     assertNotNull(response.getLastUpdated());
@@ -343,7 +342,7 @@ class AnalyticsServiceTest {
 
     // Then
     assertNotNull(response);
-    assertEquals(3L, response.getActiveCustomersToday());
+    assertEquals(3L, response.getUnsettledCustomersToday());
     assertEquals(3L, response.getNewCustomersToday());
     assertEquals(1L, response.getConversionsToday());
     assertNotNull(response.getLastUpdated());
@@ -370,7 +369,7 @@ class AnalyticsServiceTest {
     assertEquals(0L, response.getTotalCustomers());
     assertEquals(BigDecimal.ZERO, response.getConversionRate());
 
-    verify(customerRepository).countTotalActiveCustomers();
+    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
   }
 
   @Test
@@ -449,6 +448,7 @@ class AnalyticsServiceTest {
     assertNotNull(periodChange.getNewCustomersChange());
     assertNotNull(periodChange.getConversionRateChange());
 
-    verify(customerRepository).countTotalActiveCustomers();
+    verify(customerRepository, times(2)).countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository, times(3)).countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED); // Called in getUnsettledCustomers (1) and calculateConversionRate twice (current + previous period = 2)
   }
 }
