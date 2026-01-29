@@ -836,40 +836,42 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         </div>
 
         <div className="flex flex-col h-full space-y-6">
-          {/* Status Management Card */}
-          <div className="card-elevated flex-shrink-0">
-            <div className="card-header">
-              <h3 className="text-headline-6">{t('customers.detail.statusManagement')}</h3>
+          {/* Status Management Card - Hidden for OFFICER */}
+          {user?.role !== SalesRole.OFFICER && (
+            <div className="card-elevated flex-shrink-0">
+              <div className="card-header">
+                <h3 className="text-headline-6">{t('customers.detail.statusManagement')}</h3>
+              </div>
+              <div className="card-content">
+                {availableTransitions.length > 0 ? (
+                  <button
+                    onClick={() => {
+                      if (availableTransitions.length > 0) {
+                        setStatusTransition({
+                          toStatus: availableTransitions[0]!,
+                          reason: ''
+                        });
+                        setShowStatusModal(true);
+                      }
+                    }}
+                    className="btn-primary w-full flex items-center justify-center gap-3"
+                  >
+                    <ArrowLeft className="rotate-90" size={18} />
+                    {t('customers.detail.updateStatus')}
+                  </button>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="text-body-2 text-surface-500 mb-2">{t('customers.detail.noTransitionsAvailable')}</div>
+                    <p className="text-caption text-surface-400">
+                      {customer.currentStatus === 'CERTIFIED'
+                        ? t('customers.detail.businessComplete')
+                        : t('customers.detail.loadingTransitions')}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="card-content">
-              {availableTransitions.length > 0 ? (
-                <button
-                  onClick={() => {
-                    if (availableTransitions.length > 0) {
-                      setStatusTransition({
-                        toStatus: availableTransitions[0]!,
-                        reason: ''
-                      });
-                      setShowStatusModal(true);
-                    }
-                  }}
-                  className="btn-primary w-full flex items-center justify-center gap-3"
-                >
-                  <ArrowLeft className="rotate-90" size={18} />
-                  {t('customers.detail.updateStatus')}
-                </button>
-              ) : (
-                <div className="text-center py-6">
-                  <div className="text-body-2 text-surface-500 mb-2">{t('customers.detail.noTransitionsAvailable')}</div>
-                  <p className="text-caption text-surface-400">
-                    {customer.currentStatus === 'CERTIFIED'
-                      ? t('customers.detail.businessComplete')
-                      : t('customers.detail.loadingTransitions')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Status History Component */}
           <div className="flex-grow flex flex-col">
