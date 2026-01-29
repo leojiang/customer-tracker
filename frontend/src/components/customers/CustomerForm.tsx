@@ -21,7 +21,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   const { user } = useAuth();
 
   // Check if user has permission to add customers
-  const canAddCustomer = user?.role === SalesRole.ADMIN || user?.role === SalesRole.OFFICER;
+  const canAddCustomer = user?.role === SalesRole.ADMIN || user?.role === SalesRole.CUSTOMER_AGENT;
 
   const [formData, setFormData] = useState<CreateCustomerRequest>({
     name: '',
