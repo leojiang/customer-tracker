@@ -207,23 +207,39 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Statistics Cards */}
+      {/* Statistics Cards - Clickable to filter */}
       <div className="flex-shrink-0 mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+        <button
+          type="button"
+          onClick={() => setUserStatusTab('active')}
+          className={`overflow-hidden rounded-lg px-4 py-5 shadow sm:p-6 text-left transition-all duration-200 hover:shadow-lg ${
+            userStatusTab === 'active'
+              ? 'ring-2 ring-green-500 bg-green-50'
+              : 'bg-white hover:bg-gray-50'
+          }`}
+        >
           <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
             <CheckCircle size={16} />
             {t('userManagement.activeUsers')}
           </dt>
           <dd className="mt-1 text-3xl font-semibold text-green-600">{activeCount}</dd>
-        </div>
-        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+        </button>
+        <button
+          type="button"
+          onClick={() => setUserStatusTab('disabled')}
+          className={`overflow-hidden rounded-lg px-4 py-5 shadow sm:p-6 text-left transition-all duration-200 hover:shadow-lg ${
+            userStatusTab === 'disabled'
+              ? 'ring-2 ring-red-500 bg-red-50'
+              : 'bg-white hover:bg-gray-50'
+          }`}
+        >
           <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
             <XCircle size={16} />
             {t('userManagement.disabledUsers')}
           </dt>
           <dd className="mt-1 text-3xl font-semibold text-red-600">{disabledCount}</dd>
-        </div>
-        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+        </button>
+        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 opacity-75 cursor-default">
           <dt className="text-sm font-medium text-gray-500 truncate flex items-center gap-2">
             <Users size={16} />
             {t('userManagement.activeRate')}
@@ -234,36 +250,9 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
         </div>
       </div>
 
-      {/* Sub-tab Navigation */}
+      {/* Search Bar - Only */}
       <div className="flex-shrink-0">
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setUserStatusTab('active')}
-              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                userStatusTab === 'active'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-white text-gray-500 hover:text-gray-700'
-              } border border-gray-300`}
-            >
-              <CheckCircle size={16} />
-              <span className="ml-2">{t('userManagement.active')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserStatusTab('disabled')}
-              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                userStatusTab === 'disabled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-white text-gray-500 hover:text-gray-700'
-              } border border-gray-300`}
-            >
-              <XCircle size={16} />
-              <span className="ml-2">{t('userManagement.disabled')}</span>
-            </button>
-          </div>
-
+        <div className="mt-8 flex justify-end">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
