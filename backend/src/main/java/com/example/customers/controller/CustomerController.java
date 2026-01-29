@@ -126,8 +126,11 @@ public class CustomerController {
       limit = 100; // Max limit as per plan
     }
 
-    // Always sort by certificate time ASC regardless of filters
-    Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("certifiedAt").ascending());
+    // Always sort by certificate time ASC, then by creation time DESC for consistent ordering
+    Pageable pageable = PageRequest.of(page - 1, limit,
+        Sort.by("certifiedAt").ascending()
+            .and(Sort.by("createdAt").descending())
+            .and(Sort.by("id").ascending()));
 
     // Get current user's sales phone for filtering (non-admin users can only see their own
     // customers)
