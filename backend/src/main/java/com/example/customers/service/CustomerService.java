@@ -258,7 +258,7 @@ public class CustomerService {
   public Page<Customer> searchCustomers(
       String nameQuery,
       String phoneQuery,
-      CustomerStatus status,
+      List<CustomerStatus> statuses,
       String certificateIssuer,
       String salesPhone,
       boolean includeDeleted,
@@ -275,7 +275,7 @@ public class CustomerService {
         CustomerSpecifications.searchCustomers(
             nameQuery,
             phoneQuery,
-            status,
+            statuses,
             certificateIssuer,
             salesPhone,
             includeDeleted,

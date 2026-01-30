@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus, CertificateIssuerTranslationKeys, CustomerType, CustomerTypeTranslationKeys, getTranslatedCustomerTypeName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
@@ -29,7 +29,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     certifiedStartDate?: string;
     certifiedEndDate?: string;
     selectedCertificateType?: string;
-    selectedStatus?: string;
+    selectedStatuses?: string[];
     certificateIssuer?: string;
     customerAgent?: string;
     selectedCustomerType?: string;
@@ -75,7 +75,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const initialCertifiedStartDate = storedFilters?.certifiedStartDate || '';
   const initialCertifiedEndDate = storedFilters?.certifiedEndDate || '';
   const initialSelectedCertificateType = storedFilters?.selectedCertificateType || '';
-  const initialSelectedStatus = storedFilters?.selectedStatus || '';
+  const initialSelectedStatuses = storedFilters?.selectedStatuses || [];
   const initialCertificateIssuer = storedFilters?.certificateIssuer || '';
   const initialCustomerAgent = storedFilters?.customerAgent || '';
   const initialSelectedCustomerType = storedFilters?.selectedCustomerType || '';
@@ -84,12 +84,17 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   // Initialize search params with stored filters
   const isInitialSearchPhone = isPhoneNumber(initialSearchTerm);
 
+  // Convert initialSelectedStatuses to CustomerStatus array
+  const initialStatuses = initialSelectedStatuses.length > 0
+    ? initialSelectedStatuses.map(s => s as CustomerStatus)
+    : Object.values(CustomerStatus); // Default to all statuses selected
+
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: storedFilters?.page || 1,
     limit: initialPageSize,
     q: !isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     phone: isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
-    status: initialSelectedStatus ? initialSelectedStatus as CustomerStatus : undefined,
+    status: initialStatuses,
     certificateType: initialSelectedCertificateType ? initialSelectedCertificateType as CertificateType : undefined,
     certificateIssuer: initialCertificateIssuer.trim() || undefined,
     customerAgent: initialCustomerAgent.trim() || undefined,
@@ -108,13 +113,62 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [certifiedStartDate, setCertifiedStartDate] = useState(initialCertifiedStartDate);
   const [certifiedEndDate, setCertifiedEndDate] = useState(initialCertifiedEndDate);
   const [selectedCertificateType, setSelectedCertificateType] = useState(initialSelectedCertificateType);
-  const [selectedStatus, setSelectedStatus] = useState(initialSelectedStatus);
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<CustomerStatus>>(new Set(initialStatuses));
   const [certificateIssuer, setCertificateIssuer] = useState(initialCertificateIssuer);
   const [customerAgent, setCustomerAgent] = useState(initialCustomerAgent);
   const [selectedCustomerType, setSelectedCustomerType] = useState(initialSelectedCustomerType);
 
+  // Status dropdown state
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  // All available statuses
+  const allStatuses = Object.values(CustomerStatus);
+
+  // Get selected count text for status
+  const selectedStatusCount = selectedStatuses.size;
+  const selectedStatusText = selectedStatusCount === allStatuses.length
+    ? t('customers.all')
+    : `${selectedStatusCount} ${t('customers.searchStatus')}`;
+
   // Map language to date-fns locale
   const locale = language === 'zh-CN' ? zhCN : enUS;
+
+  // Handle click outside to close status dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle status selection toggle
+  const handleStatusToggle = (status: CustomerStatus) => {
+    const newSelected = new Set(selectedStatuses);
+    if (newSelected.has(status)) {
+      newSelected.delete(status);
+    } else {
+      newSelected.add(status);
+    }
+    setSelectedStatuses(newSelected);
+  };
+
+  // Handle toggle all statuses
+  const handleToggleAllStatuses = () => {
+    if (selectedStatuses.size === allStatuses.length) {
+      // If all are selected, deselect all
+      setSelectedStatuses(new Set());
+    } else {
+      // Otherwise, select all
+      setSelectedStatuses(new Set(allStatuses));
+    }
+  };
 
   const loadCustomers = useCallback(async (params: CustomerSearchParams) => {
     try {
@@ -142,7 +196,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       certifiedStartDate,
       certifiedEndDate,
       selectedCertificateType,
-      selectedStatus,
+      selectedStatuses: Array.from(selectedStatuses),
       certificateIssuer,
       customerAgent,
       selectedCustomerType,
@@ -150,7 +204,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       pageSize: searchParams.limit,
     };
     saveFiltersToStorage(filters);
-  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, selectedCustomerType, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatuses, certificateIssuer, customerAgent, selectedCustomerType, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
 
   useEffect(() => {
     loadCustomers(searchParams);
@@ -164,7 +218,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       ...prev,
       q: !isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
-      status: selectedStatus ? selectedStatus as CustomerStatus : undefined,
+      status: selectedStatuses.size > 0 ? Array.from(selectedStatuses) : undefined,
       certificateType: selectedCertificateType ? selectedCertificateType as CertificateType : undefined,
       certificateIssuer: certificateIssuer.trim() || undefined,
       customerAgent: customerAgent.trim() || undefined,
@@ -177,7 +231,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
   const handleClearAllFilters = () => {
     setSearchTerm('');
-    setSelectedStatus('');
+    setSelectedStatuses(new Set(allStatuses));
     setSelectedCertificateType('');
     setCertificateIssuer('');
     setCustomerAgent('');
@@ -268,18 +322,58 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               {/* Status Filter - full width on mobile, 2 columns on desktop */}
               <div className="sm:col-span-1 lg:col-span-2">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.searchStatus')}</label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="input-field w-full text-sm"
-                >
-                  <option value="">{t('customers.all')}</option>
-                  {Object.values(CustomerStatus).map((status) => (
-                    <option key={status} value={status}>
-                      {t(CustomerStatusTranslationKeys[status])}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative" ref={statusDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                    className="input-field w-full text-sm flex items-center justify-between"
+                  >
+                    <span className="text-gray-700">{selectedStatusText}</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isStatusDropdownOpen ? 'transform rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isStatusDropdownOpen && (
+                    <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      <div className="py-1">
+                        {/* All toggle */}
+                        <label className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200">
+                          <input
+                            type="checkbox"
+                            checked={selectedStatuses.size === allStatuses.length}
+                            onChange={handleToggleAllStatuses}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-3 text-sm font-medium text-gray-700">
+                            {t('customers.all')}
+                          </span>
+                        </label>
+                        {allStatuses.map((status) => (
+                          <label
+                            key={status}
+                            className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedStatuses.has(status)}
+                              onChange={() => handleStatusToggle(status)}
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-3 text-sm text-gray-700">
+                              {t(CustomerStatusTranslationKeys[status])}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Customer Agent - full width on mobile, 2 columns on desktop (conditional for Admin/Officer) */}

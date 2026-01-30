@@ -311,7 +311,7 @@ export interface CustomerPageResponse {
 export interface CustomerSearchParams {
   q?: string;
   phone?: string;
-  status?: CustomerStatus;
+  status?: CustomerStatus[];
   certificateIssuer?: string;
   includeDeleted?: boolean;
   certificateType?: CertificateType;

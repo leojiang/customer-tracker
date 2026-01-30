@@ -99,7 +99,7 @@ public class CustomerSpecifications {
   public static Specification<Customer> searchCustomers(
       String nameQuery,
       String phoneQuery,
-      CustomerStatus status,
+      List<CustomerStatus> statuses,
       String certificateIssuer,
       String salesPhone,
       boolean includeDeleted,
@@ -125,9 +125,9 @@ public class CustomerSpecifications {
         predicates.add(criteriaBuilder.like(root.get("phone"), "%" + phoneQuery.trim() + "%"));
       }
 
-      // Status filter
-      if (status != null) {
-        predicates.add(criteriaBuilder.equal(root.get("currentStatus"), status));
+      // Status filter (multiple statuses)
+      if (statuses != null && !statuses.isEmpty()) {
+        predicates.add(root.get("currentStatus").in(statuses));
       }
 
       // Certificate issuer search

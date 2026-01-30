@@ -92,8 +92,6 @@ public class CustomerController {
       @Parameter(description = "Search by phone number (partial match)")
           @RequestParam(required = false)
           String phone,
-      @Parameter(description = "Filter by customer status") @RequestParam(required = false)
-          CustomerStatus status,
       @Parameter(description = "Search by certificate issuer name (case-insensitive)")
           @RequestParam(required = false)
           String certificateIssuer,
@@ -107,6 +105,9 @@ public class CustomerController {
           String certificateType,
       @Parameter(description = "Filter by customer type") @RequestParam(required = false)
           String customerType,
+      @Parameter(description = "Filter by status (can be specified multiple times)")
+          @RequestParam(required = false)
+          List<String> status,
       @Parameter(description = "Filter by certified date start (ISO format)")
           @RequestParam(required = false)
           String certifiedStartDate,
@@ -163,11 +164,26 @@ public class CustomerController {
       }
     }
 
+    // Convert status strings to enum list
+    List<CustomerStatus> customerStatuses = null;
+    if (status != null && !status.isEmpty()) {
+      customerStatuses = new java.util.ArrayList<>();
+      for (String statusStr : status) {
+        if (statusStr != null && !statusStr.trim().isEmpty()) {
+          try {
+            customerStatuses.add(CustomerStatus.valueOf(statusStr.toUpperCase()));
+          } catch (IllegalArgumentException e) {
+            // Invalid status, ignore
+          }
+        }
+      }
+    }
+
     Page<Customer> customers =
         customerService.searchCustomers(
             q,
             phone,
-            status,
+            customerStatuses,
             certificateIssuer,
             filterBySalesPhone,
             includeDeleted,

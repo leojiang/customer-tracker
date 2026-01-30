@@ -92,8 +92,10 @@ export const customerApi = {
     if (params.phone) {
       searchParams.append('phone', params.phone);
     }
-    if (params.status) {
-      searchParams.append('status', params.status);
+    if (params.status && params.status.length > 0) {
+      params.status.forEach((status) => {
+        searchParams.append('status', status);
+      });
     }
     if (params.certificateIssuer) {
       searchParams.append('certificateIssuer', params.certificateIssuer);
@@ -106,6 +108,9 @@ export const customerApi = {
     }
     if (params.certificateType) {
       searchParams.append('certificateType', params.certificateType);
+    }
+    if (params.customerType) {
+      searchParams.append('customerType', params.customerType);
     }
     if (params.certifiedStartDate) {
       searchParams.append('certifiedStartDate', params.certifiedStartDate);
