@@ -27,12 +27,10 @@ public class CustomerStaging {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @NotBlank
-  @Column(nullable = false)
+  @Column
   private String name;
 
-  @NotBlank
-  @Column(nullable = false)
+  @Column
   private String phone;
 
   @Column(name = "certificate_issuer")
@@ -57,7 +55,7 @@ public class CustomerStaging {
   private String idCard;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "current_status", nullable = false)
+  @Column(name = "current_status")
   private CustomerStatus currentStatus = CustomerStatus.NEW;
 
   @Column(name = "customer_agent")
@@ -67,7 +65,7 @@ public class CustomerStaging {
   private String certifiedAt; // Format: YYYY-MM-DD (e.g., "2024-01-15")
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "import_status", nullable = false)
+  @Column(name = "import_status")
   private ImportStatus importStatus = ImportStatus.PENDING;
 
   @Column(name = "validation_message")
@@ -80,7 +78,7 @@ public class CustomerStaging {
   private Integer excelRowNumber;
 
   @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
+  @Column(name = "created_at", updatable = false)
   private ZonedDateTime createdAt;
 
   /** Import status enumeration. */

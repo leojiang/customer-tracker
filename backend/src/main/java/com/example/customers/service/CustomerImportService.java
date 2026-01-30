@@ -232,7 +232,7 @@ public class CustomerImportService {
           staging.setCurrentStatus(CustomerStatus.CERTIFIED);
 
           // Validate and determine import status
-          validateAndSetStatus(staging);
+          validateAndSetStatus(staging, stagingRecords);
 
         } catch (Exception e) {
           staging.setImportStatus(ImportStatus.INVALID);
@@ -363,41 +363,55 @@ public class CustomerImportService {
   }
 
   /** Validate staging record and determine import status. */
-  private void validateAndSetStatus(CustomerStaging staging) {
+  private void validateAndSetStatus(CustomerStaging staging, List<CustomerStaging> stagingRecords) {
+    // Check for duplicate in staging records (by name, phone + certificate type)
+    for (CustomerStaging existingStaging : stagingRecords) {
+      if (staging.getName() != null
+          && staging.getName().equals(existingStaging.getName())
+          && staging.getPhone() != null
+          && staging.getPhone().equals(existingStaging.getPhone())
+          && staging.getCertificateType() != null
+          && staging.getCertificateType().equals(existingStaging.getCertificateType())) {
+        staging.setImportStatus(ImportStatus.INVALID);
+        staging.setValidationMessage("重复的客户记录");
+        return;
+      }
+    }
+
     // Check required fields
     if (staging.getName() == null || staging.getName().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Name is required");
+      staging.setValidationMessage("名字不能为空");
       return;
     }
 
     if (staging.getIdCard() == null || staging.getIdCard().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Name is required");
+      staging.setValidationMessage("身份证不能为空");
       return;
     }
 
     if (staging.getPhone() == null || staging.getPhone().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Phone is required");
+      staging.setValidationMessage("电话号码异常或为空");
       return;
     }
 
     if (staging.getCertificateType() == null) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Certificate Type is required");
+      staging.setValidationMessage("证件类型异常或为空");
       return;
     }
 
     if (staging.getCertificateIssuer() == null || staging.getCertificateIssuer().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Certificate Issuer is required");
+      staging.setValidationMessage("发证机构异常或为空");
       return;
     }
 
     if (staging.getCertifiedAt() == null || staging.getCertifiedAt().trim().isEmpty()) {
       staging.setImportStatus(ImportStatus.INVALID);
-      staging.setValidationMessage("Certificate time is required");
+      staging.setValidationMessage("发证时间不能为空");
       return;
     }
 

@@ -247,6 +247,9 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customer.salesPerson')}</th>
               )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28">{t('batchImport.status')}</th>
+              {importStatusFilter === 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-48">{t('batchImport.validationMessage')}</th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -317,6 +320,11 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                     {getLocalizedStatus(record.importStatus)}
                   </span>
                 </td>
+                {importStatusFilter === 'INVALID' && (
+                  <td className="px-6 py-4 text-sm w-48 text-red-600">
+                    {record.validationMessage || '-'}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
