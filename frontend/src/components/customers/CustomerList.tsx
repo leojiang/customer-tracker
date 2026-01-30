@@ -758,6 +758,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('customers.phone')}
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      {t('customers.form.idCard')}
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('customers.form.certificateType')}
                     </th>
@@ -793,6 +796,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                           <Phone size={14} className="text-gray-400" />
                           <span>{customer.phone}</span>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.idCard || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {customer.certificateType ? getCertificateTypeDisplayName(customer.certificateType as CertificateType, t) : '-'}

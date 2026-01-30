@@ -207,34 +207,46 @@ public class CustomerImportService {
         CustomerStaging staging = new CustomerStaging();
         staging.setExcelRowNumber(sequenceNumber);
 
+        // Track missing columns for better error reporting
+        List<String> missingColumns = new ArrayList<>();
+
         try {
-          // Parse row data using dynamic column lookup
-          staging.setName(getCellValueAsString(row.getCell(columnIndexMap.get("姓名"))));
-          staging.setPhone(getCellValueAsString(row.getCell(columnIndexMap.get("电话"))));
+          // Parse row data using dynamic column lookup with null checks
+          // Helper method to safely get cell value by column name
+          staging.setName(getCellValueSafely(row, columnIndexMap, "姓名", missingColumns));
+          staging.setPhone(getCellValueSafely(row, columnIndexMap, "电话", missingColumns));
           staging.setCertificateIssuer(
               parseCertificateIssuer(
-                  getCellValueAsString(row.getCell(columnIndexMap.get("发证机关")))));
+                  getCellValueSafely(row, columnIndexMap, "发证机关", missingColumns)));
           staging.setBusinessRequirements(null); // Not in template
           staging.setCertificateType(
-              parseCertificateType(getCellValueAsString(row.getCell(columnIndexMap.get("证件类型")))));
+              parseCertificateType(
+                  getCellValueSafely(row, columnIndexMap, "证件类型", missingColumns)));
           staging.setAge(null); // Not in template
           staging.setEducation(
-              parseEducationLevel(getCellValueAsString(row.getCell(columnIndexMap.get("学历")))));
-          staging.setGender(getCellValueAsString(row.getCell(columnIndexMap.get("性别"))));
-          staging.setAddress(getCellValueAsString(row.getCell(columnIndexMap.get("地址"))));
-          staging.setIdCard(getCellValueAsString(row.getCell(columnIndexMap.get("身份证"))));
-          staging.setCustomerAgent(getCellValueAsString(row.getCell(columnIndexMap.get("业务经理"))));
+              parseEducationLevel(getCellValueSafely(row, columnIndexMap, "学历", missingColumns)));
+          staging.setGender(getCellValueSafely(row, columnIndexMap, "性别", missingColumns));
+          staging.setAddress(getCellValueSafely(row, columnIndexMap, "地址", missingColumns));
+          staging.setIdCard(getCellValueSafely(row, columnIndexMap, "身份证", missingColumns));
+          staging.setCustomerAgent(getCellValueSafely(row, columnIndexMap, "业务经理", missingColumns));
           staging.setCustomerType(
-              parseCustomerType(getCellValueAsString(row.getCell(columnIndexMap.get("客户类型")))));
+              parseCustomerType(getCellValueSafely(row, columnIndexMap, "客户类型", missingColumns)));
           staging.setCertifiedAt(
               parseChineseDateToISOString(
-                  getCellValueAsString(row.getCell(columnIndexMap.get("发证时间")))));
+                  getCellValueSafely(row, columnIndexMap, "发证时间", missingColumns)));
 
           // Set default status to CERTIFIED for imported records
           staging.setCurrentStatus(CustomerStatus.CERTIFIED);
 
-          // Validate and determine import status
-          validateAndSetStatus(staging, stagingRecords);
+          // Check if there were missing columns
+          if (!missingColumns.isEmpty()) {
+            staging.setImportStatus(ImportStatus.INVALID);
+            staging.setValidationMessage("文件缺少以下列: " + String.join(", ", missingColumns));
+            logger.warn("Row {} has missing columns: {}", i + 1, String.join(", ", missingColumns));
+          } else {
+            // Validate and determine import status
+            validateAndSetStatus(staging, stagingRecords);
+          }
 
         } catch (Exception e) {
           staging.setImportStatus(ImportStatus.INVALID);
@@ -546,6 +558,36 @@ public class CustomerImportService {
     } else {
       return null;
     }
+  }
+
+  /**
+   * Safely get cell value by column name with error handling.
+   *
+   * <p>This method checks if the column exists in the column index map before accessing the cell.
+   * If the column is missing, it adds the column name to the missingColumns list and returns null
+   * instead of throwing a NullPointerException.
+   *
+   * @param row the Excel row
+   * @param columnIndexMap the map of column names to their indices
+   * @param columnName the name of the column to retrieve
+   * @param missingColumns list to track missing column names
+   * @return the cell value as a string, or null if the column doesn't exist
+   */
+  private String getCellValueSafely(
+      Row row,
+      Map<String, Integer> columnIndexMap,
+      String columnName,
+      List<String> missingColumns) {
+
+    Integer columnIndex = columnIndexMap.get(columnName);
+    if (columnIndex == null) {
+      // Column not found in Excel file
+      missingColumns.add(columnName);
+      return null;
+    }
+
+    // Column exists, get the cell value
+    return getCellValueAsString(row.getCell(columnIndex));
   }
 
   /** Parse enum value from string. */

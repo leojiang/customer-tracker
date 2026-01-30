@@ -11,8 +11,11 @@ import com.example.customers.controller.AnalyticsController.RealtimeMetricsRespo
 import com.example.customers.controller.AnalyticsController.SalesPerformanceResponse;
 import com.example.customers.controller.AnalyticsController.StatusDistributionResponse;
 import com.example.customers.controller.AnalyticsController.TrendAnalysisResponse;
+import com.example.customers.entity.MonthlyCertifiedCount;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.repository.CustomerRepository;
+import com.example.customers.repository.MonthlyCertifiedCountByCertificateTypeRepository;
+import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import java.math.BigDecimal;
@@ -35,6 +38,11 @@ class AnalyticsServiceTest {
   @Mock private CustomerRepository customerRepository;
   @Mock private SalesRepository salesRepository;
   @Mock private StatusHistoryRepository statusHistoryRepository;
+  @Mock private MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
+
+  @Mock
+  private MonthlyCertifiedCountByCertificateTypeRepository
+      monthlyCertifiedCountByCertificateTypeRepository;
 
   @InjectMocks private AnalyticsService analyticsService;
 
@@ -53,7 +61,12 @@ class AnalyticsServiceTest {
   @DisplayName("Should get dashboard overview for admin")
   void shouldGetDashboardOverviewForAdmin() {
     // Given
-    when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
+    List<MonthlyCertifiedCount> monthlyCounts = new ArrayList<>();
+    MonthlyCertifiedCount count = new MonthlyCertifiedCount();
+    count.setMonth("2024-01");
+    count.setCertifiedCount(100);
+    monthlyCounts.add(count);
+    when(monthlyCertifiedCountRepository.findAllByOrderByMonthAsc()).thenReturn(monthlyCounts);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
     when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
@@ -68,8 +81,7 @@ class AnalyticsServiceTest {
     assertEquals(85L, response.getUnsettledCustomers()); // 100 total - 15 certified = 85 unsettled
     assertEquals(new BigDecimal("15.00"), response.getConversionRate());
 
-    verify(customerRepository, times(2))
-        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(monthlyCertifiedCountRepository).findAllByOrderByMonthAsc();
     verify(customerRepository, times(2))
         .countNewCustomersInPeriod(any(), any()); // Called for current and previous period
     verify(customerRepository, times(3))
@@ -100,9 +112,8 @@ class AnalyticsServiceTest {
     assertEquals(42L, response.getUnsettledCustomers()); // 50 total - 8 certified = 42 unsettled
     assertEquals(new BigDecimal("16.00"), response.getConversionRate());
 
-    verify(customerRepository, times(2))
-        .countTotalActiveCustomersBySales(
-            testSalesPhone); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(customerRepository)
+        .countTotalActiveCustomersBySales(testSalesPhone); // Called in getDashboardOverview
     verify(customerRepository, times(2))
         .countNewCustomersInPeriodBySales(
             eq(testSalesPhone), any(), any()); // Called for current and previous period
@@ -369,7 +380,8 @@ class AnalyticsServiceTest {
   @DisplayName("Should handle zero total customers in conversion rate calculation")
   void shouldHandleZeroTotalCustomersInConversionRateCalculation() {
     // Given
-    when(customerRepository.countTotalActiveCustomers()).thenReturn(0L);
+    List<MonthlyCertifiedCount> monthlyCounts = new ArrayList<>();
+    when(monthlyCertifiedCountRepository.findAllByOrderByMonthAsc()).thenReturn(monthlyCounts);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(0L);
 
     // When
@@ -380,8 +392,7 @@ class AnalyticsServiceTest {
     assertEquals(0L, response.getTotalCustomers());
     assertEquals(BigDecimal.ZERO, response.getConversionRate());
 
-    verify(customerRepository, times(2))
-        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(monthlyCertifiedCountRepository).findAllByOrderByMonthAsc();
   }
 
   @Test
@@ -442,7 +453,12 @@ class AnalyticsServiceTest {
   @DisplayName("Should calculate period change correctly")
   void shouldCalculatePeriodChangeCorrectly() {
     // Given
-    when(customerRepository.countTotalActiveCustomers()).thenReturn(100L);
+    List<MonthlyCertifiedCount> monthlyCounts = new ArrayList<>();
+    MonthlyCertifiedCount count = new MonthlyCertifiedCount();
+    count.setMonth("2024-01");
+    count.setCertifiedCount(100);
+    monthlyCounts.add(count);
+    when(monthlyCertifiedCountRepository.findAllByOrderByMonthAsc()).thenReturn(monthlyCounts);
     when(customerRepository.countNewCustomersInPeriod(any(), any())).thenReturn(20L);
     when(customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED))
         .thenReturn(15L);
@@ -460,8 +476,7 @@ class AnalyticsServiceTest {
     assertNotNull(periodChange.getNewCustomersChange());
     assertNotNull(periodChange.getConversionRateChange());
 
-    verify(customerRepository, times(2))
-        .countTotalActiveCustomers(); // Called in getDashboardOverview and getUnsettledCustomers
+    verify(monthlyCertifiedCountRepository).findAllByOrderByMonthAsc();
     verify(customerRepository, times(3))
         .countByCurrentStatusAndDeletedAtIsNull(
             CustomerStatus

@@ -82,15 +82,15 @@ public class AnalyticsService {
     String startDateComparisonStr = startDate.toLocalDate().toString();
 
     // Current period metrics
-    // For admin users, use the certified count table to get total customers (sum of all monthly certifications)
+    // For admin users, use the certified count table to get total customers (sum of all monthly
+    // certifications)
     long totalCustomers;
     if (salesPhone == null) {
       // Admin: get total from certified count table
       List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
           monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
-      totalCustomers = monthlyCounts.stream()
-          .mapToLong(mc -> mc.getCertifiedCount().longValue())
-          .sum();
+      totalCustomers =
+          monthlyCounts.stream().mapToLong(mc -> mc.getCertifiedCount().longValue()).sum();
     } else {
       // Sales user: use the customer table
       totalCustomers = customerRepository.countTotalActiveCustomersBySales(salesPhone);
@@ -102,7 +102,7 @@ public class AnalyticsService {
                 salesPhone, startDateStr, endDateStr)
             : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
-    long unsettledCustomers = getUnsettledCustomers(salesPhone);
+    long unsettledCustomers = getUnsettledCustomers(salesPhone, totalCustomers);
     BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
 
     // Previous period metrics for comparison
@@ -530,14 +530,9 @@ public class AnalyticsService {
         .divide(BigDecimal.valueOf(totalCustomers), 2, RoundingMode.HALF_UP);
   }
 
-  private long getUnsettledCustomers(String salesPhone) {
+  private long getUnsettledCustomers(String salesPhone, long totalCustomers) {
     // Get customers NOT in CERTIFIED status
     // (i.e., customers still in process: NEW, NOTIFIED, ABORTED, SUBMITTED, CERTIFIED_ELSEWHERE)
-    long totalCustomers =
-        (salesPhone != null)
-            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-            : customerRepository.countTotalActiveCustomers();
-
     long certifiedCustomers =
         (salesPhone != null)
             ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
