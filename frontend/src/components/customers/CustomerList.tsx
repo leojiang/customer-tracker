@@ -414,7 +414,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       </div>
 
       {/* Floating Add Customer Button - Above Pagination at Bottom Right */}
-      {(user?.role === SalesRole.ADMIN || user?.role === SalesRole.CUSTOMER_AGENT) && (
+      {user?.role === SalesRole.ADMIN && (
         <button
           onClick={onCreateCustomer}
           className="fixed bottom-24 right-8 w-14 h-14 bg-primary-500 hover:bg-primary-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-xl z-50"

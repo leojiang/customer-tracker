@@ -357,14 +357,14 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     if (!user) {
       return false;
     }
-    return user.role === SalesRole.ADMIN || user.role === SalesRole.CUSTOMER_AGENT;
+    return user.role === SalesRole.ADMIN;
   };
 
   const canRequestDelete = (): boolean => {
     if (!user) {
       return false;
     }
-    return user.role === SalesRole.ADMIN || user.role === SalesRole.CUSTOMER_AGENT;
+    return user.role === SalesRole.ADMIN;
   };
 
   const getSalesPersonDisplayName = (salesPhone: string): string => {
