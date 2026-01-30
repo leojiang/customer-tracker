@@ -13,9 +13,9 @@ import java.util.Objects;
 /**
  * Entity representing monthly certified customer counts grouped by certificate type.
  *
- * <p>This table tracks how many customers reached CERTIFIED status in a given month,
- * broken down by their certificate type. It provides fast, simplified queries for
- * the Certificate Type Trends chart.
+ * <p>This table tracks how many customers reached CERTIFIED status in a given month, broken down by
+ * their certificate type. It provides fast, simplified queries for the Certificate Type Trends
+ * chart.
  */
 @Entity
 @Table(name = "monthly_certified_count_by_certificate_type")

@@ -20,8 +20,8 @@ public interface MonthlyCertifiedCountByCertificateTypeRepository
   /**
    * Increment certified count for a specific month and certificate type.
    *
-   * <p>If a record doesn't exist for the given month and certificate type, creates a new one
-   * with count = 1. If a record exists, increments the count by 1.
+   * <p>If a record doesn't exist for the given month and certificate type, creates a new one with
+   * count = 1. If a record exists, increments the count by 1.
    *
    * <p>This operation is atomic and thread-safe due to the use of INSERT ... ON DUPLICATE KEY
    * UPDATE.

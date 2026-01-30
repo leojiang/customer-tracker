@@ -191,5 +191,4 @@ public interface CustomerRepository
       @Param("salesPhone") String salesPhone,
       @Param("startDate") String startDate,
       @Param("endDate") String endDate);
-
 }

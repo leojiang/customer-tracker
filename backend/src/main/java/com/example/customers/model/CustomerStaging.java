@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,11 +26,9 @@ public class CustomerStaging {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column
-  private String name;
+  @Column private String name;
 
-  @Column
-  private String phone;
+  @Column private String phone;
 
   @Column(name = "certificate_issuer")
   private String certificateIssuer;

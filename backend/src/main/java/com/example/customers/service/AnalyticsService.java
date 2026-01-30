@@ -10,9 +10,9 @@ import com.example.customers.controller.AnalyticsController.SalesPerformanceResp
 import com.example.customers.controller.AnalyticsController.StatusDistributionResponse;
 import com.example.customers.controller.AnalyticsController.TrendAnalysisResponse;
 import com.example.customers.controller.AnalyticsController.TrendDataPoint;
+import com.example.customers.entity.MonthlyCertifiedCountByCertificateType;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.repository.CustomerRepository;
-import com.example.customers.entity.MonthlyCertifiedCountByCertificateType;
 import com.example.customers.repository.MonthlyCertifiedCountByCertificateTypeRepository;
 import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.SalesRepository;
@@ -44,7 +44,8 @@ public class AnalyticsService {
   private final SalesRepository salesRepository;
   private final StatusHistoryRepository statusHistoryRepository;
   private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
-  private final MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository;
+  private final MonthlyCertifiedCountByCertificateTypeRepository
+      monthlyCertifiedCountByCertificateTypeRepository;
 
   @Autowired
   public AnalyticsService(
@@ -52,12 +53,14 @@ public class AnalyticsService {
       SalesRepository salesRepository,
       StatusHistoryRepository statusHistoryRepository,
       MonthlyCertifiedCountRepository monthlyCertifiedCountRepository,
-      MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository) {
+      MonthlyCertifiedCountByCertificateTypeRepository
+          monthlyCertifiedCountByCertificateTypeRepository) {
     this.customerRepository = customerRepository;
     this.salesRepository = salesRepository;
     this.statusHistoryRepository = statusHistoryRepository;
     this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
-    this.monthlyCertifiedCountByCertificateTypeRepository = monthlyCertifiedCountByCertificateTypeRepository;
+    this.monthlyCertifiedCountByCertificateTypeRepository =
+        monthlyCertifiedCountByCertificateTypeRepository;
   }
 
   /**
@@ -265,11 +268,13 @@ public class AnalyticsService {
   }
 
   /**
-   * Get certificate type trends from the monthly_certified_count_by_certificate_type table (simplified, fast query).
+   * Get certificate type trends from the monthly_certified_count_by_certificate_type table
+   * (simplified, fast query).
    */
   private CertificateTypeTrendsResponse getCertificateTypeTrendsFromNewTable() {
     List<MonthlyCertifiedCountByCertificateType> monthlyCounts =
-        monthlyCertifiedCountByCertificateTypeRepository.findAllByOrderByMonthAscCertificateTypeAsc();
+        monthlyCertifiedCountByCertificateTypeRepository
+            .findAllByOrderByMonthAscCertificateTypeAsc();
 
     Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
     Map<String, Long> runningTotals = new HashMap<>();
@@ -283,7 +288,8 @@ public class AnalyticsService {
     }
 
     // Build trend data for each certificate type
-    for (Map.Entry<String, List<MonthlyCertifiedCountByCertificateType>> entry : groupedByType.entrySet()) {
+    for (Map.Entry<String, List<MonthlyCertifiedCountByCertificateType>> entry :
+        groupedByType.entrySet()) {
       String certificateType = entry.getKey();
       List<MonthlyCertifiedCountByCertificateType> typeCounts = entry.getValue();
       List<TrendDataPoint> dataPoints = new ArrayList<>();
