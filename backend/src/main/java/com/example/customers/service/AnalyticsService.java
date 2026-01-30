@@ -12,6 +12,8 @@ import com.example.customers.controller.AnalyticsController.TrendAnalysisRespons
 import com.example.customers.controller.AnalyticsController.TrendDataPoint;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.repository.CustomerRepository;
+import com.example.customers.entity.MonthlyCertifiedCountByCertificateType;
+import com.example.customers.repository.MonthlyCertifiedCountByCertificateTypeRepository;
 import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.SalesRepository;
 import com.example.customers.repository.StatusHistoryRepository;
@@ -42,17 +44,20 @@ public class AnalyticsService {
   private final SalesRepository salesRepository;
   private final StatusHistoryRepository statusHistoryRepository;
   private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
+  private final MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository;
 
   @Autowired
   public AnalyticsService(
       CustomerRepository customerRepository,
       SalesRepository salesRepository,
       StatusHistoryRepository statusHistoryRepository,
-      MonthlyCertifiedCountRepository monthlyCertifiedCountRepository) {
+      MonthlyCertifiedCountRepository monthlyCertifiedCountRepository,
+      MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository) {
     this.customerRepository = customerRepository;
     this.salesRepository = salesRepository;
     this.statusHistoryRepository = statusHistoryRepository;
     this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
+    this.monthlyCertifiedCountByCertificateTypeRepository = monthlyCertifiedCountByCertificateTypeRepository;
   }
 
   /**
@@ -254,91 +259,53 @@ public class AnalyticsService {
    */
   public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(
       String salesPhone, int days) {
-    ZonedDateTime endDate = ZonedDateTime.now();
-    ZonedDateTime startDate = endDate.minusDays(days);
+    // Use the monthly_certified_count_by_certificate_type table for all users (simplified and fast)
+    // Note: The salesPhone and days parameters are kept for API compatibility but not used
+    return getCertificateTypeTrendsFromNewTable();
+  }
 
-    // Convert dates to String format for certifiedAt queries (YYYY-MM-DD)
-    String startDateStr = startDate.toLocalDate().toString();
-    String endDateStr = endDate.toLocalDate().toString();
+  /**
+   * Get certificate type trends from the monthly_certified_count_by_certificate_type table (simplified, fast query).
+   */
+  private CertificateTypeTrendsResponse getCertificateTypeTrendsFromNewTable() {
+    List<MonthlyCertifiedCountByCertificateType> monthlyCounts =
+        monthlyCertifiedCountByCertificateTypeRepository.findAllByOrderByMonthAscCertificateTypeAsc();
 
-    // Use monthly aggregation for certificate type trends
-    List<Object[]> results =
-        (salesPhone != null)
-            ? customerRepository.getCustomerTrendsByCertificateTypeByMonthForSales(
-                salesPhone, startDateStr, endDateStr)
-            : customerRepository.getCustomerTrendsByCertificateTypeByMonth(
-                startDateStr, endDateStr);
-
-    // Group by certificate type and create trend data
     Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
     Map<String, Long> runningTotals = new HashMap<>();
 
-    // Initialize running totals for each certificate type
-    for (Object[] row : results) {
-      String certificateType;
-      if (row[1] instanceof com.example.customers.model.CertificateType) {
-        certificateType = ((com.example.customers.model.CertificateType) row[1]).name();
-      } else {
-        certificateType = (String) row[1];
-      }
-      runningTotals.put(certificateType, 0L);
+    // Group by certificate type
+    Map<String, List<MonthlyCertifiedCountByCertificateType>> groupedByType = new HashMap<>();
+    for (MonthlyCertifiedCountByCertificateType count : monthlyCounts) {
+      String certType = count.getCertificateType();
+      groupedByType.computeIfAbsent(certType, k -> new ArrayList<>()).add(count);
+      runningTotals.put(certType, 0L);
     }
 
-    // Process results grouped by date and certificate type
-    Map<String, Map<String, Long>> dailyCountsByType = new HashMap<>();
-    for (Object[] row : results) {
-      String dateStr = (String) row[0];
-
-      // Handle CertificateType enum conversion
-      String certificateType;
-      if (row[1] instanceof com.example.customers.model.CertificateType) {
-        certificateType = ((com.example.customers.model.CertificateType) row[1]).name();
-      } else {
-        certificateType = (String) row[1];
-      }
-
-      Long count = ((Number) row[2]).longValue();
-
-      dailyCountsByType.computeIfAbsent(dateStr, k -> new HashMap<>()).put(certificateType, count);
-    }
-
-    // Get all unique dates and sort them
-    List<String> sortedDates = dailyCountsByType.keySet().stream().sorted().toList();
-
-    // Build trend data points for each certificate type
-    for (String certificateType : runningTotals.keySet()) {
-      List<TrendDataPoint> typeDataPoints = new ArrayList<>();
+    // Build trend data for each certificate type
+    for (Map.Entry<String, List<MonthlyCertifiedCountByCertificateType>> entry : groupedByType.entrySet()) {
+      String certificateType = entry.getKey();
+      List<MonthlyCertifiedCountByCertificateType> typeCounts = entry.getValue();
+      List<TrendDataPoint> dataPoints = new ArrayList<>();
       long runningTotal = 0;
 
-      for (String dateStr : sortedDates) {
-        Map<String, Long> dailyData = dailyCountsByType.get(dateStr);
-        long dailyCount =
-            dailyData != null && dailyData.containsKey(certificateType)
-                ? dailyData.get(certificateType)
-                : 0L;
+      for (MonthlyCertifiedCountByCertificateType count : typeCounts) {
+        String monthStr = count.getMonth();
+        Long newCertifications = count.getCertifiedCount().longValue();
+        runningTotal += newCertifications;
 
-        runningTotal += dailyCount;
+        // Parse month (YYYY-MM) to date (first day of month)
+        String[] parts = monthStr.split("-");
+        LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
-        // Parse date based on format (YYYY-MM for monthly data)
-        LocalDate date;
-        if (dateStr.matches("\\d{4}-\\d{2}")) {
-          // Monthly format (YYYY-MM) - use first day of the month
-          String[] parts = dateStr.split("-");
-          date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
-        } else {
-          // Daily format (YYYY-MM-DD)
-          date = LocalDate.parse(dateStr);
-        }
-
-        // Use overall conversion rate for simplicity
-        BigDecimal conversionRate = calculateConversionRate(salesPhone, runningTotal);
-        typeDataPoints.add(new TrendDataPoint(date, dailyCount, runningTotal, conversionRate));
+        BigDecimal conversionRate = calculateConversionRate(null, runningTotal);
+        dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRate));
       }
 
-      trendsByType.put(certificateType, typeDataPoints);
+      trendsByType.put(certificateType, dataPoints);
     }
 
-    return new CertificateTypeTrendsResponse(trendsByType, days);
+    return new CertificateTypeTrendsResponse(trendsByType, 0);
   }
 
   /**

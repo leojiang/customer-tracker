@@ -7,6 +7,7 @@ import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.StatusHistory;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.repository.CustomerSpecifications;
+import com.example.customers.repository.MonthlyCertifiedCountByCertificateTypeRepository;
 import com.example.customers.repository.MonthlyCertifiedCountRepository;
 import com.example.customers.repository.StatusHistoryRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +34,7 @@ public class CustomerService {
   private final CustomerRepository customerRepository;
   private final StatusHistoryRepository statusHistoryRepository;
   private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
+  private final MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository;
   private final StatusTransitionValidator transitionValidator;
 
   /**
@@ -41,6 +43,7 @@ public class CustomerService {
    * @param customerRepository customer data repository
    * @param statusHistoryRepository status history repository
    * @param monthlyCertifiedCountRepository monthly certified count repository
+   * @param monthlyCertifiedCountByCertificateTypeRepository monthly certified count by certificate type repository
    * @param transitionValidator status transition validator
    */
   @Autowired
@@ -48,10 +51,12 @@ public class CustomerService {
       CustomerRepository customerRepository,
       StatusHistoryRepository statusHistoryRepository,
       MonthlyCertifiedCountRepository monthlyCertifiedCountRepository,
+      MonthlyCertifiedCountByCertificateTypeRepository monthlyCertifiedCountByCertificateTypeRepository,
       StatusTransitionValidator transitionValidator) {
     this.customerRepository = customerRepository;
     this.statusHistoryRepository = statusHistoryRepository;
     this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
+    this.monthlyCertifiedCountByCertificateTypeRepository = monthlyCertifiedCountByCertificateTypeRepository;
     this.transitionValidator = transitionValidator;
   }
 
@@ -208,6 +213,12 @@ public class CustomerService {
       // Increment monthly certified count
       String month = extractMonthFromDate(customer.getCertifiedAt());
       monthlyCertifiedCountRepository.incrementCertifiedCount(month);
+
+      // Increment monthly certified count by certificate type
+      String certificateType = customer.getCertificateType() != null
+          ? customer.getCertificateType().name()
+          : "OTHER";
+      monthlyCertifiedCountByCertificateTypeRepository.incrementCertifiedCount(month, certificateType);
     }
 
     Customer savedCustomer = customerRepository.save(customer);

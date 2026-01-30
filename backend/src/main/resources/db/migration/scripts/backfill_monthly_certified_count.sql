@@ -13,7 +13,7 @@ SELECT
     COUNT(*) AS count
 FROM customers
 WHERE certified_at IS NOT NULL
-  AND current_status = 'CERTIFIED'
+--  AND current_status = 'CERTIFIED'
   AND deleted_at IS NULL
 GROUP BY DATE_FORMAT(certified_at, '%Y-%m')
 ORDER BY month DESC
@@ -31,7 +31,7 @@ SELECT
     COUNT(*) AS certified_count
 FROM customers
 WHERE certified_at IS NOT NULL
-  AND current_status = 'CERTIFIED'
+--  AND current_status = 'CERTIFIED'
   AND deleted_at IS NULL
 GROUP BY DATE_FORMAT(certified_at, '%Y-%m')
 ORDER BY month;

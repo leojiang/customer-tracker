@@ -192,17 +192,4 @@ public interface CustomerRepository
       @Param("startDate") String startDate,
       @Param("endDate") String endDate);
 
-  /** Get customer certification trends by certificate type and month. */
-  @Query(
-      "SELECT DATE_FORMAT(c.certifiedAt, '%Y-%m') as month, c.certificateType as type, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY DATE_FORMAT(c.certifiedAt, '%Y-%m'), c.certificateType ORDER BY month, c.certificateType")
-  List<Object[]> getCustomerTrendsByCertificateTypeByMonth(
-      @Param("startDate") String startDate, @Param("endDate") String endDate);
-
-  /** Get customer certification trends by certificate type and month for specific sales person. */
-  @Query(
-      "SELECT DATE_FORMAT(c.certifiedAt, '%Y-%m') as month, c.certificateType as type, COUNT(c) as count FROM Customer c WHERE c.deletedAt IS NULL AND c.salesPhone = :salesPhone AND c.certifiedAt IS NOT NULL AND c.certifiedAt BETWEEN :startDate AND :endDate GROUP BY DATE_FORMAT(c.certifiedAt, '%Y-%m'), c.certificateType ORDER BY month, c.certificateType")
-  List<Object[]> getCustomerTrendsByCertificateTypeByMonthForSales(
-      @Param("salesPhone") String salesPhone,
-      @Param("startDate") String startDate,
-      @Param("endDate") String endDate);
 }
