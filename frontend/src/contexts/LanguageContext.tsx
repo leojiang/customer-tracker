@@ -208,6 +208,7 @@ const translations = {
     'customers.form.salesPerson.you': 'You',
     'customers.form.customerAgent': 'Business Manager',
     'customers.form.customerAgent.placeholder': 'Enter agent name',
+    'customers.form.customerType': 'Customer Type',
     'customers.detail.statusManagement': 'Status Management',
     'customers.detail.updateStatus': 'Update Status',
     'customers.detail.updating': 'Updating...',
@@ -234,6 +235,9 @@ const translations = {
     'education.professional': 'Professional Degree',
     'education.certificate': 'Certificate/Diploma',
     'education.other': 'Other',
+    // Customer Type
+    'customerType.newCustomer': 'New Customer',
+    'customerType.renewCustomer': 'Renew Customer',
     // Crane & Machinery Types (起重机械)
     'certificateType.q1Command': 'Q1 Crane Commander',
     'certificateType.q2MobileCrane': 'Q2 Mobile Crane',
@@ -471,6 +475,7 @@ const translations = {
 
     // Validation messages
     'validation.certificateTypeRequired': 'Certificate type is required',
+    'validation.idCardRequired': 'ID card is required',
 
     // Common actions
 
@@ -783,6 +788,7 @@ const translations = {
     'customers.form.salesPerson.you': '您',
     'customers.form.customerAgent': '业务经理',
     'customers.form.customerAgent.placeholder': '输入经理名字',
+    'customers.form.customerType': '客户类型',
     'customers.detail.statusManagement': '状态管理',
     'customers.detail.updateStatus': '更新状态',
     'customers.detail.updating': '更新中...',
@@ -809,6 +815,9 @@ const translations = {
     'education.professional': '专业学位',
     'education.certificate': '证书/文凭',
     'education.other': '其他',
+    // Customer Type
+    'customerType.newCustomer': '新报名客户',
+    'customerType.renewCustomer': '复审客户',
     // Crane & Machinery Types (起重机械)
     'certificateType.q1Command': 'Q1指挥',
     'certificateType.q2MobileCrane': 'Q2流动式',
@@ -1046,6 +1055,7 @@ const translations = {
 
     // Validation messages
     'validation.certificateTypeRequired': '证件类型为必填项',
+    'validation.idCardRequired': '身份证为必填项',
 
     // Common actions
 

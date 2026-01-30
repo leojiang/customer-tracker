@@ -23,6 +23,7 @@ import {
   StatusHistory,
   CustomerStatus,
   CertificateType,
+  CustomerType,
   EducationLevel
 } from '@/types/customer';
 import { customerDeleteRequestApi } from '@/services/customerDeleteRequestApi';
@@ -314,6 +315,7 @@ export interface CustomerStaging {
   idCard?: string;
   currentStatus: CustomerStatus;
   customerAgent?: string;
+  customerType?: CustomerType;
   certifiedAt?: string;
   importStatus: 'PENDING' | 'VALID' | 'UPDATE' | 'DUPLICATE' | 'INVALID';
   validationMessage?: string;

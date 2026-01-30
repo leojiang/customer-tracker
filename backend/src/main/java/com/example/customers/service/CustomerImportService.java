@@ -47,7 +47,7 @@ public class CustomerImportService {
 
   // Excel column headers (Chinese template format)
   private static final String[] HEADERS = {
-    "序号", "期号", "报名时间", "发证时间", "发证机关", "姓名", "身份证", "学历", "性别", "证件类型", "电话", "地址", "业务经理"
+    "序号", "期号", "报名时间", "发证时间", "发证机关", "姓名", "身份证", "学历", "性别", "证件类型", "电话", "地址", "业务经理", "客户类型"
   };
 
   // Certificate type mapping: Chinese name -> Enum name
@@ -224,6 +224,8 @@ public class CustomerImportService {
           staging.setAddress(getCellValueAsString(row.getCell(columnIndexMap.get("地址"))));
           staging.setIdCard(getCellValueAsString(row.getCell(columnIndexMap.get("身份证"))));
           staging.setCustomerAgent(getCellValueAsString(row.getCell(columnIndexMap.get("业务经理"))));
+          staging.setCustomerType(
+              parseCustomerType(getCellValueAsString(row.getCell(columnIndexMap.get("客户类型")))));
           staging.setCertifiedAt(
               parseChineseDateToISOString(
                   getCellValueAsString(row.getCell(columnIndexMap.get("发证时间")))));
@@ -327,8 +329,8 @@ public class CustomerImportService {
       } else if (staging.getImportStatus() == ImportStatus.UPDATE) {
         // Update existing customer
         Optional<Customer> existing =
-            customerRepository.findByNameAndPhoneAndCertificateType(
-                staging.getName(), staging.getPhone(), staging.getCertificateType());
+            customerRepository.findByIdCardAndCertificateType(
+                staging.getIdCard(), staging.getCertificateType());
         if (existing.isPresent()) {
           staging.updateCustomer(existing.get());
           customerRepository.save(existing.get());
@@ -364,16 +366,14 @@ public class CustomerImportService {
 
   /** Validate staging record and determine import status. */
   private void validateAndSetStatus(CustomerStaging staging, List<CustomerStaging> stagingRecords) {
-    // Check for duplicate in staging records (by name, phone + certificate type)
+    // Check for duplicate in staging records (by id_card + certificate type)
     for (CustomerStaging existingStaging : stagingRecords) {
-      if (staging.getName() != null
-          && staging.getName().equals(existingStaging.getName())
-          && staging.getPhone() != null
-          && staging.getPhone().equals(existingStaging.getPhone())
+      if (staging.getIdCard() != null
+          && staging.getIdCard().equals(existingStaging.getIdCard())
           && staging.getCertificateType() != null
           && staging.getCertificateType().equals(existingStaging.getCertificateType())) {
         staging.setImportStatus(ImportStatus.INVALID);
-        staging.setValidationMessage("重复的客户记录");
+        staging.setValidationMessage("重复的客户记录 (身份证 + 证件类型)");
         return;
       }
     }
@@ -415,10 +415,10 @@ public class CustomerImportService {
       return;
     }
 
-    // Check if customer already exists (by name, phone + certificate type)
+    // Check if customer already exists (by id_card + certificate type)
     Optional<Customer> existingOpt =
-        customerRepository.findByNameAndPhoneAndCertificateType(
-            staging.getName(), staging.getPhone(), staging.getCertificateType());
+        customerRepository.findByIdCardAndCertificateType(
+            staging.getIdCard(), staging.getCertificateType());
 
     if (existingOpt.isPresent()) {
       Customer existing = existingOpt.get();
@@ -433,6 +433,12 @@ public class CustomerImportService {
         changedFields.add("name");
       }
 
+      // Compare phone
+      if (!nullSafeEquals(staging.getPhone(), existing.getPhone())) {
+        hasChanges = true;
+        changedFields.add("phone");
+      }
+
       // Compare certificate issuer
       if (!nullSafeEquals(staging.getCertificateIssuer(), existing.getCertificateIssuer())) {
         hasChanges = true;
@@ -445,22 +451,10 @@ public class CustomerImportService {
         changedFields.add("businessRequirements");
       }
 
-      // Compare age
-      if (!nullSafeEquals(staging.getAge(), existing.getAge())) {
-        hasChanges = true;
-        changedFields.add("age");
-      }
-
       // Compare education
       if (staging.getEducation() != existing.getEducation()) {
         hasChanges = true;
         changedFields.add("education");
-      }
-
-      // Compare gender
-      if (!nullSafeEquals(staging.getGender(), existing.getGender())) {
-        hasChanges = true;
-        changedFields.add("gender");
       }
 
       // Compare address
@@ -497,6 +491,12 @@ public class CustomerImportService {
       if (staging.getCertificateType() != existing.getCertificateType()) {
         hasChanges = true;
         changedFields.add("certificateType");
+      }
+
+      // Compare customer type
+      if (staging.getCustomerType() != existing.getCustomerType()) {
+        hasChanges = true;
+        changedFields.add("customerType");
       }
 
       if (hasChanges) {
@@ -623,6 +623,24 @@ public class CustomerImportService {
       default:
         return EducationLevel.OTHER;
     }
+  }
+
+  /** Parse Chinese customer type to enum. */
+  private com.example.customers.model.CustomerType parseCustomerType(String value) {
+    if (value == null || value.trim().isEmpty()) {
+      // Default to NEW_CUSTOMER if empty
+      return com.example.customers.model.CustomerType.NEW_CUSTOMER;
+    }
+
+    String type = value.trim();
+
+    // Map "复审" to RENEW_CUSTOMER, everything else defaults to NEW_CUSTOMER
+    if ("复审".equals(type)) {
+      return com.example.customers.model.CustomerType.RENEW_CUSTOMER;
+    }
+
+    // Default to NEW_CUSTOMER for any other value
+    return com.example.customers.model.CustomerType.NEW_CUSTOMER;
   }
 
   /** Parse Chinese certificate issuer to enum string. */

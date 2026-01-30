@@ -35,7 +35,15 @@ public interface CustomerRepository
   /** Find all customers by phone (supports multiple certificates per phone). */
   List<Customer> findAllByPhone(String phone);
 
-  /** Find customer by name, phone, and certificate type. */
+  /** Find customer by ID card and certificate type. */
+  Optional<Customer> findByIdCardAndCertificateType(
+      String idCard, com.example.customers.model.CertificateType certificateType);
+
+  /**
+   * Find customer by name, phone, and certificate type (DEPRECATED - use
+   * findByIdCardAndCertificateType).
+   */
+  @Deprecated
   Optional<Customer> findByNameAndPhoneAndCertificateType(
       String name, String phone, com.example.customers.model.CertificateType certificateType);
 

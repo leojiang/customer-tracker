@@ -66,25 +66,21 @@ public class CustomerService {
 
   /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
-    // Validate composite uniqueness (name, phone, certificate_type) only when all three are present
-    if (customer.getName() != null
-        && customer.getPhone() != null
-        && customer.getCertificateType() != null) {
+    // Validate composite uniqueness (id_card, certificate_type)
+    if (customer.getIdCard() != null && customer.getCertificateType() != null) {
       Optional<Customer> existingCustomer =
-          customerRepository.findByNameAndPhoneAndCertificateType(
-              customer.getName(), customer.getPhone(), customer.getCertificateType());
+          customerRepository.findByIdCardAndCertificateType(
+              customer.getIdCard(), customer.getCertificateType());
 
       if (existingCustomer.isPresent()) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with name '"
-                + customer.getName()
-                + "', phone number '"
-                + customer.getPhone()
+            "A customer with ID card '"
+                + customer.getIdCard()
                 + "' already has a '"
                 + customer.getCertificateType()
                 + "' certificate. "
-                + "Each combination of name, phone number and certificate type must be unique. "
+                + "Each combination of ID card and certificate type must be unique. "
                 + "Please edit the existing customer or choose a different certificate type.");
       }
     }
@@ -92,6 +88,11 @@ public class CustomerService {
     // Set default status if not provided
     if (customer.getCurrentStatus() == null) {
       customer.setCurrentStatus(CustomerStatus.NEW);
+    }
+
+    // Set default customer type if not provided (already defaulted in entity, but being explicit)
+    if (customer.getCustomerType() == null) {
+      customer.setCustomerType(com.example.customers.model.CustomerType.NEW_CUSTOMER);
     }
 
     Customer savedCustomer = customerRepository.save(customer);
@@ -128,42 +129,33 @@ public class CustomerService {
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
 
-    // Check if phone number is being changed and validate uniqueness
-    boolean phoneChanged =
-        !java.util.Objects.equals(existingCustomer.getPhone(), updatedCustomer.getPhone());
+    // Check if ID card is being changed and validate uniqueness
+    boolean idCardChanged =
+        !java.util.Objects.equals(existingCustomer.getIdCard(), updatedCustomer.getIdCard());
 
-    // Check if name is being changed
-    boolean nameChanged =
-        !java.util.Objects.equals(existingCustomer.getName(), updatedCustomer.getName());
-
-    // Check composite uniqueness (name, phone, certificate_type) if any of these are being changed
-    // Use safe null comparisons to handle legacy data
+    // Check if certificate type is being changed
     boolean certificateTypeChanged =
         !java.util.Objects.equals(
             existingCustomer.getCertificateType(), updatedCustomer.getCertificateType());
 
-    if ((nameChanged || phoneChanged || certificateTypeChanged)
-        && updatedCustomer.getName() != null
-        && updatedCustomer.getPhone() != null
+    // Check composite uniqueness (id_card, certificate_type) if either is being changed
+    if ((idCardChanged || certificateTypeChanged)
+        && updatedCustomer.getIdCard() != null
         && updatedCustomer.getCertificateType() != null) {
 
       Optional<Customer> duplicateCustomer =
-          customerRepository.findByNameAndPhoneAndCertificateType(
-              updatedCustomer.getName(),
-              updatedCustomer.getPhone(),
-              updatedCustomer.getCertificateType());
+          customerRepository.findByIdCardAndCertificateType(
+              updatedCustomer.getIdCard(), updatedCustomer.getCertificateType());
 
       if (duplicateCustomer.isPresent() && !duplicateCustomer.get().getId().equals(id)) {
         throw new BusinessException(
             BusinessException.ErrorCode.DUPLICATE_CUSTOMER_CERTIFICATE,
-            "A customer with name '"
-                + updatedCustomer.getName()
-                + "', phone number '"
-                + updatedCustomer.getPhone()
+            "A customer with ID card '"
+                + updatedCustomer.getIdCard()
                 + "' already has a '"
                 + updatedCustomer.getCertificateType()
                 + "' certificate. "
-                + "Each combination of name, phone number and certificate type must be unique. "
+                + "Each combination of ID card and certificate type must be unique. "
                 + "Please edit the existing customer or choose a different certificate type.");
       }
     }
@@ -272,6 +264,7 @@ public class CustomerService {
       boolean includeDeleted,
       CertificateType certificateType,
       String customerAgent,
+      com.example.customers.model.CustomerType customerType,
       String certifiedStartDate,
       String certifiedEndDate,
       Pageable pageable) {
@@ -288,6 +281,7 @@ public class CustomerService {
             includeDeleted,
             certificateType,
             customerAgent,
+            customerType,
             certifiedStartDate,
             certifiedEndDate);
 

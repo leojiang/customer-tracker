@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Save, User, Phone, Building2, MapPin, GraduationCap, Briefcase, AlertCircle, Lock, Calendar, IdCard } from 'lucide-react';
-import { CreateCustomerRequest, CustomerStatus, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
+import { CreateCustomerRequest, CustomerStatus, CustomerType, EducationLevel, EducationLevelDisplayNames, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys, CustomerTypeTranslationKeys } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { validatePhoneNumber, validateName, validateAge, formatPhoneNumber } from '@/lib/validation';
 import { getErrorMessage } from '@/lib/errorHandler';
@@ -36,6 +36,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
     idCard: undefined,
     currentStatus: CustomerStatus.NEW,
     customerAgent: user?.name || '',
+    customerType: CustomerType.NEW_CUSTOMER,
     certifiedAt: undefined,
   });
   const [loading, setLoading] = useState(false);
@@ -52,7 +53,6 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
     // Validate required fields
     const nameValidation = validateName(formData.name);
-    const phoneValidation = validatePhoneNumber(formData.phone);
     const ageValidation = validateAge(formData.age);
 
     const newFieldErrors: Record<string, string> = {};
@@ -61,8 +61,9 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
       newFieldErrors.name = nameValidation.message!;
     }
 
-    if (!phoneValidation.isValid) {
-      newFieldErrors.phone = phoneValidation.message!;
+    // ID card is now required (phone is optional)
+    if (!formData.idCard || formData.idCard.trim() === '') {
+      newFieldErrors.idCard = t('validation.idCardRequired');
     }
 
     if (!ageValidation.isValid) {
@@ -84,13 +85,14 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
 
       const cleanedData: CreateCustomerRequest = {
         ...formData,
-        phone: formatPhoneNumber(formData.phone), // Format phone number
+        phone: formData.phone ? formatPhoneNumber(formData.phone) : '', // Phone is required per CreateCustomerRequest
         certificateIssuer: formData.certificateIssuer?.trim() || undefined,
         businessRequirements: formData.businessRequirements?.trim() || undefined,
         certificateType: formData.certificateType,
         education: formData.education,
         gender: formData.gender?.trim() || undefined,
         address: formData.address?.trim() || undefined,
+        idCard: formData.idCard?.trim() || undefined,
       };
 
       await customerApi.createCustomer(cleanedData);
@@ -123,15 +125,30 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
   };
 
   const validateField = (field: keyof CreateCustomerRequest, value: string | number | undefined) => {
-    let validation;
+    let validation: { isValid: boolean; message?: string } | undefined;
 
     switch (field) {
       case 'name':
         validation = validateName(value as string);
         break;
       case 'phone':
-        validation = validatePhoneNumber(value as string);
+        // Phone is now optional - only validate if provided
+        if (value && value.toString().trim() !== '') {
+          validation = validatePhoneNumber(value as string);
+        }
         break;
+      case 'idCard':
+        // ID card is required
+        if (!value || value.toString().trim() === '') {
+          setFieldErrors(prev => ({ ...prev, [field]: t('validation.idCardRequired') }));
+        } else {
+          setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[field];
+            return newErrors;
+          });
+        }
+        return;
       case 'age':
         validation = validateAge(value as number);
         break;
@@ -150,7 +167,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
         return;
     }
 
-    if (!validation.isValid) {
+    if (validation && !validation.isValid) {
       setFieldErrors(prev => ({ ...prev, [field]: validation.message! }));
     } else {
       setFieldErrors(prev => {
@@ -239,7 +256,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <Phone size={16} className="text-surface-500" />
-                  {t('customers.form.phone')} *
+                  {t('customers.form.phone')}
                 </label>
                 <input
                   type="tel"
@@ -262,7 +279,7 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <IdCard size={16} className="text-surface-500" />
-                  {t('customers.form.idCard')}
+                  {t('customers.form.idCard')} *
                 </label>
                 <input
                   type="text"
@@ -277,13 +294,15 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                       setIdCardError(t('customers.form.idCardHelp'));
                     }
                   }}
-                  className={`input-field ${idCardError ? 'border-red-500' : ''}`}
+                  onBlur={(e) => validateField('idCard', e.target.value)}
+                  className={`input-field ${fieldErrors.idCard || idCardError ? 'border-red-500' : ''}`}
                   placeholder={t('customers.form.idCardPlaceholder')}
+                  required
                 />
-                {idCardError && (
+                {(fieldErrors.idCard || idCardError) && (
                   <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
                     <AlertCircle size={14} />
-                    <span>{idCardError}</span>
+                    <span>{fieldErrors.idCard || idCardError}</span>
                   </div>
                 )}
               </div>
@@ -301,6 +320,29 @@ export default function CustomerForm({ onClose, onSuccess }: CustomerFormProps) 
                   className="input-field"
                   placeholder={t('customers.form.customerAgent.placeholder')}
                 />
+              </div>
+
+              {/* Customer Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                  <Briefcase size={16} className="text-surface-500" />
+                  {t('customers.form.customerType')}
+                </label>
+                <select
+                  value={formData.customerType || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const customerTypeValue = value && value !== '' ? value as CustomerType : CustomerType.NEW_CUSTOMER;
+                    handleInputChange('customerType', customerTypeValue);
+                  }}
+                  className="input-field"
+                >
+                  {Object.entries(CustomerTypeTranslationKeys).map(([key]) => (
+                    <option key={key} value={key}>
+                      {t(CustomerTypeTranslationKeys[key as CustomerType])}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Certificate Issuer */}

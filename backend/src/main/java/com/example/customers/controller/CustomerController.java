@@ -3,6 +3,7 @@ package com.example.customers.controller;
 import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
+import com.example.customers.model.CustomerType;
 import com.example.customers.model.EducationLevel;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
@@ -104,6 +105,8 @@ public class CustomerController {
           boolean includeDeleted,
       @Parameter(description = "Filter by certificate type") @RequestParam(required = false)
           String certificateType,
+      @Parameter(description = "Filter by customer type") @RequestParam(required = false)
+          String customerType,
       @Parameter(description = "Filter by certified date start (ISO format)")
           @RequestParam(required = false)
           String certifiedStartDate,
@@ -150,6 +153,16 @@ public class CustomerController {
       }
     }
 
+    // Convert customer type string to enum
+    CustomerType customerTypeEnum = null;
+    if (customerType != null && !customerType.trim().isEmpty()) {
+      try {
+        customerTypeEnum = CustomerType.valueOf(customerType.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        // Invalid customer type, ignore
+      }
+    }
+
     Page<Customer> customers =
         customerService.searchCustomers(
             q,
@@ -160,6 +173,7 @@ public class CustomerController {
             includeDeleted,
             certificateTypeEnum,
             customerAgent,
+            customerTypeEnum,
             certifiedStartDate,
             certifiedEndDate,
             pageable);

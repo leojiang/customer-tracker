@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Phone, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomerStaging, StagingPageResponse } from '@/lib/api';
-import { CertificateType, CertificateIssuer, CertificateIssuerTranslationKeys, EducationLevel, getTranslatedEducationLevelName } from '@/types/customer';
+import { CertificateType, CertificateIssuer, CertificateIssuerTranslationKeys, CustomerType, EducationLevel, getTranslatedEducationLevelName, getTranslatedCustomerTypeName } from '@/types/customer';
 import { customerImportApi } from '@/lib/api';
 import { getCertificateTypeDisplayName } from '@/lib/certificateTypeUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,7 +31,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
     total: 0,
     totalPages: 0,
     page: 1,
-    limit: 20,
+    limit: 100,
   });
 
   // Track previous filter to detect changes
@@ -43,7 +43,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
 
   const locale = language === 'zh-CN' ? zhCN : enUS;
 
-  const loadRecords = useCallback(async (page: number = 1, limit: number = 20) => {
+  const loadRecords = useCallback(async (page: number = 1, limit: number = 100) => {
     try {
       setLoading(true);
       const response: StagingPageResponse = await customerImportApi.getStagedRecords(page, limit, importStatusFilter || undefined);
@@ -126,16 +126,6 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
     }
 
     return rangeWithDots;
-  };
-
-  const getLocalizedGender = (gender: string): string => {
-    if (gender === '男' || gender.toLowerCase() === 'male') {
-      return t('customers.form.gender.male');
-    }
-    if (gender === '女' || gender.toLowerCase() === 'female') {
-      return t('customers.form.gender.female');
-    }
-    return gender;
   };
 
   const getLocalizedStatus = (status: string): string => {
@@ -232,14 +222,14 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.name')}</th>
-              {importStatusFilter !== 'INVALID' && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28">{t('customers.form.gender')}</th>
-              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.phone')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-40">{t('customers.form.idCard')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customers.form.certifiedAt')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-56">{t('customers.form.certificateIssuer')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32">{t('customers.form.certificateType')}</th>
+              {importStatusFilter !== 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36">{t('customers.form.customerType')}</th>
+              )}
               {importStatusFilter !== 'INVALID' && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-44">{t('customers.form.education')}</th>
               )}
@@ -260,13 +250,6 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                     hasFieldChanged(record, 'name') ? 'text-red-600' : 'text-gray-900'
                   }`}>{record.name}</div>
                 </td>
-                {importStatusFilter !== 'INVALID' && (
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm w-28 ${
-                    hasFieldChanged(record, 'gender') ? 'text-red-600' : 'text-gray-500'
-                  }`}>
-                    {record.gender ? getLocalizedGender(record.gender) : '-'}
-                  </td>
-                )}
                 <td className={`px-6 py-4 whitespace-nowrap text-sm w-32 ${
                   hasFieldChanged(record, 'phone') ? 'text-red-600' : 'text-gray-500'
                 }`}>
@@ -300,6 +283,13 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                 }`}>
                   {record.certificateType ? getCertificateTypeDisplayName(record.certificateType as CertificateType, t) : '-'}
                 </td>
+                {importStatusFilter !== 'INVALID' && (
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm w-36 ${
+                    hasFieldChanged(record, 'customerType') ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {record.customerType ? getTranslatedCustomerTypeName(record.customerType as CustomerType, t) : '-'}
+                  </td>
+                )}
                 {importStatusFilter !== 'INVALID' && (
                   <td className={`px-6 py-4 whitespace-nowrap text-sm w-44 ${
                     hasFieldChanged(record, 'education') ? 'text-red-600' : 'text-gray-500'

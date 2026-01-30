@@ -7,6 +7,11 @@ export enum CustomerStatus {
   CERTIFIED_ELSEWHERE = 'CERTIFIED_ELSEWHERE'
 }
 
+export enum CustomerType {
+  NEW_CUSTOMER = 'NEW_CUSTOMER',
+  RENEW_CUSTOMER = 'RENEW_CUSTOMER'
+}
+
 export enum EducationLevel {
   ELEMENTARY = 'ELEMENTARY',
   MIDDLE_SCHOOL = 'MIDDLE_SCHOOL',
@@ -196,6 +201,12 @@ export const EducationLevelTranslationKeys: Record<EducationLevel, string> = {
   [EducationLevel.OTHER]: 'education.other',
 };
 
+// Customer type translation keys mapping for use with translation function
+export const CustomerTypeTranslationKeys: Record<CustomerType, string> = {
+  [CustomerType.NEW_CUSTOMER]: 'customerType.newCustomer',
+  [CustomerType.RENEW_CUSTOMER]: 'customerType.renewCustomer',
+};
+
 // Helper function to get translated status name
 export const getTranslatedStatusName = (status: string, t: (key: string) => string): string => {
   // Check if the status exists in our enum
@@ -214,6 +225,11 @@ export const getTranslatedEducationLevelName = (educationLevel: EducationLevel, 
   return t(EducationLevelTranslationKeys[educationLevel]);
 };
 
+// Helper function to get translated customer type name
+export const getTranslatedCustomerTypeName = (customerType: CustomerType, t: (key: string) => string): string => {
+  return t(CustomerTypeTranslationKeys[customerType]);
+};
+
 export interface Customer {
   id: string;
   name: string;
@@ -229,6 +245,7 @@ export interface Customer {
   currentStatus: CustomerStatus;
   salesPhone?: string;
   customerAgent?: string;
+  customerType?: CustomerType;
   certifiedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -258,6 +275,7 @@ export interface CreateCustomerRequest {
   idCard?: string;
   currentStatus?: CustomerStatus;
   customerAgent?: string;
+  customerType?: CustomerType;
   certifiedAt?: string;
 }
 
@@ -273,6 +291,7 @@ export interface UpdateCustomerRequest {
   address?: string;
   idCard?: string;
   customerAgent?: string;
+  customerType?: CustomerType;
   certifiedAt?: string;
 }
 
@@ -297,6 +316,7 @@ export interface CustomerSearchParams {
   includeDeleted?: boolean;
   certificateType?: CertificateType;
   customerAgent?: string;
+  customerType?: CustomerType;
   certifiedStartDate?: string;
   certifiedEndDate?: string;
   page?: number;

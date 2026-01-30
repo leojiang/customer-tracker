@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Phone, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus, CertificateIssuerTranslationKeys } from '@/types/customer';
+import { Customer, CustomerSearchParams, CustomerPageResponse, CertificateTypeTranslationKeys, CustomerStatusTranslationKeys, CertificateType, CustomerStatus, CertificateIssuerTranslationKeys, CustomerType, CustomerTypeTranslationKeys, getTranslatedCustomerTypeName } from '@/types/customer';
 import { customerApi } from '@/lib/api';
 import { getCertificateIssuerOptions, mapCertificateIssuerToDisplay } from '@/lib/certificateIssuerUtils';
 import { getCertificateTypeDisplayName } from '@/lib/certificateTypeUtils';
@@ -32,6 +32,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     selectedStatus?: string;
     certificateIssuer?: string;
     customerAgent?: string;
+    selectedCustomerType?: string;
     page?: number;
     pageSize?: number;
   }
@@ -77,7 +78,8 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const initialSelectedStatus = storedFilters?.selectedStatus || '';
   const initialCertificateIssuer = storedFilters?.certificateIssuer || '';
   const initialCustomerAgent = storedFilters?.customerAgent || '';
-  const initialPageSize = storedFilters?.pageSize || 20;
+  const initialSelectedCustomerType = storedFilters?.selectedCustomerType || '';
+  const initialPageSize = storedFilters?.pageSize || 100;
 
   // Initialize search params with stored filters
   const isInitialSearchPhone = isPhoneNumber(initialSearchTerm);
@@ -91,6 +93,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     certificateType: initialSelectedCertificateType ? initialSelectedCertificateType as CertificateType : undefined,
     certificateIssuer: initialCertificateIssuer.trim() || undefined,
     customerAgent: initialCustomerAgent.trim() || undefined,
+    customerType: initialSelectedCustomerType ? initialSelectedCustomerType as CustomerType : undefined,
     certifiedStartDate: initialCertifiedStartDate ? `${initialCertifiedStartDate}T00:00:00Z` : undefined,
     certifiedEndDate: initialCertifiedEndDate ? `${initialCertifiedEndDate}T00:00:00Z` : undefined,
   });
@@ -108,6 +111,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [selectedStatus, setSelectedStatus] = useState(initialSelectedStatus);
   const [certificateIssuer, setCertificateIssuer] = useState(initialCertificateIssuer);
   const [customerAgent, setCustomerAgent] = useState(initialCustomerAgent);
+  const [selectedCustomerType, setSelectedCustomerType] = useState(initialSelectedCustomerType);
 
   // Map language to date-fns locale
   const locale = language === 'zh-CN' ? zhCN : enUS;
@@ -141,11 +145,12 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       selectedStatus,
       certificateIssuer,
       customerAgent,
+      selectedCustomerType,
       page: searchParams.page,
       pageSize: searchParams.limit,
     };
     saveFiltersToStorage(filters);
-  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateType, selectedStatus, certificateIssuer, customerAgent, selectedCustomerType, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
 
   useEffect(() => {
     loadCustomers(searchParams);
@@ -163,6 +168,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       certificateType: selectedCertificateType ? selectedCertificateType as CertificateType : undefined,
       certificateIssuer: certificateIssuer.trim() || undefined,
       customerAgent: customerAgent.trim() || undefined,
+      customerType: selectedCustomerType ? selectedCustomerType as CustomerType : undefined,
       certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
       certifiedEndDate: certifiedEndDate ? `${certifiedEndDate}T00:00:00Z` : undefined,
       page: 1,
@@ -175,6 +181,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     setSelectedCertificateType('');
     setCertificateIssuer('');
     setCustomerAgent('');
+    setSelectedCustomerType('');
     setCertifiedStartDate('');
     setCertifiedEndDate('');
     setSearchParams({
@@ -220,28 +227,12 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }
   };
 
-  const getLocalizedGender = (gender: string | undefined) => {
-    if (!gender) {
-      return '';
-    }
-    switch (gender.toLowerCase()) {
-      case 'male':
-        return t('customers.form.gender.male');
-      case 'female':
-        return t('customers.form.gender.female');
-      case 'other':
-        return t('customers.form.gender.other');
-      default:
-        return gender;
-    }
-  };
-
   if (error) {
     return (
       <div className="card p-6 text-center">
         <div className="text-red-600 mb-4">{t('customers.errorLoading')}</div>
         <p className="text-gray-600 mb-4">{error}</p>
-        <button 
+        <button
           onClick={() => loadCustomers(searchParams)}
           className="btn-primary"
         >
@@ -304,6 +295,23 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                   />
                 </div>
               )}
+
+              {/* Customer Type - full width on mobile, 2 columns on desktop */}
+              <div className="sm:col-span-1 lg:col-span-2">
+                <label className="block text-xs text-gray-600 mb-1">{t('customers.form.customerType')}</label>
+                <select
+                  value={selectedCustomerType}
+                  onChange={(e) => setSelectedCustomerType(e.target.value)}
+                  className="input-field w-full text-sm"
+                >
+                  <option value="">{t('customers.all')}</option>
+                  {Object.entries(CustomerTypeTranslationKeys).map(([key]) => (
+                    <option key={key} value={key}>
+                      {t(CustomerTypeTranslationKeys[key as CustomerType])}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Clear Button - full width on mobile, fixed width on desktop */}
@@ -469,12 +477,6 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                       {t('customers.phone')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('customers.form.age')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('customers.form.gender')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('customers.form.certificateType')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -482,6 +484,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('customers.form.certifiedAt')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('customers.form.customerType')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('customer.salesPerson')}
@@ -508,12 +513,6 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {customer.age || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {customer.gender ? getLocalizedGender(customer.gender) : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {customer.certificateType ? getCertificateTypeDisplayName(customer.certificateType as CertificateType, t) : '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
@@ -526,6 +525,9 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
                             <span>{format(new Date(customer.certifiedAt), 'PPP', { locale })}</span>
                           </div>
                         ) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {customer.customerType ? getTranslatedCustomerTypeName(customer.customerType as CustomerType, t) : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {customer.customerAgent || '-'}

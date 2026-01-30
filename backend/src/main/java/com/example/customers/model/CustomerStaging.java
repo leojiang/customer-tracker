@@ -58,6 +58,10 @@ public class CustomerStaging {
   @Column(name = "customer_agent")
   private String customerAgent;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "customer_type")
+  private CustomerType customerType = CustomerType.NEW_CUSTOMER;
+
   @Column(name = "certified_at")
   private String certifiedAt; // Format: YYYY-MM-DD (e.g., "2024-01-15")
 
@@ -104,6 +108,7 @@ public class CustomerStaging {
     this.idCard = customer.getIdCard();
     this.currentStatus = customer.getCurrentStatus();
     this.customerAgent = customer.getCustomerAgent();
+    this.customerType = customer.getCustomerType();
     this.certifiedAt = customer.getCertifiedAt();
   }
 
@@ -212,6 +217,14 @@ public class CustomerStaging {
     this.customerAgent = customerAgent;
   }
 
+  public CustomerType getCustomerType() {
+    return customerType;
+  }
+
+  public void setCustomerType(CustomerType customerType) {
+    this.customerType = customerType;
+  }
+
   public String getCertifiedAt() {
     return certifiedAt;
   }
@@ -279,6 +292,7 @@ public class CustomerStaging {
     customer.setIdCard(this.idCard);
     customer.setCurrentStatus(this.currentStatus);
     customer.setCustomerAgent(this.customerAgent);
+    customer.setCustomerType(this.customerType);
     customer.setCertifiedAt(this.certifiedAt);
     return customer;
   }
@@ -301,6 +315,7 @@ public class CustomerStaging {
     customer.setIdCard(this.idCard);
     customer.setCurrentStatus(this.currentStatus);
     customer.setCustomerAgent(this.customerAgent);
+    customer.setCustomerType(this.customerType);
     customer.setCertifiedAt(this.certifiedAt);
   }
 }

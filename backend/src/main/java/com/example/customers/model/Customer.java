@@ -36,8 +36,8 @@ import org.hibernate.annotations.Where;
     name = "customers",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "unique_name_phone_certificate_type",
-          columnNames = {"name", "phone", "certificate_type"})
+          name = "unique_id_card_certificate_type",
+          columnNames = {"id_card", "certificate_type"})
     })
 @SQLDelete(sql = "UPDATE customers SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
@@ -51,8 +51,7 @@ public class Customer {
   @Column(nullable = false)
   private String name;
 
-  @NotBlank(message = "Phone number is required")
-  @Column(nullable = false)
+  @Column(nullable = true) // Phone is now optional
   private String phone;
 
   @Column(name = "certificate_issuer")
@@ -73,7 +72,8 @@ public class Customer {
 
   private String address;
 
-  @Column(name = "id_card")
+  @NotBlank(message = "ID card is required")
+  @Column(name = "id_card", nullable = false)
   private String idCard;
 
   @NotNull
@@ -86,6 +86,11 @@ public class Customer {
 
   @Column(name = "customer_agent")
   private String customerAgent;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "customer_type", nullable = false)
+  private CustomerType customerType = CustomerType.NEW_CUSTOMER;
 
   @Column(name = "certified_at")
   private String certifiedAt; // Format: YYYY-MM-DD (e.g., "2024-01-15")
@@ -269,6 +274,14 @@ public class Customer {
 
   public void setCustomerAgent(String customerAgent) {
     this.customerAgent = customerAgent;
+  }
+
+  public CustomerType getCustomerType() {
+    return customerType;
+  }
+
+  public void setCustomerType(CustomerType customerType) {
+    this.customerType = customerType;
   }
 
   public String getCertifiedAt() {

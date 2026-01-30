@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Phone, Building2, MapPin, User, GraduationCap, Briefcase, Save, X, AlertCircle, Trash2, UserCircle, Calendar, IdCard } from 'lucide-react';
-import { Customer, CustomerStatus, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys } from '@/types/customer';
+import { Customer, CustomerStatus, CustomerType, StatusTransitionRequest, UpdateCustomerRequest, EducationLevel, EducationLevelDisplayNames, getTranslatedStatusName, getTranslatedEducationLevelName, getTranslatedCustomerTypeName, CertificateType, CertificateTypeTranslationKeys, CertificateIssuer, CertificateIssuerTranslationKeys, CustomerTypeTranslationKeys } from '@/types/customer';
 import { customerApi, customerDeleteRequestApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errorHandler';
 import { mapCertificateIssuerToDisplay, getCertificateIssuerOptions } from '@/lib/certificateIssuerUtils';
@@ -52,6 +52,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
     address: '',
     idCard: undefined,
     customerAgent: '',
+    customerType: CustomerType.NEW_CUSTOMER,
     certifiedAt: undefined,
   });
   const [statusTransition, setStatusTransition] = useState<StatusTransitionRequest>({
@@ -114,6 +115,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         address: data.address || '',
         idCard: data.idCard,
         customerAgent: data.customerAgent || '',
+        customerType: data.customerType || CustomerType.NEW_CUSTOMER,
         certifiedAt: data.certifiedAt,
       });
       // Load valid transitions after customer is loaded
@@ -147,6 +149,7 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
         address: customer.address || '',
         idCard: customer.idCard,
         customerAgent: customer.customerAgent || '',
+        customerType: customer.customerType || CustomerType.NEW_CUSTOMER,
         certifiedAt: customer.certifiedAt,
       });
     }
@@ -593,6 +596,34 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
                       />
                     ) : (
                       <p className="text-body-1">{customer.customerAgent || <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="input-label flex items-center gap-2">
+                      <Briefcase size={18} className="text-surface-500" />
+                      {t('customers.form.customerType')}
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={editForm.customerType || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const customerTypeValue = value && value !== '' ? value as CustomerType : CustomerType.NEW_CUSTOMER;
+                          setEditForm(prev => ({ ...prev, customerType: customerTypeValue }));
+                        }}
+                        className="input-field"
+                      >
+                        {Object.entries(CustomerTypeTranslationKeys).map(([key]) => (
+                          <option key={key} value={key}>
+                            {t(CustomerTypeTranslationKeys[key as CustomerType])}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="text-body-1">
+                        {customer.customerType ? getTranslatedCustomerTypeName(customer.customerType, t) : <span className="text-surface-400 italic">{t('customers.detail.notSpecified')}</span>}
+                      </p>
                     )}
                   </div>
 
