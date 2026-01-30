@@ -97,8 +97,10 @@ export const customerApi = {
         searchParams.append('status', status);
       });
     }
-    if (params.certificateIssuer) {
-      searchParams.append('certificateIssuer', params.certificateIssuer);
+    if (params.certificateIssuer && params.certificateIssuer.length > 0) {
+      params.certificateIssuer.forEach((issuer) => {
+        searchParams.append('certificateIssuer', issuer);
+      });
     }
     if (params.customerAgent) {
       searchParams.append('customerAgent', params.customerAgent);

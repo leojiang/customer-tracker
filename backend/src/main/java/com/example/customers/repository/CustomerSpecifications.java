@@ -100,7 +100,7 @@ public class CustomerSpecifications {
       String nameQuery,
       String phoneQuery,
       List<CustomerStatus> statuses,
-      String certificateIssuer,
+      List<String> certificateIssuers,
       String salesPhone,
       boolean includeDeleted,
       List<CertificateType> certificateTypes,
@@ -130,12 +130,9 @@ public class CustomerSpecifications {
         predicates.add(root.get("currentStatus").in(statuses));
       }
 
-      // Certificate issuer search
-      if (certificateIssuer != null && !certificateIssuer.trim().isEmpty()) {
-        predicates.add(
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("certificateIssuer")),
-                "%" + certificateIssuer.toLowerCase().trim() + "%"));
+      // Certificate issuer filter (multiple issuers)
+      if (certificateIssuers != null && !certificateIssuers.isEmpty()) {
+        predicates.add(root.get("certificateIssuer").in(certificateIssuers));
       }
 
       // Sales phone filter

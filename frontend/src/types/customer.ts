@@ -312,7 +312,7 @@ export interface CustomerSearchParams {
   q?: string;
   phone?: string;
   status?: CustomerStatus[];
-  certificateIssuer?: string;
+  certificateIssuer?: string[];
   includeDeleted?: boolean;
   certificateType?: CertificateType[];
   customerAgent?: string;

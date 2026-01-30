@@ -92,9 +92,9 @@ public class CustomerController {
       @Parameter(description = "Search by phone number (partial match)")
           @RequestParam(required = false)
           String phone,
-      @Parameter(description = "Search by certificate issuer name (case-insensitive)")
+      @Parameter(description = "Filter by certificate issuer (can be specified multiple times)")
           @RequestParam(required = false)
-          String certificateIssuer,
+          List<String> certificateIssuer,
       @Parameter(description = "Search by customer agent name (case-insensitive)")
           @RequestParam(required = false)
           String customerAgent,
@@ -170,6 +170,17 @@ public class CustomerController {
       }
     }
 
+    // Convert certificate issuer strings to list (filter out null/empty values)
+    List<String> certificateIssuerList = null;
+    if (certificateIssuer != null && !certificateIssuer.isEmpty()) {
+      certificateIssuerList = new java.util.ArrayList<>();
+      for (String issuer : certificateIssuer) {
+        if (issuer != null && !issuer.trim().isEmpty()) {
+          certificateIssuerList.add(issuer.trim());
+        }
+      }
+    }
+
     // Convert status strings to enum list
     List<CustomerStatus> customerStatuses = null;
     if (status != null && !status.isEmpty()) {
@@ -190,7 +201,7 @@ public class CustomerController {
             q,
             phone,
             customerStatuses,
-            certificateIssuer,
+            certificateIssuerList,
             filterBySalesPhone,
             includeDeleted,
             certificateTypeEnumList,

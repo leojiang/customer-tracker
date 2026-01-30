@@ -311,7 +311,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                   </span>
                 </td>
                 {importStatusFilter === 'INVALID' && (
-                  <td className="px-6 py-4 text-sm w-48 text-red-600">
+                  <td className="px-6 py-4 text-sm w-48 text-red-600 whitespace-nowrap">
                     {record.validationMessage || '-'}
                   </td>
                 )}

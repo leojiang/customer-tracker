@@ -30,7 +30,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     certifiedEndDate?: string;
     selectedCertificateTypes?: string[];
     selectedStatuses?: string[];
-    certificateIssuer?: string;
+    selectedCertificateIssuers?: string[];
     customerAgent?: string;
     selectedCustomerType?: string;
     page?: number;
@@ -76,7 +76,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const initialCertifiedEndDate = storedFilters?.certifiedEndDate || '';
   const initialSelectedCertificateTypes = storedFilters?.selectedCertificateTypes || [];
   const initialSelectedStatuses = storedFilters?.selectedStatuses || [];
-  const initialCertificateIssuer = storedFilters?.certificateIssuer || '';
+  const initialSelectedCertificateIssuers = storedFilters?.selectedCertificateIssuers || [];
   const initialCustomerAgent = storedFilters?.customerAgent || '';
   const initialSelectedCustomerType = storedFilters?.selectedCustomerType || '';
   const initialPageSize = storedFilters?.pageSize || 100;
@@ -94,14 +94,19 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     ? initialSelectedCertificateTypes.map(ct => ct as CertificateType)
     : []; // Default to no certificate type filter
 
+  // Convert initialSelectedCertificateIssuers to string array
+  const initialCertificateIssuers = initialSelectedCertificateIssuers.length > 0
+    ? initialSelectedCertificateIssuers
+    : []; // Default to no certificate issuer filter
+
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: storedFilters?.page || 1,
     limit: initialPageSize,
     q: !isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     phone: isInitialSearchPhone ? initialSearchTerm || undefined : undefined,
     status: initialStatuses,
+    certificateIssuer: initialCertificateIssuers.length > 0 ? initialCertificateIssuers : undefined,
     certificateType: initialCertificateTypes.length > 0 ? initialCertificateTypes : undefined,
-    certificateIssuer: initialCertificateIssuer.trim() || undefined,
     customerAgent: initialCustomerAgent.trim() || undefined,
     customerType: initialSelectedCustomerType ? initialSelectedCustomerType as CustomerType : undefined,
     certifiedStartDate: initialCertifiedStartDate ? `${initialCertifiedStartDate}T00:00:00Z` : undefined,
@@ -119,7 +124,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [certifiedEndDate, setCertifiedEndDate] = useState(initialCertifiedEndDate);
   const [selectedCertificateTypes, setSelectedCertificateTypes] = useState<Set<CertificateType>>(new Set(initialCertificateTypes));
   const [selectedStatuses, setSelectedStatuses] = useState<Set<CustomerStatus>>(new Set(initialStatuses));
-  const [certificateIssuer, setCertificateIssuer] = useState(initialCertificateIssuer);
+  const [selectedCertificateIssuers, setSelectedCertificateIssuers] = useState<Set<string>>(new Set(initialCertificateIssuers));
   const [customerAgent, setCustomerAgent] = useState(initialCustomerAgent);
   const [selectedCustomerType, setSelectedCustomerType] = useState(initialSelectedCustomerType);
 
@@ -131,11 +136,18 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   const [isCertificateTypeDropdownOpen, setIsCertificateTypeDropdownOpen] = useState(false);
   const certificateTypeDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Certificate issuer dropdown state
+  const [isCertificateIssuerDropdownOpen, setIsCertificateIssuerDropdownOpen] = useState(false);
+  const certificateIssuerDropdownRef = useRef<HTMLDivElement>(null);
+
   // All available statuses
   const allStatuses = Object.values(CustomerStatus);
 
   // All available certificate types
   const allCertificateTypes = Object.values(CertificateType);
+
+  // All available certificate issuers
+  const allCertificateIssuers = getCertificateIssuerOptions();
 
   // Get selected count text for status
   const selectedStatusCount = selectedStatuses.size;
@@ -145,9 +157,15 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
 
   // Get selected count text for certificate type
   const selectedCertificateTypeCount = selectedCertificateTypes.size;
-  const selectedCertificateTypeText = selectedCertificateTypeCount === 0
+  const selectedCertificateTypeText = selectedCertificateTypeCount === allCertificateTypes.length
     ? t('customers.all')
     : `${selectedCertificateTypeCount} ${t('customers.form.certificateType')}`;
+
+  // Get selected count text for certificate issuer
+  const selectedCertificateIssuerCount = selectedCertificateIssuers.size;
+  const selectedCertificateIssuerText = selectedCertificateIssuerCount === allCertificateIssuers.length
+    ? t('customers.all')
+    : `${selectedCertificateIssuerCount} ${t('customers.form.certificateIssuer')}`;
 
   // Map language to date-fns locale
   const locale = language === 'zh-CN' ? zhCN : enUS;
@@ -171,6 +189,20 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     const handleClickOutside = (event: MouseEvent) => {
       if (certificateTypeDropdownRef.current && !certificateTypeDropdownRef.current.contains(event.target as Node)) {
         setIsCertificateTypeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle click outside to close certificate issuer dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (certificateIssuerDropdownRef.current && !certificateIssuerDropdownRef.current.contains(event.target as Node)) {
+        setIsCertificateIssuerDropdownOpen(false);
       }
     };
 
@@ -224,6 +256,28 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     }
   };
 
+  // Handle certificate issuer selection toggle
+  const handleCertificateIssuerToggle = (issuer: string) => {
+    const newSelected = new Set(selectedCertificateIssuers);
+    if (newSelected.has(issuer)) {
+      newSelected.delete(issuer);
+    } else {
+      newSelected.add(issuer);
+    }
+    setSelectedCertificateIssuers(newSelected);
+  };
+
+  // Handle toggle all certificate issuers
+  const handleToggleAllCertificateIssuers = () => {
+    if (selectedCertificateIssuers.size === allCertificateIssuers.length) {
+      // If all are selected, deselect all
+      setSelectedCertificateIssuers(new Set());
+    } else {
+      // Otherwise, select all
+      setSelectedCertificateIssuers(new Set(allCertificateIssuers.map(issuer => issuer.value)));
+    }
+  };
+
   const loadCustomers = useCallback(async (params: CustomerSearchParams) => {
     try {
       setLoading(true);
@@ -251,14 +305,14 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       certifiedEndDate,
       selectedCertificateTypes: Array.from(selectedCertificateTypes),
       selectedStatuses: Array.from(selectedStatuses),
-      certificateIssuer,
+      selectedCertificateIssuers: Array.from(selectedCertificateIssuers),
       customerAgent,
       selectedCustomerType,
       page: searchParams.page,
       pageSize: searchParams.limit,
     };
     saveFiltersToStorage(filters);
-  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateTypes, selectedStatuses, certificateIssuer, customerAgent, selectedCustomerType, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
+  }, [searchTerm, certifiedStartDate, certifiedEndDate, selectedCertificateTypes, selectedStatuses, selectedCertificateIssuers, customerAgent, selectedCustomerType, searchParams.page, searchParams.limit, saveFiltersToStorage, t]);
 
   useEffect(() => {
     loadCustomers(searchParams);
@@ -274,7 +328,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
       phone: isPhoneNumber(trimmedSearchTerm) ? trimmedSearchTerm || undefined : undefined,
       status: selectedStatuses.size > 0 ? Array.from(selectedStatuses) : undefined,
       certificateType: selectedCertificateTypes.size > 0 ? Array.from(selectedCertificateTypes) : undefined,
-      certificateIssuer: certificateIssuer.trim() || undefined,
+      certificateIssuer: selectedCertificateIssuers.size > 0 ? Array.from(selectedCertificateIssuers) : undefined,
       customerAgent: customerAgent.trim() || undefined,
       customerType: selectedCustomerType ? selectedCustomerType as CustomerType : undefined,
       certifiedStartDate: certifiedStartDate ? `${certifiedStartDate}T00:00:00Z` : undefined,
@@ -287,7 +341,7 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
     setSearchTerm('');
     setSelectedStatuses(new Set(allStatuses));
     setSelectedCertificateTypes(new Set());
-    setCertificateIssuer('');
+    setSelectedCertificateIssuers(new Set());
     setCustomerAgent('');
     setSelectedCustomerType('');
     setCertifiedStartDate('');
@@ -479,18 +533,58 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
               {/* Certificate Issuer - full width on mobile, spans 2 on sm, 5 columns on desktop */}
               <div className="col-span-2 sm:col-span-3 lg:col-span-5">
                 <label className="block text-xs text-gray-600 mb-1">{t('customers.form.certificateIssuer')}</label>
-                <select
-                  value={certificateIssuer}
-                  onChange={(e) => setCertificateIssuer(e.target.value)}
-                  className="input-field w-full text-sm"
-                >
-                  <option value="">{t('customers.all')}</option>
-                  {getCertificateIssuerOptions().map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {t(CertificateIssuerTranslationKeys[option.value])}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative" ref={certificateIssuerDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsCertificateIssuerDropdownOpen(!isCertificateIssuerDropdownOpen)}
+                    className="input-field w-full text-sm flex items-center justify-between"
+                  >
+                    <span className="text-gray-700">{selectedCertificateIssuerText}</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isCertificateIssuerDropdownOpen ? 'transform rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isCertificateIssuerDropdownOpen && (
+                    <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      <div className="py-1">
+                        {/* All toggle */}
+                        <label className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200">
+                          <input
+                            type="checkbox"
+                            checked={selectedCertificateIssuers.size === allCertificateIssuers.length}
+                            onChange={handleToggleAllCertificateIssuers}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-3 text-sm font-medium text-gray-700">
+                            {t('customers.all')}
+                          </span>
+                        </label>
+                        {allCertificateIssuers.map((issuer) => (
+                          <label
+                            key={issuer.value}
+                            className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedCertificateIssuers.has(issuer.value)}
+                              onChange={() => handleCertificateIssuerToggle(issuer.value)}
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-3 text-sm text-gray-700">
+                              {t(CertificateIssuerTranslationKeys[issuer.value])}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Certificate Type Filter - 1 column on mobile, 1 on sm, 2 columns on desktop */}
