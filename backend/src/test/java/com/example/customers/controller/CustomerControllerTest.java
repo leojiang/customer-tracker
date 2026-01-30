@@ -102,6 +102,7 @@ class CustomerControllerTest {
             any(),
             any(),
             any(),
+            any(),
             any(Pageable.class)))
         .thenReturn(customerPage);
 
@@ -131,6 +132,7 @@ class CustomerControllerTest {
             eq(null),
             eq(null),
             eq(null),
+            eq(null),
             any(Pageable.class));
   }
 
@@ -144,10 +146,11 @@ class CustomerControllerTest {
     when(customerService.searchCustomers(
             eq("john"),
             eq("123"),
-            eq(CustomerStatus.NEW),
+            any(),
             eq("test"),
             any(),
             eq(false),
+            any(),
             eq(null),
             eq(null),
             eq(null),
@@ -171,10 +174,11 @@ class CustomerControllerTest {
         .searchCustomers(
             eq("john"),
             eq("123"),
-            eq(CustomerStatus.NEW),
+            any(),
             eq("test"),
             any(),
             eq(false),
+            any(),
             eq(null),
             eq(null),
             eq(null),
@@ -600,6 +604,7 @@ class CustomerControllerTest {
             any(),
             any(),
             any(),
+            any(),
             any(Pageable.class)))
         .thenReturn(customerPage);
 
@@ -619,6 +624,7 @@ class CustomerControllerTest {
             any(),
             any(),
             eq(false),
+            any(),
             eq(null),
             eq(null),
             eq(null),

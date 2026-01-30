@@ -101,8 +101,9 @@ public class CustomerController {
       @Parameter(description = "Include soft-deleted customers in results")
           @RequestParam(defaultValue = "false")
           boolean includeDeleted,
-      @Parameter(description = "Filter by certificate type") @RequestParam(required = false)
-          String certificateType,
+      @Parameter(description = "Filter by certificate type (can be specified multiple times)")
+          @RequestParam(required = false)
+          List<String> certificateType,
       @Parameter(description = "Filter by customer type") @RequestParam(required = false)
           String customerType,
       @Parameter(description = "Filter by status (can be specified multiple times)")
@@ -144,13 +145,18 @@ public class CustomerController {
     // customers)
     String filterBySalesPhone = getCurrentUserSalesPhone();
 
-    // Convert certificate type string to enum
-    CertificateType certificateTypeEnum = null;
-    if (certificateType != null && !certificateType.trim().isEmpty()) {
-      try {
-        certificateTypeEnum = CertificateType.valueOf(certificateType.toUpperCase());
-      } catch (IllegalArgumentException e) {
-        // Invalid certificate type, ignore
+    // Convert certificate type strings to enum list
+    List<CertificateType> certificateTypeEnumList = null;
+    if (certificateType != null && !certificateType.isEmpty()) {
+      certificateTypeEnumList = new java.util.ArrayList<>();
+      for (String certType : certificateType) {
+        if (certType != null && !certType.trim().isEmpty()) {
+          try {
+            certificateTypeEnumList.add(CertificateType.valueOf(certType.toUpperCase()));
+          } catch (IllegalArgumentException e) {
+            // Invalid certificate type, ignore
+          }
+        }
       }
     }
 
@@ -187,7 +193,7 @@ public class CustomerController {
             certificateIssuer,
             filterBySalesPhone,
             includeDeleted,
-            certificateTypeEnum,
+            certificateTypeEnumList,
             customerAgent,
             customerTypeEnum,
             certifiedStartDate,

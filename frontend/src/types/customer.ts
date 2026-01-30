@@ -314,7 +314,7 @@ export interface CustomerSearchParams {
   status?: CustomerStatus[];
   certificateIssuer?: string;
   includeDeleted?: boolean;
-  certificateType?: CertificateType;
+  certificateType?: CertificateType[];
   customerAgent?: string;
   customerType?: CustomerType;
   certifiedStartDate?: string;

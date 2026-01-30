@@ -103,7 +103,7 @@ public class CustomerSpecifications {
       String certificateIssuer,
       String salesPhone,
       boolean includeDeleted,
-      CertificateType certificateType,
+      List<CertificateType> certificateTypes,
       String customerAgent,
       CustomerType customerType,
       String certifiedStartDate,
@@ -143,9 +143,9 @@ public class CustomerSpecifications {
         predicates.add(criteriaBuilder.equal(root.get("salesPhone"), salesPhone.trim()));
       }
 
-      // Certificate type filter
-      if (certificateType != null) {
-        predicates.add(criteriaBuilder.equal(root.get("certificateType"), certificateType));
+      // Certificate type filter (multiple types)
+      if (certificateTypes != null && !certificateTypes.isEmpty()) {
+        predicates.add(root.get("certificateType").in(certificateTypes));
       }
 
       // Customer agent filter

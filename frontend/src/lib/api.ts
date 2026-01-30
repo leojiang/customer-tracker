@@ -106,8 +106,10 @@ export const customerApi = {
     if (params.includeDeleted) {
       searchParams.append('includeDeleted', params.includeDeleted.toString());
     }
-    if (params.certificateType) {
-      searchParams.append('certificateType', params.certificateType);
+    if (params.certificateType && params.certificateType.length > 0) {
+      params.certificateType.forEach((type) => {
+        searchParams.append('certificateType', type);
+      });
     }
     if (params.customerType) {
       searchParams.append('customerType', params.customerType);
