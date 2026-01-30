@@ -312,7 +312,11 @@ export default function CustomerDetail({ customerId, onBack }: CustomerDetailPro
   };
 
   const getAvailableStatusTransitions = (): CustomerStatus[] => {
-    // Return valid transitions from backend validation
+    // Filter out CERTIFIED status for customer agents
+    if (user?.role === SalesRole.AGENT) {
+      return validTransitions.filter(status => status !== CustomerStatus.CERTIFIED);
+    }
+    // Return all valid transitions for admin/officer
     return validTransitions;
   };
 

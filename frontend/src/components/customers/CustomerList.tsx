@@ -92,12 +92,12 @@ export default function CustomerList({ onCustomerSelect, onCreateCustomer }: Cus
   // Convert initialSelectedCertificateTypes to CertificateType array
   const initialCertificateTypes = initialSelectedCertificateTypes.length > 0
     ? initialSelectedCertificateTypes.map(ct => ct as CertificateType)
-    : []; // Default to no certificate type filter
+    : Object.values(CertificateType); // Default to all certificate types selected
 
   // Convert initialSelectedCertificateIssuers to string array
   const initialCertificateIssuers = initialSelectedCertificateIssuers.length > 0
     ? initialSelectedCertificateIssuers
-    : []; // Default to no certificate issuer filter
+    : getCertificateIssuerOptions().map(issuer => issuer.value); // Default to all certificate issuers selected
 
   const [searchParams, setSearchParams] = useState<CustomerSearchParams>({
     page: storedFilters?.page || 1,

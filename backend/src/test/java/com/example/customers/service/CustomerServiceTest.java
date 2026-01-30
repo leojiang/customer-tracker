@@ -14,7 +14,6 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +72,6 @@ class CustomerServiceTest {
     verify(statusHistoryRepository).save(any(StatusHistory.class));
   }
 
-  @Disabled
   @Test
   @DisplayName(
       "Should throw exception when creating customer with duplicate name, phone and certificate type")
@@ -84,11 +82,10 @@ class CustomerServiceTest {
     newCustomer.setPhone("+1234567890");
     newCustomer.setCertificateType(
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    newCustomer.setIdCard("ID123");
 
-    when(customerRepository.findByNameAndPhoneAndCertificateType(
-            "John Doe",
-            "+1234567890",
-            com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+    when(customerRepository.findByIdCardAndCertificateType(
+            "ID123", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(testCustomer));
 
     // When & Then
@@ -176,7 +173,6 @@ class CustomerServiceTest {
     verify(customerRepository, never()).save(any());
   }
 
-  @Disabled
   @Test
   @DisplayName(
       "Should throw exception when updating customer with duplicate name, phone and certificate type")
@@ -194,12 +190,11 @@ class CustomerServiceTest {
     updateData.setPhone("+1111111111");
     updateData.setCertificateType(
         com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN);
+    updateData.setIdCard("ID999");
 
     when(customerRepository.findById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    when(customerRepository.findByNameAndPhoneAndCertificateType(
-            "Jane Smith",
-            "+1111111111",
-            com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
+    when(customerRepository.findByIdCardAndCertificateType(
+            "ID999", com.example.customers.model.CertificateType.LOW_VOLTAGE_ELECTRICIAN))
         .thenReturn(Optional.of(otherCustomer));
 
     // When & Then

@@ -82,10 +82,19 @@ public class AnalyticsService {
     String startDateComparisonStr = startDate.toLocalDate().toString();
 
     // Current period metrics
-    long totalCustomers =
-        (salesPhone != null)
-            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-            : customerRepository.countTotalActiveCustomers();
+    // For admin users, use the certified count table to get total customers (sum of all monthly certifications)
+    long totalCustomers;
+    if (salesPhone == null) {
+      // Admin: get total from certified count table
+      List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
+          monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
+      totalCustomers = monthlyCounts.stream()
+          .mapToLong(mc -> mc.getCertifiedCount().longValue())
+          .sum();
+    } else {
+      // Sales user: use the customer table
+      totalCustomers = customerRepository.countTotalActiveCustomersBySales(salesPhone);
+    }
 
     long newCustomersThisPeriod =
         (salesPhone != null)
