@@ -11,6 +11,7 @@ import CertificateTypeTrendsChart from '@/components/dashboard/charts/Certificat
 import AgentPerformanceTrendsChart from '@/components/dashboard/charts/AgentPerformanceTrendsChart';
 import TotalAgentPerformanceChart from '@/components/dashboard/charts/TotalAgentPerformanceChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
+import AlertModal from '@/components/ui/AlertModal';
 
 interface DashboardOverview {
   totalCustomers: number;
@@ -149,6 +150,20 @@ export default function AdminDashboard() {
   const [agentPerformanceLoading, setAgentPerformanceLoading] = useState<boolean>(!hasCachedData);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshingAnalytics, setRefreshingAnalytics] = useState<boolean>(false);
+
+  // Alert modal state
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'error' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
   const [error, setError] = useState<string | null>(null);
 
@@ -321,6 +336,60 @@ export default function AdminDashboard() {
     setRefreshing(false);
   }, [refreshing, fetchDashboardData]);
 
+  const handleRefreshAnalytics = async () => {
+    if (!token) {
+      return;
+    }
+
+    try {
+      setRefreshingAnalytics(true);
+
+      const response = await fetch(`${API_BASE_URL}/analytics/admin/refresh`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        const successMessage = t('dashboard.analytics.refreshSuccess', {
+          total: result.totalScriptsExecuted,
+          successful: result.successfulScripts,
+          duration: ((result.durationMs || 0) / 1000).toFixed(1)
+        });
+
+        setAlertModal({
+          isOpen: true,
+          title: t('dashboard.analytics.refreshSuccessTitle'),
+          message: successMessage,
+          type: 'info'
+        });
+
+        await fetchDashboardData(true);
+      } else {
+        const error = await response.json();
+        setAlertModal({
+          isOpen: true,
+          title: t('dashboard.analytics.refreshFailedTitle'),
+          message: error.errorMessage || error.error || 'Unknown error',
+          type: 'error'
+        });
+      }
+    } catch (err) {
+      setAlertModal({
+        isOpen: true,
+        title: t('dashboard.analytics.refreshErrorTitle'),
+        message: t('dashboard.analytics.refreshError'),
+        type: 'error'
+      });
+    } finally {
+      setRefreshingAnalytics(false);
+    }
+  };
+
   useEffect(() => {
     if (!user || !token) {
       router.push('/auth');
@@ -417,16 +486,31 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('nav.adminDashboard')}</h1>
-        <button
-          type="button"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          title={t('dashboard.charts.refresh')}
-        >
-          <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-          <span className="text-sm font-medium text-gray-700">{t('dashboard.charts.refresh')}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Analytics Refresh Button - Only for admins */}
+          <button
+            type="button"
+            onClick={handleRefreshAnalytics}
+            disabled={refreshingAnalytics}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            title={t('dashboard.analytics.refresh')}
+          >
+            <RefreshCw size={18} className={refreshingAnalytics ? 'animate-spin' : ''} />
+            <span className="text-sm font-medium">{t('dashboard.analytics.refreshButton')}</span>
+          </button>
+
+          {/* Regular Refresh Button */}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={refreshing || refreshingAnalytics}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            title={t('dashboard.charts.refresh')}
+          >
+            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            <span className="text-sm font-medium text-gray-700">{t('dashboard.charts.refresh')}</span>
+          </button>
+        </div>
       </div>
 
       <div>
@@ -617,6 +701,15 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }

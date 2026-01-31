@@ -24,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,12 +46,16 @@ public class AnalyticsController {
 
   private final AnalyticsService analyticsService;
   private final CustomerRepository customerRepository;
+  private final com.example.customers.service.AnalyticsRefreshService refreshService;
 
   @Autowired
   public AnalyticsController(
-      AnalyticsService analyticsService, CustomerRepository customerRepository) {
+      AnalyticsService analyticsService,
+      CustomerRepository customerRepository,
+      com.example.customers.service.AnalyticsRefreshService refreshService) {
     this.analyticsService = analyticsService;
     this.customerRepository = customerRepository;
+    this.refreshService = refreshService;
   }
 
   @Operation(
@@ -308,6 +313,52 @@ public class AnalyticsController {
     debug.put("maxDate", maxDate);
 
     return ResponseEntity.ok(debug);
+  }
+
+  @Operation(
+      summary = "Manually trigger regeneration of all analytical tables (Admin only)",
+      description =
+          "Execute all backfill scripts in the migration/scripts folder to regenerate analytical data")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Analytical tables regenerated successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required"),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error occurred during regeneration (partial success possible)")
+      })
+  @PostMapping("/admin/refresh")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<com.example.customers.dto.RefreshResult> regenerateAnalytics() {
+
+    com.example.customers.dto.RefreshResult result = refreshService.refreshAllAnalyticalTables();
+
+    if (result.getSuccess()) {
+      return ResponseEntity.ok(result);
+    } else {
+      return ResponseEntity.status(500).body(result);
+    }
+  }
+
+  @Operation(
+      summary = "Get health status of analytics regeneration service (Admin only)",
+      description = "Check if the analytics regeneration service is operational")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Service is healthy"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required")
+      })
+  @GetMapping("/admin/health")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<Map<String, String>> regenerationServiceHealthCheck() {
+    Map<String, String> health = new java.util.HashMap<>();
+    health.put("status", "Analytics regeneration service is running");
+    health.put("timestamp", java.time.LocalDateTime.now().toString());
+    return ResponseEntity.ok(health);
   }
 
   // Helper methods for authorization

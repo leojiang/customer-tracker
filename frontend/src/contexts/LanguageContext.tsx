@@ -549,6 +549,16 @@ const translations = {
     'dashboard.charts.months.december': 'December',
     'dashboard.charts.noLeaderboardData': 'No leaderboard data available',
 
+    // Analytics Regenerate
+    'dashboard.analytics.refresh': 'Regenerate Analytics Data',
+    'dashboard.analytics.refreshButton': 'Regenerate Data',
+    'dashboard.analytics.refreshSuccessTitle': 'Regeneration Complete',
+    'dashboard.analytics.refreshSuccess': 'Analytics data regenerated successfully!\n\nScripts executed: {total}\nSuccessful: {successful}\nDuration: {duration}s',
+    'dashboard.analytics.refreshFailedTitle': 'Regeneration Failed',
+    'dashboard.analytics.refreshFailed': 'Failed to regenerate analytics data',
+    'dashboard.analytics.refreshErrorTitle': 'Regeneration Error',
+    'dashboard.analytics.refreshError': 'Error regenerating analytics data',
+
     // User Approvals
     'approvals.pending': 'Pending Approvals',
     'approvals.approved': 'Approved Users',
@@ -1136,6 +1146,16 @@ const translations = {
     'dashboard.charts.months.november': '十一月',
     'dashboard.charts.months.december': '十二月',
     'dashboard.charts.noLeaderboardData': '暂无业绩榜单数据',
+
+    // Analytics Regenerate
+    'dashboard.analytics.refresh': '重新生成报表数据',
+    'dashboard.analytics.refreshButton': '重新生成',
+    'dashboard.analytics.refreshSuccessTitle': '重新生成完成',
+    'dashboard.analytics.refreshSuccess': '报表数据重新生成成功！\n\n执行脚本数: {total}\n成功: {successful}\n耗时: {duration}秒',
+    'dashboard.analytics.refreshFailedTitle': '重新生成失败',
+    'dashboard.analytics.refreshFailed': '重新生成报表数据失败',
+    'dashboard.analytics.refreshErrorTitle': '重新生成错误',
+    'dashboard.analytics.refreshError': '重新生成报表数据时出错',
 
     // User Approvals
     'approvals.pending': '待审批',
