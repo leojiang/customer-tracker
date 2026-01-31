@@ -46,6 +46,8 @@ public class AnalyticsService {
   private final MonthlyCertifiedCountRepository monthlyCertifiedCountRepository;
   private final MonthlyCertifiedCountByCertificateTypeRepository
       monthlyCertifiedCountByCertificateTypeRepository;
+  private final com.example.customers.repository.MonthlyAgentPerformanceRepository
+      monthlyAgentPerformanceRepository;
 
   @Autowired
   public AnalyticsService(
@@ -54,13 +56,16 @@ public class AnalyticsService {
       StatusHistoryRepository statusHistoryRepository,
       MonthlyCertifiedCountRepository monthlyCertifiedCountRepository,
       MonthlyCertifiedCountByCertificateTypeRepository
-          monthlyCertifiedCountByCertificateTypeRepository) {
+          monthlyCertifiedCountByCertificateTypeRepository,
+      com.example.customers.repository.MonthlyAgentPerformanceRepository
+          monthlyAgentPerformanceRepository) {
     this.customerRepository = customerRepository;
     this.salesRepository = salesRepository;
     this.statusHistoryRepository = statusHistoryRepository;
     this.monthlyCertifiedCountRepository = monthlyCertifiedCountRepository;
     this.monthlyCertifiedCountByCertificateTypeRepository =
         monthlyCertifiedCountByCertificateTypeRepository;
+    this.monthlyAgentPerformanceRepository = monthlyAgentPerformanceRepository;
   }
 
   /**
@@ -510,6 +515,53 @@ public class AnalyticsService {
   public void generateDailySnapshots() {
     // Implementation for future optimization
     // This would populate the analytics_snapshots table
+  }
+
+  /**
+   * Get customer agent performance trends over time.
+   *
+   * <p>Retrieves monthly performance metrics for all customer agents, allowing visualization of
+   * individual performance trends.
+   *
+   * @return Agent performance trends data grouped by agent
+   */
+  public com.example.customers.controller.AnalyticsController.AgentPerformanceTrendsResponse
+      getAgentPerformanceTrends() {
+
+    List<com.example.customers.entity.MonthlyAgentPerformance> monthlyData =
+        monthlyAgentPerformanceRepository.findAllByOrderByMonthAscCustomerAgentAsc();
+
+    // Group by customer agent
+    Map<String, List<TrendDataPoint>> trendsByAgent = new HashMap<>();
+
+    for (com.example.customers.entity.MonthlyAgentPerformance record : monthlyData) {
+      String agent = record.getCustomerAgent();
+      String monthStr = record.getMonth();
+
+      // Parse month (YYYY-MM) to date (first day of month)
+      String[] parts = monthStr.split("-");
+      LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+
+      // Create trend data point for this month's data
+      Long newCustomers = record.getNewCustomers().longValue();
+      Long conversions = record.getConversions().longValue();
+      BigDecimal conversionRate = record.getConversionRate();
+
+      // For total customers, we use the total_customers field directly since this is a snapshot
+      Long totalCustomers = record.getTotalCustomers().longValue();
+
+      TrendDataPoint dataPoint =
+          new TrendDataPoint(date, newCustomers, totalCustomers, conversionRate);
+
+      trendsByAgent.computeIfAbsent(agent, k -> new ArrayList<>()).add(dataPoint);
+    }
+
+    // Get list of all agents
+    List<String> agents = new ArrayList<>(trendsByAgent.keySet());
+    java.util.Collections.sort(agents);
+
+    return new com.example.customers.controller.AnalyticsController.AgentPerformanceTrendsResponse(
+        trendsByAgent, agents);
   }
 
   // Helper methods

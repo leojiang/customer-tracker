@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import StatusDistributionChart from '@/components/dashboard/charts/StatusDistributionChart';
 import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import CertificateTypeTrendsChart from '@/components/dashboard/charts/CertificateTypeTrendsChart';
+import AgentPerformanceTrendsChart from '@/components/dashboard/charts/AgentPerformanceTrendsChart';
+import TotalAgentPerformanceChart from '@/components/dashboard/charts/TotalAgentPerformanceChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
 
 interface DashboardOverview {
@@ -59,6 +61,11 @@ interface CertificateTypeTrendsResponse {
   totalDays: number;
 }
 
+interface AgentPerformanceTrendsResponse {
+  trendsByAgent: Record<string, TrendDataPoint[]>;
+  agents: string[];
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 /**
@@ -80,11 +87,13 @@ export default function AdminDashboard() {
     selectedMonth: number | null;
     trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
+    selectedAgents?: string[]; // Array of selected agents
     // Store data along with filters
     overview?: DashboardOverview | null;
     statusDistribution?: StatusDistribution | null;
     trends?: TrendAnalysisResponse | null;
     certificateTrends?: CertificateTypeTrendsResponse | null;
+    agentPerformance?: AgentPerformanceTrendsResponse | null;
     leaderboard?: LeaderboardResponse | null;
     lastFetchTime?: number; // Track when data was fetched
   }
@@ -115,6 +124,7 @@ export default function AdminDashboard() {
   const initialSelectedMonth = storedFilters?.selectedMonth ?? null;
   const initialTrendsViewOption = storedFilters?.trendsViewOption ?? 'newCertifications';
   const initialCertificateTypes = storedFilters?.certificateTypes ?? [];
+  const initialSelectedAgents = storedFilters?.selectedAgents ?? [];
 
   // Check if we have cached data that matches current filters
   const hasCachedData = storedFilters &&
@@ -129,12 +139,14 @@ export default function AdminDashboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(storedFilters?.leaderboard || null);
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(storedFilters?.trends || null);
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
+  const [agentPerformance, setAgentPerformance] = useState<AgentPerformanceTrendsResponse | null>(storedFilters?.agentPerformance || null);
 
   // Individual loading states for each chart/data set
   const [overviewLoading, setOverviewLoading] = useState<boolean>(!hasCachedData);
   const [statusDistributionLoading, setStatusDistributionLoading] = useState<boolean>(!hasCachedData);
   const [trendsLoading, setTrendsLoading] = useState<boolean>(!hasCachedData);
   const [certificateTrendsLoading, setCertificateTrendsLoading] = useState<boolean>(!hasCachedData);
+  const [agentPerformanceLoading, setAgentPerformanceLoading] = useState<boolean>(!hasCachedData);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -147,6 +159,7 @@ export default function AdminDashboard() {
   // Chart filter states (initialized from localStorage)
   const [trendsViewOption, setTrendsViewOption] = useState<string>(initialTrendsViewOption);
   const [certificateTypes, setCertificateTypes] = useState<string[]>(initialCertificateTypes);
+  const [selectedAgents, setSelectedAgents] = useState<string[]>(initialSelectedAgents);
 
   // Fetch leaderboard by selected month (or year if month is null)
   const fetchLeaderboardByMonth = useCallback(async (year: number, month: number | null) => {
@@ -198,11 +211,12 @@ export default function AdminDashboard() {
     setStatusDistributionLoading(true);
     setTrendsLoading(true);
     setCertificateTrendsLoading(true);
+    setAgentPerformanceLoading(true);
     setError(null);
 
     try {
       // Fetch all dashboard data in parallel
-      const [overviewRes, statusRes, trendsRes, certificateTrendsRes] = await Promise.all([
+      const [overviewRes, statusRes, trendsRes, certificateTrendsRes, agentPerformanceRes] = await Promise.all([
         fetch(`${API_BASE_URL}/analytics/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -222,6 +236,12 @@ export default function AdminDashboard() {
           },
         }),
         fetch(`${API_BASE_URL}/analytics/customers/trends-by-certificate-type?days=2000`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${API_BASE_URL}/analytics/agents/performance-trends`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -269,6 +289,16 @@ export default function AdminDashboard() {
         console.warn('Failed to fetch certificate type trends');
       }
 
+      // Handle agent performance trends separately (can fail gracefully)
+      if (agentPerformanceRes.ok) {
+        const agentPerformanceData = await agentPerformanceRes.json();
+        setAgentPerformance(agentPerformanceData);
+        setAgentPerformanceLoading(false);
+      } else {
+        setAgentPerformanceLoading(false);
+        console.warn('Failed to fetch agent performance trends');
+      }
+
       // Save data to localStorage will be handled by the saveFiltersToStorage effect
     } catch (err) {
       // Set all loading states to false on error
@@ -276,6 +306,7 @@ export default function AdminDashboard() {
       setStatusDistributionLoading(false);
       setTrendsLoading(false);
       setCertificateTrendsLoading(false);
+      setAgentPerformanceLoading(false);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -315,15 +346,17 @@ export default function AdminDashboard() {
       selectedMonth,
       trendsViewOption,
       certificateTypes,
+      selectedAgents,
       overview,
       statusDistribution,
       trends,
       certificateTrends,
+      agentPerformance,
       leaderboard,
       lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, overview, statusDistribution, trends, certificateTrends, leaderboard, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, selectedAgents, overview, statusDistribution, trends, certificateTrends, agentPerformance, leaderboard, saveFiltersToStorage]);
 
   // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {
@@ -346,6 +379,19 @@ export default function AdminDashboard() {
     }
   }, [certificateTrends, certificateTypes.length, initialCertificateTypes.length]);
 
+  // Auto-select all agents that have data when data is first loaded
+  useEffect(() => {
+    // Only auto-select if:
+    // 1. Agent performance data is loaded
+    // 2. No agents are currently selected
+    // 3. We're not loading from stored filters (initialSelectedAgents is empty)
+    if (agentPerformance && selectedAgents.length === 0 && initialSelectedAgents.length === 0) {
+      const agentsWithData = agentPerformance.agents || [];
+      if (agentsWithData.length > 0) {
+        setSelectedAgents(agentsWithData);
+      }
+    }
+  }, [agentPerformance, selectedAgents.length, initialSelectedAgents.length]);
 
   if (error) {
     return (
@@ -439,6 +485,26 @@ export default function AdminDashboard() {
             error={error}
             selectedTypes={certificateTypes}
             onSelectedTypesChange={setCertificateTypes}
+          />
+
+          {/* Agent Performance Trends Chart */}
+          <AgentPerformanceTrendsChart
+            data={agentPerformance || { trendsByAgent: {}, agents: [] }}
+            title={t('dashboard.charts.agentPerformanceTrends')}
+            loading={agentPerformanceLoading}
+            error={error}
+            selectedAgents={selectedAgents}
+            onSelectedAgentsChange={setSelectedAgents}
+          />
+
+          {/* Total Agent Performance Chart - Shows cumulative totals */}
+          <TotalAgentPerformanceChart
+            data={agentPerformance || { trendsByAgent: {}, agents: [] }}
+            title={t('dashboard.charts.totalAgentPerformance')}
+            loading={agentPerformanceLoading}
+            error={error}
+            selectedAgents={selectedAgents}
+            onSelectedAgentsChange={setSelectedAgents}
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

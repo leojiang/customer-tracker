@@ -146,6 +146,27 @@ public class AnalyticsController {
   }
 
   @Operation(
+      summary = "Get customer agent performance trends",
+      description =
+          "Retrieve monthly performance metrics for all customer agents, allowing visualization of "
+              + "individual performance trends over time")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Agent performance trends retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required")
+      })
+  @GetMapping("/agents/performance-trends")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<AgentPerformanceTrendsResponse> getAgentPerformanceTrends() {
+
+    AgentPerformanceTrendsResponse trends = analyticsService.getAgentPerformanceTrends();
+    return ResponseEntity.ok(trends);
+  }
+
+  @Operation(
       summary = "Get sales performance metrics",
       description =
           "Retrieve sales performance data. Admin users see team performance, "
@@ -631,6 +652,26 @@ public class AnalyticsController {
 
     public int getTotalDays() {
       return totalDays;
+    }
+  }
+
+  /** Response DTO for customer agent performance trends analysis. */
+  public static class AgentPerformanceTrendsResponse {
+    private java.util.Map<String, List<TrendDataPoint>> trendsByAgent;
+    private List<String> agents;
+
+    public AgentPerformanceTrendsResponse(
+        java.util.Map<String, List<TrendDataPoint>> trendsByAgent, List<String> agents) {
+      this.trendsByAgent = trendsByAgent;
+      this.agents = agents;
+    }
+
+    public java.util.Map<String, List<TrendDataPoint>> getTrendsByAgent() {
+      return trendsByAgent;
+    }
+
+    public List<String> getAgents() {
+      return agents;
     }
   }
 }
