@@ -1110,7 +1110,7 @@ const translations = {
     'dashboard.metrics.myCustomers': '我的客户',
 
     // Dashboard - Charts
-    'dashboard.charts.statusDistribution': '未发证客户状态分布',
+    'dashboard.charts.statusDistribution': '未复审客户状态分布',
     'dashboard.charts.trends': '成交量趋势',
     'dashboard.charts.noData': '暂无数据',
     'dashboard.charts.error': '错误',
