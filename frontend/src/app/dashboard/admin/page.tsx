@@ -152,7 +152,6 @@ export default function AdminDashboard() {
   const [agentPerformanceLoading, setAgentPerformanceLoading] = useState<boolean>(!hasCachedData);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [updatingRecent, setUpdatingRecent] = useState<boolean>(false);
 
   // Alert modal state
   const [alertModal, setAlertModal] = useState<{
@@ -342,78 +341,6 @@ export default function AdminDashboard() {
     setRefreshing(false);
   }, [refreshing, fetchDashboardData]);
 
-  const handleUpdateRecentAnalytics = async () => {
-    if (!token) {
-      return;
-    }
-
-    // Show confirmation warning modal
-    setAlertModal({
-      isOpen: true,
-      title: t('dashboard.analytics.updateRecentConfirmTitle'),
-      message: t('dashboard.analytics.updateRecentWarning'),
-      type: 'warning',
-      confirmMode: true,
-      onConfirm: executeUpdateRecentAnalytics,
-      cancelText: t('customers.cancel'),
-      confirmText: t('customers.confirm')
-    });
-  };
-
-  const executeUpdateRecentAnalytics = async () => {
-    if (!token) {
-      return;
-    }
-
-    try {
-      setUpdatingRecent(true);
-
-      const response = await fetch(`${API_BASE_URL}/analytics/admin/update-recent`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-
-        const successMessage = t('dashboard.analytics.updateRecentSuccess', {
-          total: result.totalScriptsExecuted,
-          successful: result.successfulScripts,
-          duration: ((result.durationMs || 0) / 1000).toFixed(1)
-        });
-
-        setAlertModal({
-          isOpen: true,
-          title: t('dashboard.analytics.updateRecentSuccessTitle'),
-          message: successMessage,
-          type: 'info'
-        });
-
-        await fetchDashboardData(true);
-      } else {
-        const error = await response.json();
-        setAlertModal({
-          isOpen: true,
-          title: t('dashboard.analytics.updateRecentFailedTitle'),
-          message: error.errorMessage || error.error || 'Unknown error',
-          type: 'error'
-        });
-      }
-    } catch (err) {
-      setAlertModal({
-        isOpen: true,
-        title: t('dashboard.analytics.updateRecentErrorTitle'),
-        message: t('dashboard.analytics.updateRecentError'),
-        type: 'error'
-      });
-    } finally {
-      setUpdatingRecent(false);
-    }
-  };
-
   useEffect(() => {
     if (!user || !token) {
       router.push('/auth');
@@ -521,18 +448,6 @@ export default function AdminDashboard() {
           >
             <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
             <span className="text-sm font-medium">{t('dashboard.charts.refresh')}</span>
-          </button>
-
-          {/* Update Recent Analytics Button - Safe for production */}
-          <button
-            type="button"
-            onClick={handleUpdateRecentAnalytics}
-            disabled={updatingRecent}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            title={t('dashboard.analytics.updateRecent')}
-          >
-            <RefreshCw size={18} className={updatingRecent ? 'animate-spin' : ''} />
-            <span className="text-sm font-medium">{t('dashboard.analytics.updateRecentButton')}</span>
           </button>
         </div>
       </div>

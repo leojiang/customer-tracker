@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,7 @@ public class CustomerImportService {
 
   private final CustomerRepository customerRepository;
   private final CustomerStagingRepository stagingRepository;
+  private final AnalyticsRefreshService analyticsRefreshService;
 
   // Excel column headers (Chinese template format)
   private static final String[] HEADERS = {
@@ -130,6 +132,7 @@ public class CustomerImportService {
     CERTIFICATE_ISSUER_MAP = new HashMap<>();
     CERTIFICATE_ISSUER_MAP.put("市场监督管理局", "MARKET_SUPERVISION_ADMINISTRATION");
     CERTIFICATE_ISSUER_MAP.put("住建局", "HOUSING_CONSTRUCTION_BUREAU");
+    CERTIFICATE_ISSUER_MAP.put("住建厅", "HOUSING_CONSTRUCTION_BUREAU");
     CERTIFICATE_ISSUER_MAP.put("应急管理厅", "EMERGENCY_MANAGEMENT_DEPARTMENT");
     CERTIFICATE_ISSUER_MAP.put("其它", "OTHER");
     CERTIFICATE_ISSUER_MAP.put("其他", "OTHER");
@@ -137,9 +140,12 @@ public class CustomerImportService {
 
   @Autowired
   public CustomerImportService(
-      CustomerRepository customerRepository, CustomerStagingRepository stagingRepository) {
+      CustomerRepository customerRepository,
+      CustomerStagingRepository stagingRepository,
+      AnalyticsRefreshService analyticsRefreshService) {
     this.customerRepository = customerRepository;
     this.stagingRepository = stagingRepository;
+    this.analyticsRefreshService = analyticsRefreshService;
   }
 
   /**
@@ -321,10 +327,36 @@ public class CustomerImportService {
   /**
    * Confirm import and move valid records to customers table.
    *
+   * <p>This method is not transactional. It delegates to a transactional method for the actual
+   * import, then triggers analytics update in a separate transaction to ensure the import is
+   * committed before analytics queries run.
+   *
+   * @return import summary
+   */
+  public ImportSummary confirmImport() {
+    // Perform the import in a transaction
+    ImportSummary summary = doImport();
+
+    // Update analytics tables if any records were imported or updated
+    // This runs in a separate transaction and can see the committed import data
+    if (summary.getImported() > 0 || summary.getUpdated() > 0) {
+      logger.info(
+          "Triggering analytics refresh for last 12 months... ({} new, {} updated)",
+          summary.getImported(),
+          summary.getUpdated());
+      analyticsRefreshService.updateRecentAnalyticalTables();
+    }
+
+    return summary;
+  }
+
+  /**
+   * Perform the actual import in a transaction.
+   *
    * @return import summary
    */
   @Transactional
-  public ImportSummary confirmImport() {
+  private ImportSummary doImport() {
     List<CustomerStaging> stagingRecords = getAllStagedRecords();
 
     int imported = 0;

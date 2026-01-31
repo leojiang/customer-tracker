@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -93,9 +94,12 @@ public class AnalyticsRefreshService {
    * <p>This method only executes scripts starting with "update_", which are designed to update only
    * recent data while preserving historical records.
    *
+   * <p>Uses REQUIRES_NEW propagation to ensure this method runs in a new transaction, allowing it
+   * to see committed changes from calling transactions.
+   *
    * @return RefreshResult with execution details
    */
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public RefreshResult updateRecentAnalyticalTables() {
     log.info("Starting recent analytics update (last 12 months) at {}", LocalDateTime.now());
     long startTime = System.currentTimeMillis();
