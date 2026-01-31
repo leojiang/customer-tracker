@@ -19,7 +19,7 @@ SELECT
     COUNT(*) AS certified_count
 FROM customers
 WHERE certified_at IS NOT NULL
-  AND c.current_status = 'CERTIFIED'
+  AND current_status = 'CERTIFIED'
   AND certified_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
   AND deleted_at IS NULL
 GROUP BY DATE_FORMAT(certified_at, '%Y-%m')

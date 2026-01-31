@@ -184,6 +184,7 @@ const translations = {
     'customers.name': 'Name',
     'customers.phone': 'Phone',
     'customers.cancel': 'Cancel',
+    'customers.confirm': 'Confirm',
     'customers.close': 'Close',
     'customers.ok': 'OK',
     'customers.detail.customer': 'Customer',
@@ -503,7 +504,7 @@ const translations = {
     'dashboard.charts.noData': 'No data available',
     'dashboard.charts.error': 'Error',
     'dashboard.charts.errorLoading': 'Error loading chart',
-    'dashboard.charts.refresh': 'Refresh',
+    'dashboard.charts.refresh': 'Refresh Reports',
     'dashboard.charts.total': 'total',
     'dashboard.charts.totalCustomers': 'Total Customers',
     'dashboard.charts.customers': 'customers',
@@ -561,7 +562,8 @@ const translations = {
 
     // Analytics Update Recent
     'dashboard.analytics.updateRecent': 'Update Recent Analytics',
-    'dashboard.analytics.updateRecentButton': 'Update Last 12 Months',
+    'dashboard.analytics.updateRecentButton': 'Generate report data',
+    'dashboard.analytics.updateRecentConfirmTitle': 'Confirm Update',
     'dashboard.analytics.updateRecentWarning': 'This will update analytics data for the last 12 months only.\n\nHistorical data older than 12 months will not be modified.\n\nContinue?',
     'dashboard.analytics.updateRecentSuccessTitle': 'Update Complete',
     'dashboard.analytics.updateRecentSuccess': 'Recent analytics updated successfully!\n\nScripts executed: {total}\nSuccessful: {successful}\nDuration: {duration}s',
@@ -793,6 +795,7 @@ const translations = {
     'customers.name': '姓名',
     'customers.phone': '电话',
     'customers.cancel': '取消',
+    'customers.confirm': '确认',
     'customers.close': '关闭',
     'customers.ok': '确定',
     'customers.detail.customer': '客户',
@@ -1112,7 +1115,7 @@ const translations = {
     'dashboard.charts.noData': '暂无数据',
     'dashboard.charts.error': '错误',
     'dashboard.charts.errorLoading': '图表加载出错',
-    'dashboard.charts.refresh': '刷新',
+    'dashboard.charts.refresh': '刷新报表',
     'dashboard.charts.total': '总计',
     'dashboard.charts.totalCustomers': '总成交量',
     'dashboard.charts.customers': '客户',
@@ -1170,7 +1173,8 @@ const translations = {
 
     // Analytics Update Recent
     'dashboard.analytics.updateRecent': '更新近期分析数据',
-    'dashboard.analytics.updateRecentButton': '更新最近12个月',
+    'dashboard.analytics.updateRecentButton': '重新生成报表数据',
+    'dashboard.analytics.updateRecentConfirmTitle': '确认更新',
     'dashboard.analytics.updateRecentWarning': '这将仅更新最近12个月的分析数据。\n\n超过12个月的历史数据不会被修改。\n\n是否继续？',
     'dashboard.analytics.updateRecentSuccessTitle': '更新完成',
     'dashboard.analytics.updateRecentSuccess': '近期分析数据更新成功！\n\n执行脚本数: {total}\n成功: {successful}\n耗时: {duration}秒',

@@ -1,7 +1,5 @@
 package com.example.customers.controller;
 
-import com.example.customers.model.Sales;
-import com.example.customers.model.SalesRole;
 import com.example.customers.repository.CustomerRepository;
 import com.example.customers.service.AnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,8 +18,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,8 +74,7 @@ public class AnalyticsController {
           @RequestParam(defaultValue = "30")
           int days) {
 
-    String salesPhone = getCurrentUserSalesPhone();
-    DashboardOverviewResponse overview = analyticsService.getDashboardOverview(salesPhone, days);
+    DashboardOverviewResponse overview = analyticsService.getDashboardOverview(days);
     return ResponseEntity.ok(overview);
   }
 
@@ -97,8 +92,7 @@ public class AnalyticsController {
   @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<StatusDistributionResponse> getStatusDistribution() {
 
-    String salesPhone = getCurrentUserSalesPhone();
-    StatusDistributionResponse distribution = analyticsService.getStatusDistribution(salesPhone);
+    StatusDistributionResponse distribution = analyticsService.getStatusDistribution();
     return ResponseEntity.ok(distribution);
   }
 
@@ -120,9 +114,7 @@ public class AnalyticsController {
           @RequestParam(defaultValue = "daily")
           String granularity) {
 
-    String salesPhone = getCurrentUserSalesPhone();
-    TrendAnalysisResponse trends =
-        analyticsService.getCustomerTrends(salesPhone, days, granularity);
+    TrendAnalysisResponse trends = analyticsService.getCustomerTrends(days, granularity);
     return ResponseEntity.ok(trends);
   }
 
@@ -144,9 +136,8 @@ public class AnalyticsController {
           @RequestParam(defaultValue = "90")
           int days) {
 
-    String salesPhone = getCurrentUserSalesPhone();
     CertificateTypeTrendsResponse trends =
-        analyticsService.getCustomerTrendsByCertificateType(salesPhone, days);
+        analyticsService.getCustomerTrendsByCertificateType(days);
     return ResponseEntity.ok(trends);
   }
 
@@ -190,8 +181,7 @@ public class AnalyticsController {
           @RequestParam(defaultValue = "30")
           int days) {
 
-    String salesPhone = getCurrentUserSalesPhone();
-    SalesPerformanceResponse performance = analyticsService.getSalesPerformance(salesPhone, days);
+    SalesPerformanceResponse performance = analyticsService.getSalesPerformance(days);
     return ResponseEntity.ok(performance);
   }
 
@@ -288,8 +278,7 @@ public class AnalyticsController {
   @PreAuthorize("hasAnyAuthority('ADMIN', 'OFFICER', 'CUSTOMER_AGENT')")
   public ResponseEntity<RealtimeMetricsResponse> getRealtimeMetrics() {
 
-    String salesPhone = getCurrentUserSalesPhone();
-    RealtimeMetricsResponse metrics = analyticsService.getRealtimeMetrics(salesPhone);
+    RealtimeMetricsResponse metrics = analyticsService.getRealtimeMetrics();
     return ResponseEntity.ok(metrics);
   }
 
@@ -387,21 +376,6 @@ public class AnalyticsController {
     health.put("status", "Analytics regeneration service is running");
     health.put("timestamp", java.time.LocalDateTime.now().toString());
     return ResponseEntity.ok(health);
-  }
-
-  // Helper methods for authorization
-  private Sales getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.getPrincipal() instanceof Sales) {
-      return (Sales) authentication.getPrincipal();
-    }
-    throw new IllegalStateException("No authenticated user found");
-  }
-
-  private String getCurrentUserSalesPhone() {
-    Sales currentUser = getCurrentUser();
-    // Admin can see all data (no filter), regular sales can only see their own
-    return currentUser.getRole() == SalesRole.ADMIN ? null : currentUser.getPhone();
   }
 
   // Response DTOs

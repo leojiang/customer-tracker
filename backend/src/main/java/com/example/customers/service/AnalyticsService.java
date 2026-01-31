@@ -71,11 +71,10 @@ public class AnalyticsService {
   /**
    * Get dashboard overview metrics.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
    * @param days Number of days for analysis
    * @return Dashboard overview data
    */
-  public DashboardOverviewResponse getDashboardOverview(String salesPhone, int days) {
+  public DashboardOverviewResponse getDashboardOverview(int days) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
     ZonedDateTime previousStartDate = startDate.minusDays(days);
@@ -87,41 +86,26 @@ public class AnalyticsService {
     String startDateComparisonStr = startDate.toLocalDate().toString();
 
     // Current period metrics
-    // For admin users, use the certified count table to get total customers (sum of all monthly
-    // certifications)
-    long totalCustomers;
-    if (salesPhone == null) {
-      // Admin: get total from certified count table
-      List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
-          monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
-      totalCustomers =
-          monthlyCounts.stream().mapToLong(mc -> mc.getCertifiedCount().longValue()).sum();
-    } else {
-      // Sales user: use the customer table
-      totalCustomers = customerRepository.countTotalActiveCustomersBySales(salesPhone);
-    }
+    // Use the certified count table to get total customers (sum of all monthly certifications)
+    List<com.example.customers.entity.MonthlyCertifiedCount> monthlyCounts =
+        monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
+    long totalCustomers =
+        monthlyCounts.stream().mapToLong(mc -> mc.getCertifiedCount().longValue()).sum();
 
     long newCustomersThisPeriod =
-        (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, startDateStr, endDateStr)
-            : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
+        customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
-    long unsettledCustomers = getUnsettledCustomers(salesPhone, totalCustomers);
+    long unsettledCustomers = getUnsettledCustomers(totalCustomers);
     BigDecimal conversionRate = calculateConversionRate(totalCustomers, unsettledCustomers);
 
     // Previous period metrics for comparison
     long newCustomersPreviousPeriod =
-        (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, previousStartDateStr, startDateComparisonStr)
-            : customerRepository.countNewCustomersInPeriod(
-                previousStartDateStr, startDateComparisonStr);
+        customerRepository.countNewCustomersInPeriod(previousStartDateStr, startDateComparisonStr);
 
     long previousTotalCustomers = totalCustomers - newCustomersThisPeriod;
     // For previous period, we need to calculate unsettled customers as well
     // Using the same ratio as current period for simplicity
-    long previousUnsettledCustomers = getUnsettledCustomers(salesPhone, previousTotalCustomers);
+    long previousUnsettledCustomers = getUnsettledCustomers(previousTotalCustomers);
     BigDecimal previousConversionRate =
         calculateConversionRate(previousTotalCustomers, previousUnsettledCustomers);
 
@@ -141,14 +125,10 @@ public class AnalyticsService {
   /**
    * Get customer status distribution.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
    * @return Status distribution data
    */
-  public StatusDistributionResponse getStatusDistribution(String salesPhone) {
-    List<Object[]> results =
-        (salesPhone != null)
-            ? customerRepository.countCustomersByStatusForSales(salesPhone)
-            : customerRepository.countCustomersByStatus();
+  public StatusDistributionResponse getStatusDistribution() {
+    List<Object[]> results = customerRepository.countCustomersByStatus();
 
     Map<String, Long> statusCounts = new HashMap<>();
     long totalCustomers = 0;
@@ -166,21 +146,20 @@ public class AnalyticsService {
   /**
    * Get customer acquisition trends.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
    * @param days Number of days for analysis
    * @param granularity Data granularity (daily, weekly)
    * @return Trend analysis data
    */
-  public TrendAnalysisResponse getCustomerTrends(String salesPhone, int days, String granularity) {
+  public TrendAnalysisResponse getCustomerTrends(int days, String granularity) {
     boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
 
-    // Use the new monthly_certified_count table for admin monthly trends (much simpler and faster)
-    if (isMonthly && salesPhone == null) {
+    // Use the new monthly_certified_count table for monthly trends (much simpler and faster)
+    if (isMonthly) {
       return getMonthlyTrendsFromNewTable();
     }
 
-    // For sales users or daily granularity, use the existing complex queries
-    return getTrendsFromCustomerTable(salesPhone, days, granularity);
+    // For daily granularity, use the existing complex queries
+    return getTrendsFromCustomerTable(days, granularity);
   }
 
   /** Get monthly trends from the monthly_certified_count table (simplified, fast query). */
@@ -201,7 +180,7 @@ public class AnalyticsService {
       LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
       // Calculate conversion rate
-      long unsettledAtDate = getUnsettledCustomers(null, runningTotal);
+      long unsettledAtDate = getUnsettledCustomers(runningTotal);
       BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
       dataPoints.add(
@@ -211,11 +190,8 @@ public class AnalyticsService {
     return new TrendAnalysisResponse(dataPoints, "monthly", 0);
   }
 
-  /**
-   * Get trends from the customers table (complex query, used for sales users or daily granularity).
-   */
-  private TrendAnalysisResponse getTrendsFromCustomerTable(
-      String salesPhone, int days, String granularity) {
+  /** Get trends from the customers table (complex query, used for daily granularity). */
+  private TrendAnalysisResponse getTrendsFromCustomerTable(int days, String granularity) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
@@ -228,24 +204,13 @@ public class AnalyticsService {
     List<Object[]> results;
 
     if (isMonthly) {
-      results =
-          (salesPhone != null)
-              ? customerRepository.getCustomerTrendsByMonthForSales(
-                  salesPhone, startDateStr, endDateStr)
-              : customerRepository.getCustomerTrendsByMonth(startDateStr, endDateStr);
+      results = customerRepository.getCustomerTrendsByMonth(startDateStr, endDateStr);
     } else {
-      results =
-          (salesPhone != null)
-              ? customerRepository.getCustomerTrendsByDateForSales(
-                  salesPhone, startDateStr, endDateStr)
-              : customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
+      results = customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
     }
 
     List<TrendDataPoint> dataPoints = new ArrayList<>();
-    long runningTotal =
-        (salesPhone != null)
-            ? customerRepository.countCustomersCreatedBeforeForSales(salesPhone, startDate)
-            : customerRepository.countCustomersCreatedBefore(startDate);
+    long runningTotal = customerRepository.countCustomersCreatedBefore(startDate);
 
     for (Object[] row : results) {
       String periodStr = (String) row[0];
@@ -264,7 +229,7 @@ public class AnalyticsService {
       }
 
       // For simplicity, use overall conversion rate - could be enhanced to calculate per-date
-      long unsettledAtDate = getUnsettledCustomers(salesPhone, runningTotal);
+      long unsettledAtDate = getUnsettledCustomers(runningTotal);
       BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
       dataPoints.add(new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate));
@@ -276,14 +241,12 @@ public class AnalyticsService {
   /**
    * Get customer certification trends by certificate type.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
-   * @param days Number of days for analysis
+   * @param days Number of days for analysis (kept for API compatibility but not used)
    * @return Certificate type trends data
    */
-  public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(
-      String salesPhone, int days) {
-    // Use the monthly_certified_count_by_certificate_type table for all users (simplified and fast)
-    // Note: The salesPhone and days parameters are kept for API compatibility but not used
+  public CertificateTypeTrendsResponse getCustomerTrendsByCertificateType(int days) {
+    // Use the monthly_certified_count_by_certificate_type table (simplified and fast)
+    // Note: The days parameter is kept for API compatibility but not used
     return getCertificateTypeTrendsFromNewTable();
   }
 
@@ -324,7 +287,7 @@ public class AnalyticsService {
         String[] parts = monthStr.split("-");
         LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
-        long unsettled = getUnsettledCustomers(null, runningTotal);
+        long unsettled = getUnsettledCustomers(runningTotal);
         BigDecimal conversionRate = calculateConversionRate(runningTotal, unsettled);
         dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRate));
       }
@@ -338,11 +301,10 @@ public class AnalyticsService {
   /**
    * Get sales performance metrics.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
    * @param days Number of days for analysis
    * @return Sales performance data
    */
-  public SalesPerformanceResponse getSalesPerformance(String salesPhone, int days) {
+  public SalesPerformanceResponse getSalesPerformance(int days) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
@@ -350,37 +312,22 @@ public class AnalyticsService {
     String startDateStr = startDate.toLocalDate().toString();
     String endDateStr = endDate.toLocalDate().toString();
 
-    long totalCustomers =
-        (salesPhone != null)
-            ? customerRepository.countTotalActiveCustomersBySales(salesPhone)
-            : customerRepository.countTotalActiveCustomers();
+    long totalCustomers = customerRepository.countTotalActiveCustomers();
 
-    long newCustomers =
-        (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(
-                salesPhone, startDateStr, endDateStr)
-            : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
+    long newCustomers = customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
     long conversions =
-        (salesPhone != null)
-            ? customerRepository.countConversionsInPeriodBySales(
-                CustomerStatus.CERTIFIED, salesPhone, startDate, ZonedDateTime.now())
-            : customerRepository.countConversionsInPeriod(
-                CustomerStatus.CERTIFIED, startDate, ZonedDateTime.now());
+        customerRepository.countConversionsInPeriod(
+            CustomerStatus.CERTIFIED, startDate, ZonedDateTime.now());
 
-    long unsettled = getUnsettledCustomers(salesPhone, totalCustomers);
+    long unsettled = getUnsettledCustomers(totalCustomers);
     BigDecimal conversionRate = calculateConversionRate(totalCustomers, unsettled);
 
     // Get status breakdown
-    Map<String, Long> statusBreakdown = getStatusBreakdown(salesPhone);
+    Map<String, Long> statusBreakdown = getStatusBreakdown();
 
     return new SalesPerformanceResponse(
-        salesPhone != null ? salesPhone : "ADMIN",
-        totalCustomers,
-        newCustomers,
-        conversions,
-        conversionRate,
-        statusBreakdown);
+        "ADMIN", totalCustomers, newCustomers, conversions, conversionRate, statusBreakdown);
   }
 
   /**
@@ -484,33 +431,22 @@ public class AnalyticsService {
   /**
    * Get real-time metrics.
    *
-   * @param salesPhone Sales phone for filtering (null for admin view)
    * @return Real-time metrics data
    */
-  public RealtimeMetricsResponse getRealtimeMetrics(String salesPhone) {
+  public RealtimeMetricsResponse getRealtimeMetrics() {
     LocalDate today = LocalDate.now();
     String todayStr = today.toString();
 
-    long unsettledCustomersToday =
-        (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, todayStr, todayStr)
-            : customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
+    long unsettledCustomersToday = customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
 
-    long newCustomersToday =
-        (salesPhone != null)
-            ? customerRepository.countNewCustomersInPeriodBySales(salesPhone, todayStr, todayStr)
-            : customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
+    long newCustomersToday = customerRepository.countNewCustomersInPeriod(todayStr, todayStr);
 
     // Conversions are still based on createdAt since they represent status changes
     ZonedDateTime startOfDay = today.atStartOfDay(ZoneId.systemDefault());
     ZonedDateTime now = ZonedDateTime.now();
 
     long conversionsToday =
-        (salesPhone != null)
-            ? customerRepository.countConversionsInPeriodBySales(
-                CustomerStatus.CERTIFIED, salesPhone, startOfDay, now)
-            : customerRepository.countConversionsInPeriod(
-                CustomerStatus.CERTIFIED, startOfDay, now);
+        customerRepository.countConversionsInPeriod(CustomerStatus.CERTIFIED, startOfDay, now);
 
     String lastUpdated = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
@@ -587,18 +523,13 @@ public class AnalyticsService {
         .divide(BigDecimal.valueOf(totalCustomers), 2, RoundingMode.HALF_UP);
   }
 
-  private long getUnsettledCustomers(String salesPhone, long totalCustomers) {
+  private long getUnsettledCustomers(long totalCustomers) {
     // Count customers currently NOT in CERTIFIED status (unsettled customers)
-    return (salesPhone != null)
-        ? customerRepository.countNotCertifiedCustomersBySales(salesPhone)
-        : customerRepository.countNotCertifiedCustomers();
+    return customerRepository.countNotCertifiedCustomers();
   }
 
-  private Map<String, Long> getStatusBreakdown(String salesPhone) {
-    List<Object[]> results =
-        (salesPhone != null)
-            ? customerRepository.countCustomersByStatusForSales(salesPhone)
-            : customerRepository.countCustomersByStatus();
+  private Map<String, Long> getStatusBreakdown() {
+    List<Object[]> results = customerRepository.countCustomersByStatus();
 
     Map<String, Long> breakdown = new HashMap<>();
 
