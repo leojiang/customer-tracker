@@ -1131,7 +1131,7 @@ const translations = {
     'dashboard.charts.selectCertificateTypes': '选择证件类型',
     'dashboard.charts.allCertificateTypes': '所有证件类型',
     'dashboard.charts.certificateTypes': '证件类型',
-    'dashboard.charts.agentPerformanceTrends': '业务经理业绩趋势',
+    'dashboard.charts.agentPerformanceTrends': '业务经理月业绩趋势',
     'dashboard.charts.totalAgentPerformance': '业务经理总业绩趋势',
     'dashboard.charts.allAgents': '所有业务经理',
     'dashboard.charts.agents': '业务经理',
