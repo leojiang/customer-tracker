@@ -218,7 +218,7 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
 
       {/* Scrollable Table Area */}
       <div className="flex-1 overflow-auto">
-        <table className="divide-y divide-gray-300" style={{ minWidth: importStatusFilter === 'INVALID' ? '1000px' : '1400px' }}>
+        <table className="divide-y divide-gray-300" style={{ minWidth: importStatusFilter === 'INVALID' ? '1000px' : '1600px' }}>
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-32 whitespace-nowrap">{t('customers.name')}</th>
@@ -235,6 +235,9 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
               )}
               {importStatusFilter !== 'INVALID' && (
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-36 whitespace-nowrap">{t('customer.salesPerson')}</th>
+              )}
+              {importStatusFilter !== 'INVALID' && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-48 whitespace-nowrap">{t('customers.form.address')}</th>
               )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 left-0 z-10 bg-gray-50 w-28 whitespace-nowrap">{t('batchImport.status')}</th>
               {importStatusFilter === 'INVALID' && (
@@ -302,6 +305,15 @@ export default function StagingList({ refreshTrigger, onStatsUpdate, importStatu
                     hasFieldChanged(record, 'customerAgent') ? 'text-red-600' : 'text-gray-500'
                   }`}>
                     {record.customerAgent || '-'}
+                  </td>
+                )}
+                {importStatusFilter !== 'INVALID' && (
+                  <td className={`px-6 py-4 text-sm w-48 ${
+                    hasFieldChanged(record, 'address') ? 'text-red-600 font-medium' : 'text-gray-500'
+                  }`}>
+                    <div className="truncate" title={record.address || '-'}>
+                      {record.address || '-'}
+                    </div>
                   </td>
                 )}
                 <td className="px-6 py-4 whitespace-nowrap w-28">

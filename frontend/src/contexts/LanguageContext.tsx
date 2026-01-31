@@ -1175,7 +1175,7 @@ const translations = {
     'dashboard.analytics.updateRecent': '更新近期分析数据',
     'dashboard.analytics.updateRecentButton': '重新生成报表数据',
     'dashboard.analytics.updateRecentConfirmTitle': '确认更新',
-    'dashboard.analytics.updateRecentWarning': '这将仅更新最近12个月的分析数据。\n\n超过12个月的历史数据不会被修改。\n\n是否继续？',
+    'dashboard.analytics.updateRecentWarning': '请注意，该操作只能在上传新文件以后方可操作！\n\n这将仅更新最近12个月的分析数据，\n\n超过12个月的历史数据不会被修改。\n\n是否继续？',
     'dashboard.analytics.updateRecentSuccessTitle': '更新完成',
     'dashboard.analytics.updateRecentSuccess': '近期分析数据更新成功！\n\n执行脚本数: {total}\n成功: {successful}\n耗时: {duration}秒',
     'dashboard.analytics.updateRecentFailedTitle': '更新失败',

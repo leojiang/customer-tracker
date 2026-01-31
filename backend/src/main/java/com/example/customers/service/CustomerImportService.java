@@ -457,12 +457,6 @@ public class CustomerImportService {
         changedFields.add("certificateIssuer");
       }
 
-      // Compare business requirements
-      if (!nullSafeEquals(staging.getBusinessRequirements(), existing.getBusinessRequirements())) {
-        hasChanges = true;
-        changedFields.add("businessRequirements");
-      }
-
       // Compare education
       if (staging.getEducation() != existing.getEducation()) {
         hasChanges = true;
@@ -497,12 +491,6 @@ public class CustomerImportService {
       if (!nullSafeEquals(staging.getCertifiedAt(), existing.getCertifiedAt())) {
         hasChanges = true;
         changedFields.add("certifiedAt");
-      }
-
-      // Compare certificate type
-      if (staging.getCertificateType() != existing.getCertificateType()) {
-        hasChanges = true;
-        changedFields.add("certificateType");
       }
 
       // Compare customer type
