@@ -173,6 +173,12 @@ public class AnalyticsService {
     for (com.example.customers.entity.MonthlyCertifiedCount monthlyCount : monthlyCounts) {
       String monthStr = monthlyCount.getMonth();
       Long newCertifications = monthlyCount.getCertifiedCount().longValue();
+      Long newCustomerCertifiedCount = monthlyCount.getNewCustomerCertifiedCount() != null
+          ? monthlyCount.getNewCustomerCertifiedCount().longValue()
+          : 0L;
+      Long renewCustomerCertifiedCount = monthlyCount.getRenewCustomerCertifiedCount() != null
+          ? monthlyCount.getRenewCustomerCertifiedCount().longValue()
+          : 0L;
       runningTotal += newCertifications;
 
       // Parse month (YYYY-MM) to date (first day of month)
@@ -184,7 +190,8 @@ public class AnalyticsService {
       BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
       dataPoints.add(
-          new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate));
+          new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate,
+              newCustomerCertifiedCount, renewCustomerCertifiedCount));
     }
 
     return new TrendAnalysisResponse(dataPoints, "monthly", 0);
@@ -232,7 +239,8 @@ public class AnalyticsService {
       long unsettledAtDate = getUnsettledCustomers(runningTotal);
       BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
-      dataPoints.add(new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate));
+      // Note: Daily granularity doesn't have customer type breakdown, so we pass 0
+      dataPoints.add(new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate, 0, 0));
     }
 
     return new TrendAnalysisResponse(dataPoints, granularity, days);
@@ -289,7 +297,8 @@ public class AnalyticsService {
 
         long unsettled = getUnsettledCustomers(runningTotal);
         BigDecimal conversionRate = calculateConversionRate(runningTotal, unsettled);
-        dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRate));
+        // Note: Certificate type trends don't have customer type breakdown, so we pass 0
+        dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRate, 0, 0));
       }
 
       trendsByType.put(certificateType, dataPoints);
@@ -494,8 +503,9 @@ public class AnalyticsService {
       // For total customers, we use the total_customers field directly since this is a snapshot
       Long totalCustomers = record.getTotalCustomers().longValue();
 
+      // Note: Agent performance trends don't have customer type breakdown, so we pass 0
       TrendDataPoint dataPoint =
-          new TrendDataPoint(date, newCustomers, totalCustomers, conversionRate);
+          new TrendDataPoint(date, newCustomers, totalCustomers, conversionRate, 0, 0);
 
       trendsByAgent.computeIfAbsent(agent, k -> new ArrayList<>()).add(dataPoint);
     }

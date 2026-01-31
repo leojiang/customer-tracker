@@ -13,10 +13,12 @@ WHERE month >= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH), '%Y-%m')
 
 -- Step 2: Insert/Update data for the last 12 months
 -- Uses REPLACE to handle both new and existing records
-INSERT INTO monthly_certified_count (month, certified_count)
+INSERT INTO monthly_certified_count (month, certified_count, new_customer_certified_count, renew_customer_certified_count)
 SELECT
     DATE_FORMAT(certified_at, '%Y-%m') AS month,
-    COUNT(*) AS certified_count
+    COUNT(*) AS certified_count,
+    SUM(CASE WHEN customer_type = 'NEW_CUSTOMER' THEN 1 ELSE 0 END) AS new_customer_certified_count,
+    SUM(CASE WHEN customer_type = 'RENEW_CUSTOMER' THEN 1 ELSE 0 END) AS renew_customer_certified_count
 FROM customers
 WHERE certified_at IS NOT NULL
   AND current_status = 'CERTIFIED'
@@ -30,6 +32,8 @@ ORDER BY month;
 SELECT
     month,
     certified_count,
+    new_customer_certified_count,
+    renew_customer_certified_count,
     updated_at
 FROM monthly_certified_count
 WHERE month >= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH), '%Y-%m')
@@ -40,6 +44,8 @@ ORDER BY month DESC;
 SELECT
     COUNT(*) AS total_months_updated,
     SUM(certified_count) AS total_certified_last_12_months,
+    SUM(new_customer_certified_count) AS total_new_customers_last_12_months,
+    SUM(renew_customer_certified_count) AS total_renew_customers_last_12_months,
     MIN(month) AS earliest_month_updated,
     MAX(month) AS latest_month_updated
 FROM monthly_certified_count

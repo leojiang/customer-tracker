@@ -49,6 +49,8 @@ interface TrendDataPoint {
   newCustomers: number; // This now represents certifications based on certifiedAt
   totalCustomers: number;
   conversionRate: number;
+  newCustomerCertifiedCount: number; // Number of NEW_CUSTOMER type certifications
+  renewCustomerCertifiedCount: number; // Number of RENEW_CUSTOMER type certifications
 }
 
 interface TrendAnalysisResponse {

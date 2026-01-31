@@ -502,9 +502,16 @@ public class AnalyticsController {
     private long newCustomers;
     private long totalCustomers;
     private BigDecimal conversionRate;
+    private long newCustomerCertifiedCount;
+    private long renewCustomerCertifiedCount;
 
     public TrendDataPoint(
-        LocalDate date, long newCustomers, long totalCustomers, BigDecimal conversionRate) {
+        LocalDate date,
+        long newCustomers,
+        long totalCustomers,
+        BigDecimal conversionRate,
+        long newCustomerCertifiedCount,
+        long renewCustomerCertifiedCount) {
       // Format: if date is first day of month, use YYYY-MM format, otherwise YYYY-MM-DD
       if (date.getDayOfMonth() == 1) {
         this.date = date.format(DateTimeFormatter.ofPattern("yyyy-MM"));
@@ -514,6 +521,8 @@ public class AnalyticsController {
       this.newCustomers = newCustomers;
       this.totalCustomers = totalCustomers;
       this.conversionRate = conversionRate;
+      this.newCustomerCertifiedCount = newCustomerCertifiedCount;
+      this.renewCustomerCertifiedCount = renewCustomerCertifiedCount;
     }
 
     // Getters
@@ -531,6 +540,14 @@ public class AnalyticsController {
 
     public BigDecimal getConversionRate() {
       return conversionRate;
+    }
+
+    public long getNewCustomerCertifiedCount() {
+      return newCustomerCertifiedCount;
+    }
+
+    public long getRenewCustomerCertifiedCount() {
+      return renewCustomerCertifiedCount;
     }
   }
 

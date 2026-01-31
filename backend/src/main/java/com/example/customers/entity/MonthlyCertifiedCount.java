@@ -20,6 +20,12 @@ public class MonthlyCertifiedCount {
   @Column(name = "certified_count", nullable = false)
   private Integer certifiedCount;
 
+  @Column(name = "new_customer_certified_count", nullable = false)
+  private Integer newCustomerCertifiedCount;
+
+  @Column(name = "renew_customer_certified_count", nullable = false)
+  private Integer renewCustomerCertifiedCount;
+
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
@@ -53,6 +59,22 @@ public class MonthlyCertifiedCount {
 
   public void setCertifiedCount(Integer certifiedCount) {
     this.certifiedCount = certifiedCount;
+  }
+
+  public Integer getNewCustomerCertifiedCount() {
+    return newCustomerCertifiedCount;
+  }
+
+  public void setNewCustomerCertifiedCount(Integer newCustomerCertifiedCount) {
+    this.newCustomerCertifiedCount = newCustomerCertifiedCount;
+  }
+
+  public Integer getRenewCustomerCertifiedCount() {
+    return renewCustomerCertifiedCount;
+  }
+
+  public void setRenewCustomerCertifiedCount(Integer renewCustomerCertifiedCount) {
+    this.renewCustomerCertifiedCount = renewCustomerCertifiedCount;
   }
 
   public LocalDateTime getCreatedAt() {

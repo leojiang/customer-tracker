@@ -32,6 +32,8 @@ interface TrendDataPoint {
   newCustomers: number; // This now represents certifications based on certifiedAt
   totalCustomers: number;
   conversionRate: number;
+  newCustomerCertifiedCount: number; // Number of NEW_CUSTOMER type certifications
+  renewCustomerCertifiedCount: number; // Number of RENEW_CUSTOMER type certifications
 }
 
 interface TrendLineChartProps {
@@ -74,26 +76,37 @@ export default function TrendLineChart({
   // Use default title if not provided
   const chartTitle = title || t('dashboard.charts.trends');
 
-  // Prepare chart data with both new certifications and total customers
+  // Prepare chart data with customer type breakdown
   const chartData = {
     labels: data.map(point => new Date(point.date)),
     datasets: [
       {
-        label: t('dashboard.charts.newCertifications'),
-        data: data.map(point => point.newCustomers),
+        label: t('customerType.newCustomer'),
+        data: data.map(point => point.newCustomerCertifiedCount),
         backgroundColor: 'rgba(99, 102, 241, 0.8)', // indigo-500 with opacity
         borderColor: 'rgb(99, 102, 241)', // indigo-500
         borderWidth: 1,
         borderRadius: 4,
-        barPercentage: 0.7,
+        barPercentage: 0.35,
+        yAxisID: 'y',
+        hidden: activeDataset !== 'newCertifications',
+      },
+      {
+        label: t('customerType.renewCustomer'),
+        data: data.map(point => point.renewCustomerCertifiedCount),
+        backgroundColor: 'rgba(34, 197, 94, 0.8)', // green-500 with opacity
+        borderColor: 'rgb(34, 197, 94)', // green-500
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.35,
         yAxisID: 'y',
         hidden: activeDataset !== 'newCertifications',
       },
       {
         label: t('dashboard.charts.totalCustomers'),
         data: data.map(point => point.totalCustomers),
-        backgroundColor: 'rgba(34, 197, 94, 0.8)', // green-500 with opacity
-        borderColor: 'rgb(34, 197, 94)', // green-500
+        backgroundColor: 'rgba(168, 85, 247, 0.8)', // purple-500 with opacity
+        borderColor: 'rgb(168, 85, 247)', // purple-500
         borderWidth: 1,
         borderRadius: 4,
         barPercentage: 0.7,
@@ -361,17 +374,23 @@ export default function TrendLineChart({
         />
       </div>
 
-      {/* Summary stats - both metrics */}
-      <div className="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+      {/* Summary stats - customer type breakdown */}
+      <div className="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
         <div className="text-center">
           <div className="text-lg font-semibold text-indigo-600">
-            {data[data.length - 1]?.newCustomers.toLocaleString() || '0'}
+            {(data[data.length - 1]?.newCustomerCertifiedCount ?? 0).toLocaleString()}
           </div>
-          <div className="text-xs text-gray-500">{t('dashboard.charts.latestNew')}</div>
+          <div className="text-xs text-gray-500">{t('customerType.newCustomer')}</div>
         </div>
         <div className="text-center">
           <div className="text-lg font-semibold text-green-600">
-            {data[data.length - 1]?.totalCustomers.toLocaleString() || '0'}
+            {(data[data.length - 1]?.renewCustomerCertifiedCount ?? 0).toLocaleString()}
+          </div>
+          <div className="text-xs text-gray-500">{t('customerType.renewCustomer')}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-purple-600">
+            {(data[data.length - 1]?.totalCustomers ?? 0).toLocaleString()}
           </div>
           <div className="text-xs text-gray-500">{t('dashboard.charts.totalNow')}</div>
         </div>
