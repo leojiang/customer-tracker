@@ -151,6 +151,7 @@ export default function AdminDashboard() {
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [refreshingAnalytics, setRefreshingAnalytics] = useState<boolean>(false);
+  const [updatingRecent, setUpdatingRecent] = useState<boolean>(false);
 
   // Alert modal state
   const [alertModal, setAlertModal] = useState<{
@@ -390,6 +391,66 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUpdateRecentAnalytics = async () => {
+    if (!token) {
+      return;
+    }
+
+    // Show confirmation warning
+    const warningMessage = t('dashboard.analytics.updateRecentWarning');
+    if (!confirm(warningMessage)) {
+      return;
+    }
+
+    try {
+      setUpdatingRecent(true);
+
+      const response = await fetch(`${API_BASE_URL}/analytics/admin/update-recent`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        const successMessage = t('dashboard.analytics.updateRecentSuccess', {
+          total: result.totalScriptsExecuted,
+          successful: result.successfulScripts,
+          duration: ((result.durationMs || 0) / 1000).toFixed(1)
+        });
+
+        setAlertModal({
+          isOpen: true,
+          title: t('dashboard.analytics.updateRecentSuccessTitle'),
+          message: successMessage,
+          type: 'info'
+        });
+
+        await fetchDashboardData(true);
+      } else {
+        const error = await response.json();
+        setAlertModal({
+          isOpen: true,
+          title: t('dashboard.analytics.updateRecentFailedTitle'),
+          message: error.errorMessage || error.error || 'Unknown error',
+          type: 'error'
+        });
+      }
+    } catch (err) {
+      setAlertModal({
+        isOpen: true,
+        title: t('dashboard.analytics.updateRecentErrorTitle'),
+        message: t('dashboard.analytics.updateRecentError'),
+        type: 'error'
+      });
+    } finally {
+      setUpdatingRecent(false);
+    }
+  };
+
   useEffect(() => {
     if (!user || !token) {
       router.push('/auth');
@@ -487,6 +548,18 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t('nav.adminDashboard')}</h1>
         <div className="flex items-center gap-3">
+          {/* Update Recent Analytics Button - Safe for production */}
+          <button
+            type="button"
+            onClick={handleUpdateRecentAnalytics}
+            disabled={updatingRecent || refreshingAnalytics}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            title={t('dashboard.analytics.updateRecent')}
+          >
+            <RefreshCw size={18} className={updatingRecent ? 'animate-spin' : ''} />
+            <span className="text-sm font-medium">{t('dashboard.analytics.updateRecentButton')}</span>
+          </button>
+
           {/* Analytics Refresh Button - Only for admins */}
           <button
             type="button"
@@ -592,14 +665,24 @@ export default function AdminDashboard() {
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            {/* Status Distribution Chart */}
-            <StatusDistributionChart
-              data={statusDistribution?.statusCounts || {}}
-              totalCustomers={statusDistribution?.totalCustomers || 0}
-              title={t('dashboard.charts.statusDistribution')}
-              loading={statusDistributionLoading}
-              error={error}
-            />
+            {/* Status Distribution Chart - Excludes CERTIFIED customers */}
+            {(() => {
+              // Filter out CERTIFIED status to show only unsettled customers
+              const unsettledStatusData = Object.fromEntries(
+                Object.entries(statusDistribution?.statusCounts || {}).filter(([status]) => status !== 'CERTIFIED')
+              );
+              const unsettledTotal = Object.values(unsettledStatusData).reduce((sum, count) => sum + count, 0);
+
+              return (
+                <StatusDistributionChart
+                  data={unsettledStatusData}
+                  totalCustomers={unsettledTotal}
+                  title={t('dashboard.charts.statusDistribution')}
+                  loading={statusDistributionLoading}
+                  error={error}
+                />
+              );
+            })()}
 
             {/* Sales Leaderboard */}
             <div className="overflow-hidden rounded-lg bg-white shadow flex flex-col">

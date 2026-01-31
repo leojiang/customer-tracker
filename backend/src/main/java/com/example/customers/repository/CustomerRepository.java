@@ -116,6 +116,16 @@ public interface CustomerRepository
   long countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
       CustomerStatus currentStatus, String salesPhone);
 
+  /** Count customers who are NOT in CERTIFIED status (unsettled customers). */
+  @Query(
+      "SELECT COUNT(c) FROM Customer c WHERE c.currentStatus <> 'CERTIFIED' AND c.deletedAt IS NULL")
+  long countNotCertifiedCustomers();
+
+  /** Count unsettled customers for specific sales person. */
+  @Query(
+      "SELECT COUNT(c) FROM Customer c WHERE c.currentStatus <> 'CERTIFIED' AND c.salesPhone = :salesPhone AND c.deletedAt IS NULL")
+  long countNotCertifiedCustomersBySales(@Param("salesPhone") String salesPhone);
+
   /** Count conversions in date range. */
   @Query(
       "SELECT COUNT(c) FROM Customer c WHERE c.deletedAt IS NULL AND c.currentStatus = :status AND c.createdAt BETWEEN :startDate AND :endDate")

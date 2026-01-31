@@ -108,7 +108,7 @@ public class AnalyticsService {
             : customerRepository.countNewCustomersInPeriod(startDateStr, endDateStr);
 
     long unsettledCustomers = getUnsettledCustomers(salesPhone, totalCustomers);
-    BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
+    BigDecimal conversionRate = calculateConversionRate(totalCustomers, unsettledCustomers);
 
     // Previous period metrics for comparison
     long newCustomersPreviousPeriod =
@@ -119,7 +119,11 @@ public class AnalyticsService {
                 previousStartDateStr, startDateComparisonStr);
 
     long previousTotalCustomers = totalCustomers - newCustomersThisPeriod;
-    BigDecimal previousConversionRate = calculateConversionRate(salesPhone, previousTotalCustomers);
+    // For previous period, we need to calculate unsettled customers as well
+    // Using the same ratio as current period for simplicity
+    long previousUnsettledCustomers = getUnsettledCustomers(salesPhone, previousTotalCustomers);
+    BigDecimal previousConversionRate =
+        calculateConversionRate(previousTotalCustomers, previousUnsettledCustomers);
 
     // Calculate period changes
     PeriodChange periodChange =
@@ -197,7 +201,8 @@ public class AnalyticsService {
       LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
       // Calculate conversion rate
-      BigDecimal conversionRateAtDate = calculateConversionRate(null, runningTotal);
+      long unsettledAtDate = getUnsettledCustomers(null, runningTotal);
+      BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
       dataPoints.add(
           new TrendDataPoint(date, newCertifications, runningTotal, conversionRateAtDate));
@@ -259,7 +264,8 @@ public class AnalyticsService {
       }
 
       // For simplicity, use overall conversion rate - could be enhanced to calculate per-date
-      BigDecimal conversionRateAtDate = calculateConversionRate(salesPhone, runningTotal);
+      long unsettledAtDate = getUnsettledCustomers(salesPhone, runningTotal);
+      BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
 
       dataPoints.add(new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate));
     }
@@ -318,7 +324,8 @@ public class AnalyticsService {
         String[] parts = monthStr.split("-");
         LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
-        BigDecimal conversionRate = calculateConversionRate(null, runningTotal);
+        long unsettled = getUnsettledCustomers(null, runningTotal);
+        BigDecimal conversionRate = calculateConversionRate(runningTotal, unsettled);
         dataPoints.add(new TrendDataPoint(date, newCertifications, runningTotal, conversionRate));
       }
 
@@ -361,7 +368,8 @@ public class AnalyticsService {
             : customerRepository.countConversionsInPeriod(
                 CustomerStatus.CERTIFIED, startDate, ZonedDateTime.now());
 
-    BigDecimal conversionRate = calculateConversionRate(salesPhone, totalCustomers);
+    long unsettled = getUnsettledCustomers(salesPhone, totalCustomers);
+    BigDecimal conversionRate = calculateConversionRate(totalCustomers, unsettled);
 
     // Get status breakdown
     Map<String, Long> statusBreakdown = getStatusBreakdown(salesPhone);
@@ -566,34 +574,24 @@ public class AnalyticsService {
 
   // Helper methods
 
-  private BigDecimal calculateConversionRate(String salesPhone, long totalCustomers) {
+  private BigDecimal calculateConversionRate(long totalCustomers, long unsettledCustomers) {
     if (totalCustomers == 0) {
       return BigDecimal.ZERO;
     }
 
-    long conversions =
-        (salesPhone != null)
-            ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-                CustomerStatus.CERTIFIED, salesPhone)
-            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
+    // Conversion rate = (total customers - unsettled customers) / total customers * 100
+    long settledCustomers = totalCustomers - unsettledCustomers;
 
-    return BigDecimal.valueOf(conversions)
+    return BigDecimal.valueOf(settledCustomers)
         .multiply(BigDecimal.valueOf(100))
         .divide(BigDecimal.valueOf(totalCustomers), 2, RoundingMode.HALF_UP);
   }
 
   private long getUnsettledCustomers(String salesPhone, long totalCustomers) {
-    // Get customers NOT in CERTIFIED status
-    // (i.e., customers still in process: NEW, NOTIFIED, ABORTED, SUBMITTED, CERTIFIED_ELSEWHERE)
-    long certifiedCustomers =
-        (salesPhone != null)
-            ? customerRepository.countByCurrentStatusAndSalesPhoneAndDeletedAtIsNull(
-                CustomerStatus.CERTIFIED, salesPhone)
-            : customerRepository.countByCurrentStatusAndDeletedAtIsNull(CustomerStatus.CERTIFIED);
-
-    long unsettledCustomers = totalCustomers - certifiedCustomers;
-
-    return unsettledCustomers;
+    // Count customers currently NOT in CERTIFIED status (unsettled customers)
+    return (salesPhone != null)
+        ? customerRepository.countNotCertifiedCustomersBySales(salesPhone)
+        : customerRepository.countNotCertifiedCustomers();
   }
 
   private Map<String, Long> getStatusBreakdown(String salesPhone) {

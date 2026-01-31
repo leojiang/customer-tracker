@@ -485,7 +485,7 @@ const translations = {
     // Dashboard - Sales
 
     // Dashboard - Metrics
-    'dashboard.metrics.totalCustomers': 'Total Customers',
+    'dashboard.metrics.totalCustomers': 'Total Certified Customers',
     'dashboard.metrics.newCustomers': 'New Certifications',
     'dashboard.metrics.unsettled': 'Unsettled',
     'dashboard.metrics.conversionRate': 'Conversion Rate',
@@ -498,7 +498,7 @@ const translations = {
     'dashboard.metrics.myCustomers': 'My Customers',
 
     // Dashboard - Charts
-    'dashboard.charts.statusDistribution': 'Customer Status Distribution',
+    'dashboard.charts.statusDistribution': 'Not Certified Customer Status Distribution',
     'dashboard.charts.trends': 'Customer Certification Trends',
     'dashboard.charts.noData': 'No data available',
     'dashboard.charts.error': 'Error',
@@ -558,6 +558,17 @@ const translations = {
     'dashboard.analytics.refreshFailed': 'Failed to regenerate analytics data',
     'dashboard.analytics.refreshErrorTitle': 'Regeneration Error',
     'dashboard.analytics.refreshError': 'Error regenerating analytics data',
+
+    // Analytics Update Recent
+    'dashboard.analytics.updateRecent': 'Update Recent Analytics',
+    'dashboard.analytics.updateRecentButton': 'Update Last 12 Months',
+    'dashboard.analytics.updateRecentWarning': 'This will update analytics data for the last 12 months only.\n\nHistorical data older than 12 months will not be modified.\n\nContinue?',
+    'dashboard.analytics.updateRecentSuccessTitle': 'Update Complete',
+    'dashboard.analytics.updateRecentSuccess': 'Recent analytics updated successfully!\n\nScripts executed: {total}\nSuccessful: {successful}\nDuration: {duration}s',
+    'dashboard.analytics.updateRecentFailedTitle': 'Update Failed',
+    'dashboard.analytics.updateRecentFailed': 'Failed to update recent analytics',
+    'dashboard.analytics.updateRecentErrorTitle': 'Update Error',
+    'dashboard.analytics.updateRecentError': 'Error updating recent analytics',
 
     // User Approvals
     'approvals.pending': 'Pending Approvals',
@@ -1083,9 +1094,9 @@ const translations = {
     // Dashboard - Sales
 
     // Dashboard - Metrics
-    'dashboard.metrics.totalCustomers': '总业务量',
+    'dashboard.metrics.totalCustomers': '成交总量',
     'dashboard.metrics.newCustomers': '每月业务量',
-    'dashboard.metrics.unsettled': '未成交业务',
+    'dashboard.metrics.unsettled': '未成交量',
     'dashboard.metrics.conversionRate': '转化率',
     'dashboard.metrics.newCustomers30d': '当月成交总量',
     'dashboard.metrics.fromLastPeriod': '对比上期',
@@ -1096,7 +1107,7 @@ const translations = {
     'dashboard.metrics.myCustomers': '我的客户',
 
     // Dashboard - Charts
-    'dashboard.charts.statusDistribution': '客户状态分布',
+    'dashboard.charts.statusDistribution': '未发证客户状态分布',
     'dashboard.charts.trends': '成交量趋势',
     'dashboard.charts.noData': '暂无数据',
     'dashboard.charts.error': '错误',
@@ -1156,6 +1167,17 @@ const translations = {
     'dashboard.analytics.refreshFailed': '重新生成报表数据失败',
     'dashboard.analytics.refreshErrorTitle': '重新生成错误',
     'dashboard.analytics.refreshError': '重新生成报表数据时出错',
+
+    // Analytics Update Recent
+    'dashboard.analytics.updateRecent': '更新近期分析数据',
+    'dashboard.analytics.updateRecentButton': '更新最近12个月',
+    'dashboard.analytics.updateRecentWarning': '这将仅更新最近12个月的分析数据。\n\n超过12个月的历史数据不会被修改。\n\n是否继续？',
+    'dashboard.analytics.updateRecentSuccessTitle': '更新完成',
+    'dashboard.analytics.updateRecentSuccess': '近期分析数据更新成功！\n\n执行脚本数: {total}\n成功: {successful}\n耗时: {duration}秒',
+    'dashboard.analytics.updateRecentFailedTitle': '更新失败',
+    'dashboard.analytics.updateRecentFailed': '更新近期分析数据失败',
+    'dashboard.analytics.updateRecentErrorTitle': '更新错误',
+    'dashboard.analytics.updateRecentError': '更新近期分析数据时出错',
 
     // User Approvals
     'approvals.pending': '待审批',

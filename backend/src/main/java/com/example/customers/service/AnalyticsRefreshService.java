@@ -86,6 +86,72 @@ public class AnalyticsRefreshService {
     return result;
   }
 
+  /**
+   * Update analytical tables for the last 12 months only. This protects historical data older than
+   * 12 months from being overwritten.
+   *
+   * <p>This method only executes scripts starting with "update_", which are designed to update only
+   * recent data while preserving historical records.
+   *
+   * @return RefreshResult with execution details
+   */
+  @Transactional
+  public RefreshResult updateRecentAnalyticalTables() {
+    log.info("Starting recent analytics update (last 12 months) at {}", LocalDateTime.now());
+    long startTime = System.currentTimeMillis();
+
+    RefreshResult result = new RefreshResult();
+    result.setStartTime(LocalDateTime.now());
+    List<ScriptResult> scriptResults = new ArrayList<>();
+
+    try {
+      // Discover only update scripts (starting with "update_")
+      List<String> scriptFiles = discoverUpdateScripts();
+      log.info("Found {} update scripts for last 12 months", scriptFiles.size());
+
+      // Execute each script
+      for (String scriptFile : scriptFiles) {
+        ScriptResult scriptResult = executeBackfillScript(scriptFile);
+        scriptResults.add(scriptResult);
+
+        if (!scriptResult.getSuccess()) {
+          log.error("Script {} failed: {}", scriptFile, scriptResult.getErrorMessage());
+        }
+      }
+
+      // Calculate summary statistics
+      int successfulCount = (int) scriptResults.stream().filter(ScriptResult::getSuccess).count();
+      int failedCount = scriptResults.size() - successfulCount;
+
+      result.setScriptResults(scriptResults);
+      result.setTotalScriptsExecuted(scriptResults.size());
+      result.setSuccessfulScripts(successfulCount);
+      result.setFailedScripts(failedCount);
+      result.setSuccess(failedCount == 0);
+
+      long endTime = System.currentTimeMillis();
+      result.setEndTime(LocalDateTime.now());
+      result.setDurationMs(endTime - startTime);
+
+      log.info(
+          "Recent analytics update completed in {} ms. "
+              + "Scripts: {} total, {} successful, {} failed",
+          result.getDurationMs(),
+          scriptResults.size(),
+          successfulCount,
+          failedCount);
+
+    } catch (Exception e) {
+      log.error("Error during recent analytics update", e);
+      result.setSuccess(false);
+      result.setErrorMessage(e.getMessage());
+      result.setEndTime(LocalDateTime.now());
+      result.setDurationMs(System.currentTimeMillis() - startTime);
+    }
+
+    return result;
+  }
+
   /** Discover all .sql backfill scripts in the scripts folder */
   private List<String> discoverBackfillScripts() {
     try {
@@ -110,6 +176,33 @@ public class AnalyticsRefreshService {
     } catch (Exception e) {
       log.error("Failed to discover backfill scripts", e);
       throw new RuntimeException("Could not discover backfill scripts", e);
+    }
+  }
+
+  /** Discover only update scripts (starting with "update_") in the scripts folder */
+  private List<String> discoverUpdateScripts() {
+    try {
+      org.springframework.core.io.Resource[] resources =
+          new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
+              .getResources("classpath:" + SCRIPTS_PATH + "/update_*.sql");
+
+      return Arrays.stream(resources)
+          .map(
+              resource -> {
+                try {
+                  return resource.getFilename();
+                } catch (Exception e) {
+                  log.warn("Could not get filename for resource", e);
+                  return null;
+                }
+              })
+          .filter(name -> name != null && name.startsWith("update_") && name.endsWith(".sql"))
+          .sorted() // Execute scripts in alphabetical order
+          .collect(Collectors.toList());
+
+    } catch (Exception e) {
+      log.error("Failed to discover update scripts", e);
+      throw new RuntimeException("Could not discover update scripts", e);
     }
   }
 

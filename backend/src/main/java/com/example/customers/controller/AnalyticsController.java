@@ -344,6 +344,34 @@ public class AnalyticsController {
   }
 
   @Operation(
+      summary = "Update analytics for last 12 months (Admin only)",
+      description =
+          "Execute update scripts to refresh analytical data for the last 12 months only. "
+              + "Historical data older than 12 months is protected and not modified. "
+              + "This is safer than full regeneration and should be used after data imports.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Recent analytics updated successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required"),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error occurred during update (partial success possible)")
+      })
+  @PostMapping("/admin/update-recent")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<com.example.customers.dto.RefreshResult> updateRecentAnalytics() {
+
+    com.example.customers.dto.RefreshResult result = refreshService.updateRecentAnalyticalTables();
+
+    if (result.getSuccess()) {
+      return ResponseEntity.ok(result);
+    } else {
+      return ResponseEntity.status(500).body(result);
+    }
+  }
+
+  @Operation(
       summary = "Get health status of analytics regeneration service (Admin only)",
       description = "Check if the analytics regeneration service is operational")
   @ApiResponses(
