@@ -54,7 +54,8 @@ class AuthServiceTest {
     // Given
     when(salesRepository.findByPhone(testPhone)).thenReturn(Optional.of(testSales));
     when(passwordEncoder.matches(testPassword, testHashedPassword)).thenReturn(true);
-    when(jwtService.generateToken(testSales)).thenReturn(testToken);
+    when(salesRepository.save(any(Sales.class))).thenReturn(testSales);
+    when(jwtService.generateToken(any(Sales.class))).thenReturn(testToken);
 
     // When
     AuthService.AuthResult result = authService.login(testPhone, testPassword);
@@ -69,7 +70,8 @@ class AuthServiceTest {
 
     verify(salesRepository).findByPhone(testPhone);
     verify(passwordEncoder).matches(testPassword, testHashedPassword);
-    verify(jwtService).generateToken(testSales);
+    verify(salesRepository).save(any(Sales.class));
+    verify(jwtService).generateToken(any(Sales.class));
   }
 
   @Test
