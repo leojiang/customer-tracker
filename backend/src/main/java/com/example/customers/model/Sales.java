@@ -93,6 +93,9 @@ public class Sales {
   @Column(name = "must_change_password")
   private Boolean mustChangePassword = false;
 
+  @Column(name = "token_version", nullable = false)
+  private Long tokenVersion = 0L;
+
   public Sales() {}
 
   /**
@@ -266,6 +269,22 @@ public class Sales {
 
   public void setMustChangePassword(Boolean mustChangePassword) {
     this.mustChangePassword = mustChangePassword;
+  }
+
+  public Long getTokenVersion() {
+    return tokenVersion;
+  }
+
+  public void setTokenVersion(Long tokenVersion) {
+    this.tokenVersion = tokenVersion;
+  }
+
+  /**
+   * Increment the token version. Call this method when user logs in to invalidate
+   * previous JWT tokens.
+   */
+  public void incrementTokenVersion() {
+    this.tokenVersion = (this.tokenVersion == null ? 0L : this.tokenVersion) + 1;
   }
 
   // Approval status helper methods

@@ -67,9 +67,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       final String phone = jwtService.extractPhone(jwt);
 
       if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        Optional<Sales> salesOptional = authService.getSalesByPhone(phone);
+        // Use validateToken which checks token version
+        Optional<Sales> salesOptional = authService.validateToken(jwt);
 
-        if (salesOptional.isPresent() && jwtService.isTokenValid(jwt, phone)) {
+        if (salesOptional.isPresent()) {
           Sales sales = salesOptional.get();
 
           List<SimpleGrantedAuthority> authorities =
@@ -80,6 +81,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authToken);
+        } else {
+          // Token is invalid (expired or session conflict)
+          // Set response header to indicate session conflict
+          Long tokenVersion = jwtService.extractTokenVersion(jwt);
+          Optional<Sales> userCheck = authService.getSalesByPhone(phone);
+
+          if (userCheck.isPresent() && !userCheck.get().getTokenVersion().equals(tokenVersion)) {
+            // Session conflict: user logged in elsewhere
+            response.setHeader("X-Session-Conflict", "true");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"error.sessionConflict\", \"message\": \"Session invalidated due to login from another device\"}");
+            return;
+          }
         }
       }
     } catch (Exception e) {

@@ -70,6 +70,10 @@ public class AuthService {
       return AuthResult.failure("error.accountDisabled", "DISABLED");
     }
 
+    // Increment token version to invalidate any existing sessions on other devices
+    sales.incrementTokenVersion();
+    sales = salesRepository.save(sales);
+
     String token = jwtService.generateToken(sales);
 
     // Check if user must change password
@@ -132,8 +136,26 @@ public class AuthService {
   public Optional<Sales> validateToken(String token) {
     try {
       String phone = jwtService.extractPhone(token);
-      if (jwtService.isTokenValid(token, phone)) {
-        return salesRepository.findByPhone(phone);
+      if (!jwtService.isTokenValid(token, phone)) {
+        return Optional.empty();
+      }
+
+      // Additional validation: check token version
+      // If the user's token version in DB doesn't match the token's version,
+      // the token is invalid (user logged in elsewhere)
+      Long tokenVersionFromJwt = jwtService.extractTokenVersion(token);
+      Optional<Sales> salesOptional = salesRepository.findByPhone(phone);
+
+      if (salesOptional.isPresent()) {
+        Sales sales = salesOptional.get();
+        Long currentTokenVersion = sales.getTokenVersion();
+
+        // If versions don't match, token was invalidated by a newer login
+        if (!currentTokenVersion.equals(tokenVersionFromJwt)) {
+          return Optional.empty();
+        }
+
+        return salesOptional;
       }
     } catch (Exception e) {
       // Token is invalid

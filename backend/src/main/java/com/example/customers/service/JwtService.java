@@ -32,6 +32,22 @@ public class JwtService {
     return extractClaim(token, Claims::getSubject);
   }
 
+  public Long extractTokenVersion(String token) {
+    return extractClaim(token, claims -> {
+      Object versionObj = claims.get("tokenVersion");
+      if (versionObj == null) {
+        return 0L; // Default version for old tokens
+      }
+      if (versionObj instanceof Integer) {
+        return ((Integer) versionObj).longValue();
+      }
+      if (versionObj instanceof Long) {
+        return (Long) versionObj;
+      }
+      return 0L;
+    });
+  }
+
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
@@ -47,6 +63,7 @@ public class JwtService {
     Map<String, Object> extraClaims = new HashMap<>();
     extraClaims.put("role", sales.getRole().name());
     extraClaims.put("id", sales.getId().toString());
+    extraClaims.put("tokenVersion", sales.getTokenVersion() != null ? sales.getTokenVersion() : 0L);
     return generateToken(extraClaims, sales.getPhone());
   }
 

@@ -301,7 +301,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
+                    <td colSpan={7} className="px-6 py-12 text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                       <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
                     </td>
@@ -396,7 +396,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-12">
+                    <td colSpan={7} className="text-center py-12">
                       <Users className="mx-auto h-12 w-12 text-gray-400" />
                       <h3 className="mt-2 text-sm font-medium text-gray-900">{t('approvals.noUsersFound')}</h3>
                       <p className="mt-1 text-sm text-gray-500">

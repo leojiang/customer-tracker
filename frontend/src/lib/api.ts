@@ -42,7 +42,7 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 
   // Get token from sessionStorage for authentication
   const token = typeof window !== 'undefined' ? sessionStorage.getItem('auth_token') : null;
-  
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -54,17 +54,48 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 
   try {
     const response = await fetch(url, config);
-    
+
+    // Check for session conflict header
+    const sessionConflict = response.headers.get('X-Session-Conflict');
+
+    if (sessionConflict === 'true' || response.status === 401) {
+      // Try to parse the error response to see if it's a session conflict
+      const contentType = response.headers.get('content-type');
+      const isJsonResponse = contentType && contentType.includes('application/json');
+
+      if (isJsonResponse) {
+        try {
+          const errorData = await response.json();
+          if (errorData.error === 'error.sessionConflict') {
+            // Session conflict detected - logout user
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('auth_token');
+              sessionStorage.removeItem('user_data');
+              // Store the session conflict flag to show message after redirect
+              sessionStorage.setItem('session_conflict', 'true');
+              // Redirect to login page
+              if (window.location.pathname !== '/auth') {
+                window.location.href = '/auth?reason=session-conflict';
+              }
+            }
+            throw new ApiError(401, 'error.sessionConflict');
+          }
+        } catch (parseError) {
+          // If parsing fails, continue with normal error handling
+        }
+      }
+    }
+
     const contentType = response.headers.get('content-type');
     const isJsonResponse = contentType && contentType.includes('application/json');
-    
+
     if (!response.ok) {
       // For auth endpoints, try to return the error response as JSON if possible
       if (endpoint.startsWith('/auth/') && isJsonResponse) {
         const errorData = await response.json();
         return errorData as T;
       }
-      
+
       const errorText = await response.text();
       throw new ApiError(response.status, errorText || `HTTP ${response.status}`);
     }
@@ -72,7 +103,7 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
     if (isJsonResponse) {
       return await response.json();
     }
-    
+
     return response.text() as T;
   } catch (error) {
     if (error instanceof ApiError) {

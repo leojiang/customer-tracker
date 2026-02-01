@@ -331,7 +331,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
+                    <td colSpan={8} className="px-6 py-12 text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                       <p className="mt-2 text-gray-600">{t('approvals.loadingRequests')}</p>
                     </td>

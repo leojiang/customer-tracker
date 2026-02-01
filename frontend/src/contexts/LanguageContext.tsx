@@ -105,9 +105,14 @@ const translations = {
     'error.invalidToken': 'Invalid or expired token',
     'error.invalidResponse': 'Invalid response from server',
     'error.updateFailed': 'Update Failed',
+    'error.sessionConflict': 'You have been logged out because you logged in on another device.',
+    'error.sessionConflictTitle': 'Logged Out Due to New Login',
 
     // Error help messages
     'error.tips': 'Tips:',
+    'error.whatHappened': 'What happened:',
+    'error.sessionConflictExplanation': 'Your account was used to sign in on a different device, which automatically signed you out from this session.',
+    'error.sessionCanRelogin': 'You can sign in again to continue using this device.',
     'error.checkPhoneFormat': 'Double-check your phone number format',
     'error.ensurePassword': 'Ensure your password is correct',
     'error.capsLock': 'Make sure Caps Lock is not enabled',
@@ -716,9 +721,14 @@ const translations = {
     'error.invalidToken': '无效或过期的令牌',
     'error.invalidResponse': '服务器响应无效',
     'error.updateFailed': '更新失败',
+    'error.sessionConflict': '您已在其他设备登录，当前会话已失效。',
+    'error.sessionConflictTitle': '由于新登录而退出',
 
     // Error help messages
     'error.tips': '提示：',
+    'error.whatHappened': '发生了什么：',
+    'error.sessionConflictExplanation': '您的账户在另一台设备上登录，导致您从当前会话中自动退出。',
+    'error.sessionCanRelogin': '您可以重新登录以继续使用此设备。',
     'error.checkPhoneFormat': '请仔细检查您的手机号码格式',
     'error.ensurePassword': '确保您的密码正确',
     'error.capsLock': '确保未启用大写锁定',
@@ -734,8 +744,8 @@ const translations = {
     'error.contactSupport': '如果问题持续存在，请联系技术支持',
 
     // Navigation
-    'nav.adminDashboard': '管理报表',
-    'nav.dashboard': '统计报表',
+    'nav.adminDashboard': '统计报表',
+    'nav.dashboard': '报表',
     'nav.customers': '客户',
     'nav.batchImport': '批量导入',
     'nav.settings': '设置',

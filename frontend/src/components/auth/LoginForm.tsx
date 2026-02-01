@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Phone, Lock, LogIn, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Phone, Lock, LogIn, Clock, XCircle, AlertCircle, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LoginRequest } from '@/types/auth';
@@ -22,6 +22,19 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
   const { login, mustChangePassword } = useAuth();
   const { t } = useLanguage();
+
+  // Check for session conflict on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sessionConflict = sessionStorage.getItem('session_conflict');
+      if (sessionConflict === 'true') {
+        // Show session conflict message
+        setError(t('error.sessionConflict'));
+        // Clear the flag so it doesn't show again on refresh
+        sessionStorage.removeItem('session_conflict');
+      }
+    }
+  }, [t]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +99,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     let title = t('error.loginFailed');
 
     // Enhanced error type detection based on translation keys and messages
-    if (error === t('error.incorrectCredentials') || error.includes('Incorrect phone number or password') || error.includes('check your credentials') || error.includes('手机号码或密码错误')) {
+    if (error === t('error.sessionConflict') || error.includes('logged out') || error.includes('登录失效')) {
+      errorType = 'session-conflict';
+      icon = <LogOut className="w-5 h-5" />;
+      bgClass = 'bg-blue-50 border-blue-200';
+      textClass = 'text-blue-700';
+      iconClass = 'text-blue-500';
+      title = t('error.sessionConflictTitle');
+    } else if (error === t('error.incorrectCredentials') || error.includes('Incorrect phone number or password') || error.includes('check your credentials') || error.includes('手机号码或密码错误')) {
       errorType = 'invalid-credentials';
       icon = <AlertCircle className="w-5 h-5" />;
       bgClass = 'bg-red-50 border-red-200';
@@ -141,6 +161,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             </div>
             
             {/* Contextual help based on error type */}
+            {errorType === 'session-conflict' && (
+              <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
+                <p className="font-medium mb-1">{t('error.whatHappened')}</p>
+                <p>{t('error.sessionConflictExplanation')}</p>
+                <p className="mt-2">{t('error.sessionCanRelogin')}</p>
+              </div>
+            )}
+
             {errorType === 'invalid-credentials' && (
               <div className={`mt-3 text-sm ${textClass.replace('700', '600')}`}>
                 <p className="font-medium mb-1">{t('error.tips')}</p>
