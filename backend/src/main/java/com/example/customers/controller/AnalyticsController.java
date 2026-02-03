@@ -163,6 +163,30 @@ public class AnalyticsController {
   }
 
   @Operation(
+      summary = "Get daily status change trends",
+      description =
+          "Retrieve daily trends for status changes (NOTIFIED, SUBMITTED, ABORTED, CERTIFIED_ELSEWHERE). "
+              + "Uses the latest status per customer per day to ensure accurate counting.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Status change trends retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Admin access required")
+      })
+  @GetMapping("/customers/status-change-trends")
+  @PreAuthorize("hasAuthority('ADMIN')")
+  public ResponseEntity<Map<String, Object>> getStatusChangeTrends(
+      @Parameter(description = "Number of days for analysis", example = "30")
+          @RequestParam(defaultValue = "30")
+          int days) {
+
+    Map<String, Object> trends = analyticsService.getDailyStatusChangeTrends(days);
+    return ResponseEntity.ok(trends);
+  }
+
+  @Operation(
       summary = "Get sales performance metrics",
       description =
           "Retrieve sales performance data. Admin users see team performance, "

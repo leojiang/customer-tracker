@@ -554,6 +554,10 @@ const translations = {
     'dashboard.charts.months.november': 'November',
     'dashboard.charts.months.december': 'December',
     'dashboard.charts.noLeaderboardData': 'No leaderboard data available',
+    'dashboard.charts.statusChangeTrends': 'Customer Status Change Trends',
+    'dashboard.charts.statusChanges': 'Status Changes',
+    'dashboard.charts.days': 'days',
+    'dashboard.charts.last': 'Last',
 
     // Analytics Regenerate
     'dashboard.analytics.refresh': 'Regenerate Analytics Data',
@@ -1170,6 +1174,10 @@ const translations = {
     'dashboard.charts.months.november': '十一月',
     'dashboard.charts.months.december': '十二月',
     'dashboard.charts.noLeaderboardData': '暂无业绩榜单数据',
+    'dashboard.charts.statusChangeTrends': '客户状态变更趋势',
+    'dashboard.charts.statusChanges': '状态变更',
+    'dashboard.charts.days': '天',
+    'dashboard.charts.last': '最近',
 
     // Analytics Regenerate
     'dashboard.analytics.refresh': '重新生成报表数据',

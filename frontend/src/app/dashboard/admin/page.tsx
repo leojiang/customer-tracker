@@ -10,6 +10,7 @@ import TrendLineChart from '@/components/dashboard/charts/TrendLineChart';
 import CertificateTypeTrendsChart from '@/components/dashboard/charts/CertificateTypeTrendsChart';
 import AgentPerformanceTrendsChart from '@/components/dashboard/charts/AgentPerformanceTrendsChart';
 import TotalAgentPerformanceChart from '@/components/dashboard/charts/TotalAgentPerformanceChart';
+import StatusChangeTrendsChart from '@/components/dashboard/charts/StatusChangeTrendsChart';
 import MetricCard from '@/components/dashboard/widgets/MetricCard';
 import AlertModal from '@/components/ui/AlertModal';
 
@@ -67,6 +68,20 @@ interface CertificateTypeTrendsResponse {
 interface AgentPerformanceTrendsResponse {
   trendsByAgent: Record<string, TrendDataPoint[]>;
   agents: string[];
+}
+
+interface StatusChangeTrendsDataPoint {
+  date: string;
+  NOTIFIED: number;
+  SUBMITTED: number;
+  ABORTED: number;
+  CERTIFIED_ELSEWHERE: number;
+}
+
+interface StatusChangeTrendsResponse {
+  dataPoints: StatusChangeTrendsDataPoint[];
+  granularity: string;
+  totalDays: number;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -143,6 +158,7 @@ export default function AdminDashboard() {
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(storedFilters?.trends || null);
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
   const [agentPerformance, setAgentPerformance] = useState<AgentPerformanceTrendsResponse | null>(storedFilters?.agentPerformance || null);
+  const [statusChangeTrends, setStatusChangeTrends] = useState<StatusChangeTrendsResponse | null>(null);
 
   // Individual loading states for each chart/data set
   const [overviewLoading, setOverviewLoading] = useState<boolean>(!hasCachedData);
@@ -150,6 +166,7 @@ export default function AdminDashboard() {
   const [trendsLoading, setTrendsLoading] = useState<boolean>(!hasCachedData);
   const [certificateTrendsLoading, setCertificateTrendsLoading] = useState<boolean>(!hasCachedData);
   const [agentPerformanceLoading, setAgentPerformanceLoading] = useState<boolean>(!hasCachedData);
+  const [statusChangeTrendsLoading, setStatusChangeTrendsLoading] = useState<boolean>(true);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -385,6 +402,36 @@ export default function AdminDashboard() {
     }
   }, [token, selectedYear, selectedMonth, fetchLeaderboardByMonth]);
 
+  // Fetch status change trends
+  useEffect(() => {
+    if (token) {
+      const fetchStatusChangeTrends = async () => {
+        try {
+          setStatusChangeTrendsLoading(true);
+          const response = await fetch(`${API_BASE_URL}/analytics/customers/status-change-trends?days=30`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setStatusChangeTrends(data);
+          } else {
+            console.warn('Failed to fetch status change trends');
+          }
+        } catch (err) {
+          console.error('Error fetching status change trends:', err);
+        } finally {
+          setStatusChangeTrendsLoading(false);
+        }
+      };
+
+      fetchStatusChangeTrends();
+    }
+  }, [token]);
+
   // Auto-select all certificate types that have data when data is first loaded
   useEffect(() => {
     // Only auto-select if:
@@ -528,6 +575,15 @@ export default function AdminDashboard() {
             error={error}
             selectedAgents={selectedAgents}
             onSelectedAgentsChange={setSelectedAgents}
+          />
+
+          {/* Status Change Trends Chart */}
+          <StatusChangeTrendsChart
+            data={statusChangeTrends || undefined}
+            title={t('dashboard.charts.statusChangeTrends')}
+            days={30}
+            loading={statusChangeTrendsLoading}
+            error={error}
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

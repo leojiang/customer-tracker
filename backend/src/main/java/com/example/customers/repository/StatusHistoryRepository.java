@@ -67,4 +67,31 @@ public interface StatusHistoryRepository extends JpaRepository<StatusHistory, UU
    * <p>Cascade should handle this, but explicit method for testing.
    */
   void deleteByCustomer(Customer customer);
+
+  /**
+   * Get daily status change trends using latest status per customer per day.
+   *
+   * <p>For customers with multiple status changes on the same day, only the latest
+   * status transition is counted.
+   *
+   * @param startDate start date for the query
+   * @param endDate end date for the query
+   * @return List of Object arrays containing [date, status, count]
+   */
+  @Query(
+      "SELECT DATE(sh.changedAt) as statusDate, sh.toStatus as status, COUNT(sh) as count "
+          + "FROM StatusHistory sh "
+          + "WHERE sh.changedAt BETWEEN :startDate AND :endDate "
+          + "AND sh.toStatus IN ('NOTIFIED', 'SUBMITTED', 'ABORTED', 'CERTIFIED_ELSEWHERE') "
+          + "AND sh.changedAt = ( "
+          + "    SELECT MAX(sh2.changedAt) "
+          + "    FROM StatusHistory sh2 "
+          + "    WHERE sh2.customer.id = sh.customer.id "
+          + "    AND DATE(sh2.changedAt) = DATE(sh.changedAt) "
+          + ") "
+          + "GROUP BY DATE(sh.changedAt), sh.toStatus "
+          + "ORDER BY DATE(sh.changedAt), sh.toStatus")
+  List<Object[]> findDailyStatusChangeTrendsLatestPerCustomer(
+      @Param("startDate") java.time.ZonedDateTime startDate,
+      @Param("endDate") java.time.ZonedDateTime endDate);
 }

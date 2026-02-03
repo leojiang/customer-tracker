@@ -204,6 +204,60 @@ public class AnalyticsService {
     return new TrendAnalysisResponse(dataPoints, "monthly", 0);
   }
 
+  /**
+   * Get daily status change trends for the 4 key statuses.
+   *
+   * <p>Returns counts of status changes per day, using only the latest status per customer per day.
+   *
+   * @param days Number of days to analyze
+   * @return Status change trends data
+   */
+  public Map<String, Object> getDailyStatusChangeTrends(int days) {
+    ZonedDateTime endDate = ZonedDateTime.now();
+    ZonedDateTime startDate = endDate.minusDays(days);
+
+    List<Object[]> results =
+        statusHistoryRepository.findDailyStatusChangeTrendsLatestPerCustomer(startDate, endDate);
+
+    // Process results into a structured format
+    Map<LocalDate, Map<String, Integer>> dailyStatusCounts = new HashMap<>();
+
+    for (Object[] row : results) {
+      // Convert java.sql.Date to LocalDate
+      LocalDate date = ((java.sql.Date) row[0]).toLocalDate();
+      CustomerStatus status = (CustomerStatus) row[1];
+      Long count = ((Number) row[2]).longValue();
+
+      dailyStatusCounts
+          .computeIfAbsent(date, k -> new HashMap<>())
+          .put(status.name(), count.intValue());
+    }
+
+    // Build response data structure
+    List<Map<String, Object>> dataPoints = new ArrayList<>();
+    for (LocalDate date = startDate.toLocalDate();
+         !date.isAfter(endDate.toLocalDate());
+         date = date.plusDays(1)) {
+      Map<String, Object> dataPoint = new HashMap<>();
+      dataPoint.put("date", date.toString());
+
+      Map<String, Integer> statusCounts = dailyStatusCounts.getOrDefault(date, new HashMap<>());
+      dataPoint.put("NOTIFIED", statusCounts.getOrDefault("NOTIFIED", 0));
+      dataPoint.put("SUBMITTED", statusCounts.getOrDefault("SUBMITTED", 0));
+      dataPoint.put("ABORTED", statusCounts.getOrDefault("ABORTED", 0));
+      dataPoint.put("CERTIFIED_ELSEWHERE", statusCounts.getOrDefault("CERTIFIED_ELSEWHERE", 0));
+
+      dataPoints.add(dataPoint);
+    }
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("dataPoints", dataPoints);
+    response.put("granularity", "daily");
+    response.put("totalDays", days);
+
+    return response;
+  }
+
   /** Get trends from the customers table (complex query, used for daily granularity). */
   private TrendAnalysisResponse getTrendsFromCustomerTable(int days, String granularity) {
     ZonedDateTime endDate = ZonedDateTime.now();
