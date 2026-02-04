@@ -222,7 +222,8 @@ class CustomerServiceTest {
     when(customerRepository.save(testCustomer)).thenReturn(testCustomer);
 
     // When
-    Customer result = customerService.transitionStatus(testCustomerId, toStatus, reason);
+    Customer result =
+        customerService.transitionStatus(testCustomerId, toStatus, reason, "Test User");
 
     // Then
     assertNotNull(result);
@@ -250,7 +251,7 @@ class CustomerServiceTest {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> customerService.transitionStatus(testCustomerId, toStatus, reason));
+            () -> customerService.transitionStatus(testCustomerId, toStatus, reason, "Test User"));
 
     assertEquals(errorMessage, exception.getMessage());
     verify(customerRepository).findById(testCustomerId);
@@ -272,7 +273,7 @@ class CustomerServiceTest {
     EntityNotFoundException exception =
         assertThrows(
             EntityNotFoundException.class,
-            () -> customerService.transitionStatus(testCustomerId, toStatus, reason));
+            () -> customerService.transitionStatus(testCustomerId, toStatus, reason, "Test User"));
 
     assertTrue(exception.getMessage().contains("not found"));
     verify(customerRepository).findById(testCustomerId);
@@ -334,7 +335,7 @@ class CustomerServiceTest {
     when(customerRepository.save(testCustomer)).thenReturn(testCustomer);
 
     // When
-    customerService.deleteCustomer(testCustomerId);
+    customerService.deleteCustomer(testCustomerId, "Test User");
 
     // Then
     assertNotNull(testCustomer.getDeletedAt());
@@ -353,7 +354,7 @@ class CustomerServiceTest {
     when(customerRepository.save(testCustomer)).thenReturn(testCustomer);
 
     // When
-    Customer result = customerService.restoreCustomer(testCustomerId);
+    Customer result = customerService.restoreCustomer(testCustomerId, "Test User");
 
     // Then
     assertNotNull(result);
@@ -373,7 +374,8 @@ class CustomerServiceTest {
     // When & Then
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> customerService.restoreCustomer(testCustomerId));
+            IllegalArgumentException.class,
+            () -> customerService.restoreCustomer(testCustomerId, "Test User"));
 
     assertTrue(exception.getMessage().contains("not deleted"));
     verify(customerRepository).findByIdIncludingDeleted(testCustomerId);

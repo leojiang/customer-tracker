@@ -264,7 +264,9 @@ public class CustomerController {
 
       // Get current user's phone to associate with the customer
       String currentUserPhone = getCurrentUserPhone();
-      Customer savedCustomer = customerService.createCustomer(customer, currentUserPhone);
+      String currentUserName = getCurrentUserName();
+      Customer savedCustomer =
+          customerService.createCustomer(customer, currentUserPhone, currentUserName);
       return ResponseEntity.status(HttpStatus.CREATED).body(savedCustomer);
 
     } catch (IllegalArgumentException e) {
@@ -339,7 +341,9 @@ public class CustomerController {
         return ResponseEntity.notFound().build();
       }
 
-      customerService.deleteCustomer(id);
+      // Get current user's name for tracking
+      String currentUserName = getCurrentUserName();
+      customerService.deleteCustomer(id, currentUserName);
       return ResponseEntity.noContent().build();
     } catch (EntityNotFoundException e) {
       return ResponseEntity.notFound().build();
@@ -357,7 +361,9 @@ public class CustomerController {
         return ResponseEntity.notFound().build();
       }
 
-      Customer restoredCustomer = customerService.restoreCustomer(id);
+      // Get current user's name for tracking
+      String currentUserName = getCurrentUserName();
+      Customer restoredCustomer = customerService.restoreCustomer(id, currentUserName);
       return ResponseEntity.ok(restoredCustomer);
     } catch (EntityNotFoundException e) {
       return ResponseEntity.notFound().build();
@@ -393,8 +399,11 @@ public class CustomerController {
         return ResponseEntity.notFound().build();
       }
 
+      // Get current user's name for tracking
+      String currentUserName = getCurrentUserName();
       Customer updatedCustomer =
-          customerService.transitionStatus(id, request.getToStatus(), request.getReason());
+          customerService.transitionStatus(
+              id, request.getToStatus(), request.getReason(), currentUserName);
       return ResponseEntity.ok(updatedCustomer);
     } catch (EntityNotFoundException e) {
       return ResponseEntity.notFound().build();
@@ -892,6 +901,10 @@ public class CustomerController {
 
   private String getCurrentUserPhone() {
     return getCurrentUser().getPhone();
+  }
+
+  private String getCurrentUserName() {
+    return getCurrentUser().getName();
   }
 
   private String getCurrentUserSalesPhone() {

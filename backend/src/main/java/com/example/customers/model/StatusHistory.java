@@ -45,6 +45,9 @@ public class StatusHistory {
 
   private String reason;
 
+  @Column(name = "changed_by")
+  private String changedBy;
+
   @CreationTimestamp
   @Column(name = "changed_at", nullable = false, updatable = false)
   private ZonedDateTime changedAt;
@@ -58,13 +61,19 @@ public class StatusHistory {
    * @param fromStatus previous status (null for initial status)
    * @param toStatus new status
    * @param reason optional reason for the change
+   * @param changedBy name or identifier of the user who made the change
    */
   public StatusHistory(
-      Customer customer, CustomerStatus fromStatus, CustomerStatus toStatus, String reason) {
+      Customer customer,
+      CustomerStatus fromStatus,
+      CustomerStatus toStatus,
+      String reason,
+      String changedBy) {
     this.customer = customer;
     this.fromStatus = fromStatus;
     this.toStatus = toStatus;
     this.reason = reason;
+    this.changedBy = changedBy;
   }
 
   // Getters and Setters
@@ -108,6 +117,14 @@ public class StatusHistory {
     this.reason = reason;
   }
 
+  public String getChangedBy() {
+    return changedBy;
+  }
+
+  public void setChangedBy(String changedBy) {
+    this.changedBy = changedBy;
+  }
+
   public ZonedDateTime getChangedAt() {
     return changedAt;
   }
@@ -129,6 +146,9 @@ public class StatusHistory {
         + toStatus
         + ", reason='"
         + reason
+        + '\''
+        + ", changedBy='"
+        + changedBy
         + '\''
         + ", changedAt="
         + changedAt

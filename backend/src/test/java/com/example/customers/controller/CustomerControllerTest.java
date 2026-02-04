@@ -60,6 +60,7 @@ class CustomerControllerTest {
     Sales mockSales = new Sales();
     mockSales.setId(UUID.randomUUID());
     mockSales.setPhone("+9999999999");
+    mockSales.setName("Admin User");
     mockSales.setRole(SalesRole.ADMIN);
 
     TestingAuthenticationToken authentication =
@@ -229,7 +230,8 @@ class CustomerControllerTest {
     request.setBusinessRequirements("Need inventory system");
     request.setCurrentStatus(CustomerStatus.NEW);
 
-    when(customerService.createCustomer(any(Customer.class), anyString())).thenReturn(testCustomer);
+    when(customerService.createCustomer(any(Customer.class), anyString(), anyString()))
+        .thenReturn(testCustomer);
 
     // When & Then
     mockMvc
@@ -241,7 +243,7 @@ class CustomerControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.name").value("John Doe")); // Returns the mock testCustomer
 
-    verify(customerService).createCustomer(any(Customer.class), anyString());
+    verify(customerService).createCustomer(any(Customer.class), anyString(), anyString());
   }
 
   @Test
@@ -253,7 +255,7 @@ class CustomerControllerTest {
     request.setName("Jane Smith");
     request.setPhone("1234567890");
 
-    when(customerService.createCustomer(any(Customer.class), anyString()))
+    when(customerService.createCustomer(any(Customer.class), anyString(), anyString()))
         .thenThrow(new IllegalArgumentException("Customer with phone 1234567890 already exists"));
 
     // When & Then
@@ -264,7 +266,7 @@ class CustomerControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
 
-    verify(customerService).createCustomer(any(Customer.class), anyString());
+    verify(customerService).createCustomer(any(Customer.class), anyString(), anyString());
   }
 
   @Test
@@ -331,14 +333,14 @@ class CustomerControllerTest {
   void shouldDeleteCustomerSuccessfully() throws Exception {
     // Given
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
-    doNothing().when(customerService).deleteCustomer(testCustomerId);
+    doNothing().when(customerService).deleteCustomer(testCustomerId, "Admin User");
 
     // When & Then
     mockMvc
         .perform(delete("/api/customers/{id}", testCustomerId))
         .andExpect(status().isNoContent());
 
-    verify(customerService).deleteCustomer(testCustomerId);
+    verify(customerService).deleteCustomer(testCustomerId, "Admin User");
   }
 
   @Test
@@ -349,13 +351,13 @@ class CustomerControllerTest {
         .thenReturn(Optional.empty()); // This will trigger the 404
     doThrow(new EntityNotFoundException("Customer not found"))
         .when(customerService)
-        .deleteCustomer(testCustomerId);
+        .deleteCustomer(any(), any());
 
     // When & Then
     mockMvc.perform(delete("/api/customers/{id}", testCustomerId)).andExpect(status().isNotFound());
 
     verify(customerService).getCustomerById(testCustomerId);
-    verify(customerService, never()).deleteCustomer(any());
+    verify(customerService, never()).deleteCustomer(any(), any());
   }
 
   @Test
@@ -364,7 +366,7 @@ class CustomerControllerTest {
     // Given
     when(customerService.getCustomerByIdIncludingDeleted(testCustomerId))
         .thenReturn(Optional.of(testCustomer));
-    when(customerService.restoreCustomer(testCustomerId)).thenReturn(testCustomer);
+    when(customerService.restoreCustomer(testCustomerId, "Admin User")).thenReturn(testCustomer);
 
     // When & Then
     mockMvc
@@ -373,7 +375,7 @@ class CustomerControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.name").value("John Doe"));
 
-    verify(customerService).restoreCustomer(testCustomerId);
+    verify(customerService).restoreCustomer(testCustomerId, "Admin User");
   }
 
   @Test
@@ -391,7 +393,7 @@ class CustomerControllerTest {
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.transitionStatus(
-            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively"))
+            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively", "Admin User"))
         .thenReturn(updatedCustomer);
 
     // When & Then
@@ -405,7 +407,8 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.currentStatus").value("NOTIFIED"));
 
     verify(customerService)
-        .transitionStatus(testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively");
+        .transitionStatus(
+            testCustomerId, CustomerStatus.NOTIFIED, "Customer responded positively", "Admin User");
   }
 
   @Test
@@ -419,7 +422,7 @@ class CustomerControllerTest {
 
     when(customerService.getCustomerById(testCustomerId)).thenReturn(Optional.of(testCustomer));
     when(customerService.transitionStatus(
-            testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition"))
+            testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition", "Admin User"))
         .thenThrow(
             new IllegalArgumentException(
                 "Invalid transition from Customer called to Business done"));
@@ -433,7 +436,8 @@ class CustomerControllerTest {
         .andExpect(status().isBadRequest());
 
     verify(customerService)
-        .transitionStatus(testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition");
+        .transitionStatus(
+            testCustomerId, CustomerStatus.CERTIFIED, "Invalid transition", "Admin User");
   }
 
   @Test

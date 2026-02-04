@@ -66,6 +66,11 @@ public class CustomerService {
 
   /** Create a new customer. */
   public Customer createCustomer(Customer customer) {
+    return createCustomer(customer, null);
+  }
+
+  /** Create a new customer with tracking. */
+  public Customer createCustomer(Customer customer, String changedBy) {
     // Validate composite uniqueness (id_card, certificate_type)
     if (customer.getIdCard() != null && customer.getCertificateType() != null) {
       Optional<Customer> existingCustomer =
@@ -98,16 +103,23 @@ public class CustomerService {
     Customer savedCustomer = customerRepository.save(customer);
 
     // Create initial status history
+    if (changedBy == null || changedBy.isEmpty()) {
+      changedBy = "System";
+    }
     createStatusHistory(
-        savedCustomer, null, savedCustomer.getCurrentStatus(), "Initial customer creation");
+        savedCustomer,
+        null,
+        savedCustomer.getCurrentStatus(),
+        "Initial customer creation",
+        changedBy);
 
     return savedCustomer;
   }
 
-  /** Create a new customer with sales person assignment. */
-  public Customer createCustomer(Customer customer, String salesPhone) {
+  /** Create a new customer with sales person assignment and tracking. */
+  public Customer createCustomer(Customer customer, String salesPhone, String changedBy) {
     customer.setSalesPhone(salesPhone);
-    return createCustomer(customer);
+    return createCustomer(customer, changedBy);
   }
 
   /** Get customer by ID (active only). */
@@ -179,7 +191,8 @@ public class CustomerService {
 
   /** Transition customer status with history tracking and validation. */
   @Transactional
-  public Customer transitionStatus(UUID customerId, CustomerStatus toStatus, String reason) {
+  public Customer transitionStatus(
+      UUID customerId, CustomerStatus toStatus, String reason, String changedBy) {
     Customer customer =
         customerRepository
             .findById(customerId)
@@ -220,7 +233,7 @@ public class CustomerService {
     Customer savedCustomer = customerRepository.save(customer);
 
     // Create status history
-    createStatusHistory(savedCustomer, fromStatus, toStatus, reason);
+    createStatusHistory(savedCustomer, fromStatus, toStatus, reason, changedBy);
 
     return savedCustomer;
   }
@@ -289,7 +302,7 @@ public class CustomerService {
   }
 
   /** Soft delete customer. */
-  public void deleteCustomer(UUID id) {
+  public void deleteCustomer(UUID id, String changedBy) {
     Customer customer =
         customerRepository
             .findById(id)
@@ -303,11 +316,12 @@ public class CustomerService {
         customer,
         customer.getCurrentStatus(),
         customer.getCurrentStatus(),
-        "Customer soft deleted");
+        "Customer soft deleted",
+        changedBy);
   }
 
   /** Restore soft-deleted customer. */
-  public Customer restoreCustomer(UUID id) {
+  public Customer restoreCustomer(UUID id, String changedBy) {
     Customer customer =
         customerRepository
             .findByIdIncludingDeleted(id)
@@ -325,7 +339,8 @@ public class CustomerService {
         restoredCustomer,
         restoredCustomer.getCurrentStatus(),
         restoredCustomer.getCurrentStatus(),
-        "Customer restored from soft delete");
+        "Customer restored from soft delete",
+        changedBy);
 
     return restoredCustomer;
   }
@@ -426,8 +441,12 @@ public class CustomerService {
   // Private helper methods
 
   private void createStatusHistory(
-      Customer customer, CustomerStatus fromStatus, CustomerStatus toStatus, String reason) {
-    StatusHistory history = new StatusHistory(customer, fromStatus, toStatus, reason);
+      Customer customer,
+      CustomerStatus fromStatus,
+      CustomerStatus toStatus,
+      String reason,
+      String changedBy) {
+    StatusHistory history = new StatusHistory(customer, fromStatus, toStatus, reason, changedBy);
     statusHistoryRepository.save(history);
   }
 

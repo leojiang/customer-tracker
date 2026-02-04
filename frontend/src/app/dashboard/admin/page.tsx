@@ -71,16 +71,12 @@ interface AgentPerformanceTrendsResponse {
 }
 
 interface StatusChangeTrendsDataPoint {
-  date: string;
-  NOTIFIED: number;
-  SUBMITTED: number;
-  ABORTED: number;
-  CERTIFIED_ELSEWHERE: number;
+  [key: string]: string | number;
 }
 
 interface StatusChangeTrendsResponse {
   dataPoints: StatusChangeTrendsDataPoint[];
-  granularity: string;
+  users: string[];
   totalDays: number;
 }
 
@@ -114,6 +110,7 @@ export default function AdminDashboard() {
     certificateTrends?: CertificateTypeTrendsResponse | null;
     agentPerformance?: AgentPerformanceTrendsResponse | null;
     leaderboard?: LeaderboardResponse | null;
+    statusChangeTrends?: StatusChangeTrendsResponse | null;
     lastFetchTime?: number; // Track when data was fetched
   }
 
@@ -151,7 +148,8 @@ export default function AdminDashboard() {
     storedFilters.statusDistribution &&
     storedFilters.trends &&
     storedFilters.certificateTrends &&
-    storedFilters.leaderboard;
+    storedFilters.leaderboard &&
+    storedFilters.statusChangeTrends;
 
   const [overview, setOverview] = useState<DashboardOverview | null>(storedFilters?.overview || null);
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(storedFilters?.statusDistribution || null);
@@ -159,7 +157,7 @@ export default function AdminDashboard() {
   const [trends, setTrends] = useState<TrendAnalysisResponse | null>(storedFilters?.trends || null);
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
   const [agentPerformance, setAgentPerformance] = useState<AgentPerformanceTrendsResponse | null>(storedFilters?.agentPerformance || null);
-  const [statusChangeTrends, setStatusChangeTrends] = useState<StatusChangeTrendsResponse | null>(null);
+  const [statusChangeTrends, setStatusChangeTrends] = useState<StatusChangeTrendsResponse | null>(storedFilters?.statusChangeTrends || null);
   const [statusChangeDays, setStatusChangeDays] = useState<number>(storedFilters?.statusChangeDays || 30);
 
   // Individual loading states for each chart/data set
@@ -168,7 +166,7 @@ export default function AdminDashboard() {
   const [trendsLoading, setTrendsLoading] = useState<boolean>(!hasCachedData);
   const [certificateTrendsLoading, setCertificateTrendsLoading] = useState<boolean>(!hasCachedData);
   const [agentPerformanceLoading, setAgentPerformanceLoading] = useState<boolean>(!hasCachedData);
-  const [statusChangeTrendsLoading, setStatusChangeTrendsLoading] = useState<boolean>(true);
+  const [statusChangeTrendsLoading, setStatusChangeTrendsLoading] = useState<boolean>(!hasCachedData);
   const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(!hasCachedData);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -357,8 +355,33 @@ export default function AdminDashboard() {
     }
     setRefreshing(true);
     await fetchDashboardData(true);
+
+    // Also fetch status change trends
+    if (token) {
+      try {
+        setStatusChangeTrendsLoading(true);
+        const response = await fetch(`${API_BASE_URL}/analytics/customers/status-change-trends?days=${statusChangeDays}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setStatusChangeTrends(data);
+        } else {
+          console.warn('Failed to fetch status change trends');
+        }
+      } catch (err) {
+        console.error('Error fetching status change trends:', err);
+      } finally {
+        setStatusChangeTrendsLoading(false);
+      }
+    }
+
     setRefreshing(false);
-  }, [refreshing, fetchDashboardData]);
+  }, [refreshing, fetchDashboardData, token, statusChangeDays]);
 
   useEffect(() => {
     if (!user || !token) {
@@ -393,10 +416,11 @@ export default function AdminDashboard() {
       certificateTrends,
       agentPerformance,
       leaderboard,
+      statusChangeTrends,
       lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, selectedAgents, statusChangeDays, overview, statusDistribution, trends, certificateTrends, agentPerformance, leaderboard, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, selectedAgents, statusChangeDays, overview, statusDistribution, trends, certificateTrends, agentPerformance, leaderboard, statusChangeTrends, saveFiltersToStorage]);
 
   // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {

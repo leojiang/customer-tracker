@@ -25,8 +25,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -207,52 +210,68 @@ public class AnalyticsService {
   /**
    * Get daily status change trends for the 4 key statuses.
    *
-   * <p>Returns counts of status changes per day, using only the latest status per customer per day.
+   * <p>Returns counts of status changes per day for each user, using only the latest status per
+   * customer per day.
    *
    * @param days Number of days to analyze
-   * @return Status change trends data
+   * @return Status change trends data with daily data points
    */
   public Map<String, Object> getDailyStatusChangeTrends(int days) {
     ZonedDateTime endDate = ZonedDateTime.now();
     ZonedDateTime startDate = endDate.minusDays(days);
 
     List<Object[]> results =
-        statusHistoryRepository.findDailyStatusChangeTrendsLatestPerCustomer(startDate, endDate);
+        statusHistoryRepository.findDailyStatusChangeTrendsGroupedByUser(startDate, endDate);
 
-    // Process results into a structured format
-    Map<LocalDate, Map<String, Integer>> dailyStatusCounts = new HashMap<>();
+    // Group by date and build a data point for each day
+    Map<String, Map<String, Integer>> dataByDate = new LinkedHashMap<>();
+    Set<String> uniqueUsers = new LinkedHashSet<>();
 
     for (Object[] row : results) {
-      // Convert java.sql.Date to LocalDate
-      LocalDate date = ((java.sql.Date) row[0]).toLocalDate();
-      CustomerStatus status = (CustomerStatus) row[1];
-      Long count = ((Number) row[2]).longValue();
+      java.sql.Date statusDate = (java.sql.Date) row[0];
+      String changedBy = (String) row[1];
+      CustomerStatus status = (CustomerStatus) row[2];
+      Long count = ((Number) row[3]).longValue();
 
-      dailyStatusCounts
-          .computeIfAbsent(date, k -> new HashMap<>())
-          .put(status.name(), count.intValue());
+      // Track unique users
+      uniqueUsers.add(changedBy != null ? changedBy : "System");
+
+      String dateStr = statusDate.toString();
+      String userKey = changedBy != null ? changedBy : "System";
+
+      // Get or create data point for this date
+      Map<String, Integer> dataPoint = dataByDate.computeIfAbsent(dateStr, k -> new HashMap<>());
+
+      // Accumulate counts for this user/status on this date
+      // Key format: "user_STATUS" e.g., "admin_NOTIFIED"
+      String key = userKey + "_" + status.name();
+      dataPoint.merge(key, count.intValue(), Integer::sum);
     }
 
-    // Build response data structure
+    // Build response with ALL days in the range, even if no data
     List<Map<String, Object>> dataPoints = new ArrayList<>();
-    for (LocalDate date = startDate.toLocalDate();
-        !date.isAfter(endDate.toLocalDate());
-        date = date.plusDays(1)) {
-      Map<String, Object> dataPoint = new HashMap<>();
-      dataPoint.put("date", date.toString());
 
-      Map<String, Integer> statusCounts = dailyStatusCounts.getOrDefault(date, new HashMap<>());
-      dataPoint.put("NOTIFIED", statusCounts.getOrDefault("NOTIFIED", 0));
-      dataPoint.put("SUBMITTED", statusCounts.getOrDefault("SUBMITTED", 0));
-      dataPoint.put("ABORTED", statusCounts.getOrDefault("ABORTED", 0));
-      dataPoint.put("CERTIFIED_ELSEWHERE", statusCounts.getOrDefault("CERTIFIED_ELSEWHERE", 0));
+    // Generate all dates from startDate to endDate (inclusive)
+    for (int i = days - 1; i >= 0; i--) {
+      ZonedDateTime currentDate = endDate.minusDays(i);
+      String dateStr = currentDate.toLocalDate().toString();
+
+      Map<String, Object> dataPoint = new HashMap<>();
+      dataPoint.put("date", dateStr);
+
+      // Add data for this date if it exists
+      Map<String, Integer> dayData = dataByDate.get(dateStr);
+      if (dayData != null) {
+        dataPoint.putAll(dayData);
+      }
+      // If no data, the data point will only have the "date" field (all counts will be 0)
 
       dataPoints.add(dataPoint);
     }
 
     Map<String, Object> response = new HashMap<>();
     response.put("dataPoints", dataPoints);
-    response.put("granularity", "daily");
+    response.put("users", new ArrayList<>(uniqueUsers));
     response.put("totalDays", days);
 
     return response;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,11 +10,11 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
-  TimeScale,
+  ChartDataset,
+  TooltipItem,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { useLanguage } from '@/contexts/LanguageContext';
-import 'chartjs-adapter-date-fns';
 
 // Status type constants mapped to translation keys and colors
 const STATUS_TYPES = {
@@ -42,6 +42,11 @@ const STATUS_TYPES = {
 
 type StatusType = keyof typeof STATUS_TYPES;
 
+// Extended dataset type to include custom legendItem property
+interface ExtendedChartDataset extends ChartDataset<'bar'> {
+  legendItem?: boolean;
+}
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -49,21 +54,16 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend,
-  TimeScale
+  Legend
 );
 
 interface StatusChangeDataPoint {
-  date: string;
-  NOTIFIED: number;
-  SUBMITTED: number;
-  ABORTED: number;
-  CERTIFIED_ELSEWHERE: number;
+  [key: string]: string | number; // Can be string (date) or number (counts)
 }
 
 interface StatusChangeTrendsResponse {
   dataPoints: StatusChangeDataPoint[];
-  granularity: string;
+  users: string[];
   totalDays: number;
 }
 
@@ -87,24 +87,54 @@ export default function StatusChangeTrendsChart({
   onDaysChange,
 }: StatusChangeTrendsChartProps) {
   const { t, language } = useLanguage();
-  const chartRef = useRef<ChartJS<'bar'>>(null);
 
   const chartTitle = title || t('dashboard.charts.statusChangeTrends');
-
-  // Prepare chart data with 4 statuses - dynamically generated from STATUS_TYPES
   const statusKeys = Object.keys(STATUS_TYPES) as StatusType[];
+  const dataPoints = data?.dataPoints || [];
+  const users = data?.users || [];
+
+  // Extract dates from data points and format them
+  const dates = dataPoints
+    .map(dp => dp.date as string)
+    .filter(d => d)
+    .sort();
+
+  // Format dates for display based on language
+  const formattedDates = dates.map(dateStr => {
+    const date = new Date(dateStr);
+    // Map language codes to locale codes
+    const locale = language === 'zh-CN' ? 'zh-CN' : 'en-US';
+    return date.toLocaleDateString(locale, {
+      month: 'short',
+      day: 'numeric',
+    });
+  });
+
+  // Prepare chart data - grouped bars by user for each date, stacked by status
+  // Each user gets their own stack, with status types stacked within each user's bar
   const chartData = {
-    labels: data?.dataPoints.map(point => new Date(point.date)) || [],
-    datasets: statusKeys.map((statusKey) => ({
-      label: t(STATUS_TYPES[statusKey].translationKey),
-      data: data?.dataPoints.map(point => point[statusKey]) || [],
-      backgroundColor: STATUS_TYPES[statusKey].backgroundColor,
-      borderColor: STATUS_TYPES[statusKey].borderColor,
-      borderWidth: 1,
-      borderRadius: 4,
-      barPercentage: 0.8,
-      stack: 'statusChanges',
-    })),
+    labels: formattedDates, // Use formatted dates for display
+    datasets: users.flatMap((user) =>
+      statusKeys.map((statusKey) => ({
+        label: user, // Show only user name in legend
+        data: dates.map(date => {
+          const dataPoint = dataPoints.find(dp => dp.date === date);
+          if (!dataPoint) {return 0;}
+          const key = `${user}_${statusKey}`;
+          return dataPoint[key] || 0;
+        }),
+        backgroundColor: STATUS_TYPES[statusKey].backgroundColor,
+        borderColor: STATUS_TYPES[statusKey].borderColor,
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.7,
+        stack: user, // Each user gets their own stack
+        // Use a custom property to filter legend items
+        hidden: false,
+        // Mark the first dataset for each user as the legend representative
+        legendItem: statusKey === statusKeys[0],
+      }))
+    ),
   };
 
   // Chart options
@@ -112,7 +142,8 @@ export default function StatusChangeTrendsChart({
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: 'index' as const,
+      mode: 'nearest' as const,
+      axis: 'x' as const,
       intersect: false,
     },
     plugins: {
@@ -125,6 +156,13 @@ export default function StatusChangeTrendsChart({
             size: 12,
             family: 'Inter, sans-serif',
           },
+          // Filter legend to show only one entry per user (the first dataset for each user)
+          filter: (legendItem, chartData) => {
+            if (legendItem.datasetIndex === undefined) {return false;}
+            const dataset = chartData.datasets[legendItem.datasetIndex] as ExtendedChartDataset;
+            // Only show legend item for the first status type of each user
+            return dataset.legendItem === true;
+          },
         },
       },
       tooltip: {
@@ -133,45 +171,41 @@ export default function StatusChangeTrendsChart({
         bodyColor: 'white',
         borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
+        filter: function(tooltipItem) {
+          // Filter to show only datasets for the hovered user
+          // Get the user from the hovered dataset
+          const hoveredStack = tooltipItem.dataset.stack;
+          // Show all items that belong to the same stack (same user)
+          return tooltipItem.dataset.stack === hoveredStack;
+        },
         callbacks: {
-          title: function(tooltipItems) {
-            if (tooltipItems.length > 0) {
-              const item = tooltipItems[0];
-              if (item && typeof item.parsed.x === 'number') {
-                const date = new Date(item.parsed.x);
-                const localeCode = language === 'zh-CN' ? 'zh-CN' : 'en-US';
-                return date.toLocaleDateString(localeCode, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
-              }
-            }
-            return '';
+          title: function(tooltipItems: TooltipItem<"bar">[]) {
+            // Show the date and user as title
+            const index = tooltipItems[0]?.dataIndex;
+            const user = tooltipItems[0]?.dataset.label;
+            if (index === undefined || !user) {return '';}
+            return `${formattedDates[index]} - ${user}`;
           },
-          label: function(context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y === null) {
-              return label + 'N/A';
-            }
-            label += context.parsed.y.toLocaleString();
-            return label;
+          label: function(context: TooltipItem<"bar">) {
+            const dataset = context.dataset;
+            const dataIndex = context.dataIndex;
+            const value = dataset.data[dataIndex];
+
+            // Get the status type from the background color
+            const statusType = statusKeys.find(key => {
+              return STATUS_TYPES[key].backgroundColor === dataset.backgroundColor;
+            });
+
+            if (!statusType || !value || value === 0) {return '';} // Skip zero values
+
+            const statusLabel = t(STATUS_TYPES[statusType].translationKey);
+            return `${statusLabel}: ${value.toLocaleString()}`;
           },
         },
       },
     },
     scales: {
       x: {
-        type: 'time' as const,
-        time: {
-          unit: 'day',
-          displayFormats: {
-            day: 'MMM dd',
-          },
-        },
         grid: {
           display: false,
         },
@@ -181,14 +215,7 @@ export default function StatusChangeTrendsChart({
             family: 'Inter, sans-serif',
           },
           color: 'rgb(107, 114, 128)',
-          callback: function(value) {
-            const date = new Date(value);
-            const localeCode = language === 'zh-CN' ? 'zh-CN' : 'en-US';
-            return date.toLocaleDateString(localeCode, {
-              month: 'short',
-              day: 'numeric'
-            });
-          },
+          maxTicksLimit: 10,
         },
       },
       y: {
@@ -214,6 +241,7 @@ export default function StatusChangeTrendsChart({
           color: 'rgb(107, 114, 128)',
         },
         stacked: true,
+        beginAtZero: true,
       },
     },
     elements: {
@@ -223,30 +251,12 @@ export default function StatusChangeTrendsChart({
     },
   };
 
-  // Clean up chart on unmount
-  useEffect(() => {
-    const chart = chartRef.current;
-    return () => {
-      if (chart) {
-        chart.destroy();
-      }
-    };
-  }, []);
-
   if (loading) {
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <div className="animate-pulse">
           <div className="h-5 bg-gray-200 rounded w-48 mb-4"></div>
           <div className="h-80 bg-gray-200 rounded mb-4"></div>
-          <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="text-center">
-                <div className="h-6 bg-gray-200 rounded w-16 mx-auto mb-1"></div>
-                <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     );
@@ -266,7 +276,7 @@ export default function StatusChangeTrendsChart({
     );
   }
 
-  if (!data || !data.dataPoints || data.dataPoints.length === 0) {
+  if (!data || !data.dataPoints || dataPoints.length === 0) {
     return (
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <h3 className="text-lg font-medium text-gray-900 mb-4">{chartTitle}</h3>
@@ -277,29 +287,21 @@ export default function StatusChangeTrendsChart({
     );
   }
 
-  // Calculate summary statistics - dynamically from STATUS_TYPES
-  const latestData = data.dataPoints[data.dataPoints.length - 1]!;
-  const totals = data.dataPoints.reduce((acc, point) => {
-    statusKeys.forEach((key) => {
-      acc[key] = (acc[key] || 0) + (point[key] || 0);
-    });
-    return acc;
-  }, {} as Record<StatusType, number>);
+  // Calculate total counts for each user across all dates and all statuses
+  const userTotals = users.map(user => {
+    return dates.reduce((sum, date) => {
+      const dataPoint = dataPoints.find(dp => dp.date === date);
+      if (!dataPoint) {return sum;}
 
-  // Get color classes for each status
-  const getColorClasses = (statusKey: StatusType) => {
-    const colorMap = {
-      NOTIFIED: 'blue',
-      SUBMITTED: 'green',
-      ABORTED: 'red',
-      CERTIFIED_ELSEWHERE: 'purple',
-    };
-    const color = colorMap[statusKey];
-    return {
-      text: `text-${color}-600`,
-      bg: `bg-${color}-500`,
-    };
-  };
+      let userTotal = 0;
+      statusKeys.forEach(statusKey => {
+        const key = `${user}_${statusKey}`;
+        const value = dataPoint[key];
+        userTotal += typeof value === 'number' ? value : 0;
+      });
+      return sum + userTotal;
+    }, 0);
+  });
 
   return (
     <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
@@ -324,26 +326,22 @@ export default function StatusChangeTrendsChart({
 
       <div className="relative h-80">
         <Bar
-          ref={chartRef}
           data={chartData}
           options={options}
         />
       </div>
 
-      {/* Summary stats */}
+      {/* Summary stats - show total for each user */}
       <div className="mt-4 grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-        {statusKeys.map((statusKey) => {
-          const colorClasses = getColorClasses(statusKey);
-          return (
-            <div key={statusKey} className="text-center">
-              <div className={`text-lg font-semibold ${colorClasses.text}`}>
-                {latestData[statusKey].toLocaleString()}
-              </div>
-              <div className="text-xs text-gray-500">{t(STATUS_TYPES[statusKey].translationKey)}</div>
-              <div className="text-xs text-gray-400">{t('dashboard.charts.totalLabel')}: {totals[statusKey].toLocaleString()}</div>
+        {users.slice(0, 4).map((user, index) => (
+          <div key={user} className="text-center">
+            <div className="text-lg font-semibold text-gray-800">
+              {(userTotals[index] || 0).toLocaleString()}
             </div>
-          );
-        })}
+            <div className="text-xs text-gray-500">{user}</div>
+            <div className="text-xs text-gray-400">{t('dashboard.charts.totalLabel')}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

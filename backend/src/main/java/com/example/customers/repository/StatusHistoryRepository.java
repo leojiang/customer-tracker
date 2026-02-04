@@ -94,4 +94,31 @@ public interface StatusHistoryRepository extends JpaRepository<StatusHistory, UU
   List<Object[]> findDailyStatusChangeTrendsLatestPerCustomer(
       @Param("startDate") java.time.ZonedDateTime startDate,
       @Param("endDate") java.time.ZonedDateTime endDate);
+
+  /**
+   * Get daily status change trends grouped by user (changedBy) and status.
+   *
+   * <p>For customers with multiple status changes on the same day, only the latest status
+   * transition is counted. Results are grouped by the user who made the change and the status type.
+   *
+   * @param startDate start date for the query
+   * @param endDate end date for the query
+   * @return List of Object arrays containing [date, changedBy, status, count]
+   */
+  @Query(
+      "SELECT DATE(sh.changedAt) as statusDate, sh.changedBy as changedBy, sh.toStatus as status, COUNT(sh) as count "
+          + "FROM StatusHistory sh "
+          + "WHERE sh.changedAt BETWEEN :startDate AND :endDate "
+          + "AND sh.toStatus IN ('NOTIFIED', 'SUBMITTED', 'ABORTED', 'CERTIFIED_ELSEWHERE') "
+          + "AND sh.changedAt = ( "
+          + "    SELECT MAX(sh2.changedAt) "
+          + "    FROM StatusHistory sh2 "
+          + "    WHERE sh2.customer.id = sh.customer.id "
+          + "    AND DATE(sh2.changedAt) = DATE(sh.changedAt) "
+          + ") "
+          + "GROUP BY DATE(sh.changedAt), sh.changedBy, sh.toStatus "
+          + "ORDER BY DATE(sh.changedAt), sh.changedBy, sh.toStatus")
+  List<Object[]> findDailyStatusChangeTrendsGroupedByUser(
+      @Param("startDate") java.time.ZonedDateTime startDate,
+      @Param("endDate") java.time.ZonedDateTime endDate);
 }
