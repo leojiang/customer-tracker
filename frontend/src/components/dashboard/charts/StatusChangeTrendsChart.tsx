@@ -40,31 +40,6 @@ const STATUS_TYPES = {
   },
 } as const;
 
-// Color palette for different users
-const USER_COLORS: readonly string[] = [
-  'rgb(59, 130, 246)',   // blue-500
-  'rgb(34, 197, 94)',    // green-500
-  'rgb(239, 68, 68)',    // red-500
-  'rgb(168, 85, 247)',   // purple-500
-  'rgb(245, 158, 11)',   // amber-500
-  'rgb(20, 184, 166)',   // teal-500
-  'rgb(236, 72, 153)',   // pink-500
-  'rgb(99, 102, 241)',   // indigo-500
-  'rgb(249, 115, 22)',   // orange-500
-  'rgb(139, 92, 246)',   // violet-500
-] as const;
-
-// Function to get a consistent color for a user based on their name
-function getUserColor(userName: string): string {
-  // Generate a hash from the username to pick a color
-  let hash = 0;
-  for (let i = 0; i < userName.length; i++) {
-    hash = userName.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const colorIndex = Math.abs(hash) % USER_COLORS.length;
-  return USER_COLORS[colorIndex]!;
-}
-
 type StatusType = keyof typeof STATUS_TYPES;
 
 // Extended dataset type to include custom legendItem property
@@ -181,7 +156,8 @@ export default function StatusChangeTrendsChart({
             size: 12,
             family: 'Inter, sans-serif',
           },
-          // Generate custom legend items with user-specific colors
+          color: 'white',
+          // Generate custom legend items with white color
           generateLabels: function(chart) {
             const uniqueUsers: string[] = [];
             const userIndices: Map<string, number> = new Map();
@@ -198,11 +174,10 @@ export default function StatusChangeTrendsChart({
             // Generate legend items for each user
             return uniqueUsers.map((user) => {
               const datasetIndex = userIndices.get(user) || 0;
-              const userColor = getUserColor(user);
               return {
                 text: user,
-                fillStyle: userColor,
-                strokeStyle: userColor,
+                fillStyle: 'white',
+                strokeStyle: 'white',
                 lineWidth: 2,
                 hidden: false,
                 index: datasetIndex,
