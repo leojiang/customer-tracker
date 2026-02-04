@@ -157,7 +157,7 @@ export default function StatusChangeTrendsChart({
             family: 'Inter, sans-serif',
           },
           color: 'white',
-          // Generate custom legend items with white color
+          // Generate custom legend items with white color and gray border
           generateLabels: function(chart) {
             const uniqueUsers: string[] = [];
             const userIndices: Map<string, number> = new Map();
@@ -177,7 +177,7 @@ export default function StatusChangeTrendsChart({
               return {
                 text: user,
                 fillStyle: 'white',
-                strokeStyle: 'white',
+                strokeStyle: 'rgb(107, 114, 128)', // gray-500
                 lineWidth: 2,
                 hidden: false,
                 index: datasetIndex,
