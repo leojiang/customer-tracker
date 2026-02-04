@@ -563,6 +563,16 @@ export default function AdminDashboard() {
 
         {/* Charts Section */}
         <div className="mt-8 space-y-8">
+          {/* Daily Work Progress Chart */}
+          <StatusChangeTrendsChart
+            data={statusChangeTrends || undefined}
+            title={t('dashboard.charts.dailyWorkProgress')}
+            days={statusChangeDays}
+            loading={statusChangeTrendsLoading}
+            error={error}
+            onDaysChange={setStatusChangeDays}
+          />
+
           {/* Customer Trends Chart */}
           <TrendLineChart
             data={trends?.dataPoints || []}
@@ -602,16 +612,6 @@ export default function AdminDashboard() {
             error={error}
             selectedAgents={selectedAgents}
             onSelectedAgentsChange={setSelectedAgents}
-          />
-
-          {/* Status Change Trends Chart */}
-          <StatusChangeTrendsChart
-            data={statusChangeTrends || undefined}
-            title={t('dashboard.charts.statusChangeTrends')}
-            days={statusChangeDays}
-            loading={statusChangeTrendsLoading}
-            error={error}
-            onDaysChange={setStatusChangeDays}
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

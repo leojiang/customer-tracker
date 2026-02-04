@@ -88,7 +88,7 @@ export default function StatusChangeTrendsChart({
 }: StatusChangeTrendsChartProps) {
   const { t, language } = useLanguage();
 
-  const chartTitle = title || t('dashboard.charts.statusChangeTrends');
+  const chartTitle = title || t('dashboard.charts.dailyWorkProgress');
   const statusKeys = Object.keys(STATUS_TYPES) as StatusType[];
   const dataPoints = data?.dataPoints || [];
   const users = data?.users || [];
