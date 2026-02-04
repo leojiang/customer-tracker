@@ -164,6 +164,38 @@ export default function StatusChangeTrendsChart({
             return dataset.legendItem === true;
           },
         },
+        onClick: (e, legendItem, legend) => {
+          // Get the chart instance
+          const chart = legend.chart;
+          if (!chart) {return;}
+
+          // Get the user name from the clicked legend item
+          const clickedIndex = legendItem.datasetIndex;
+          if (clickedIndex === undefined) {return;}
+
+          const clickedDataset = chart.data.datasets[clickedIndex];
+          if (!clickedDataset) {return;}
+
+          const user = clickedDataset.label;
+          if (!user) {return;}
+
+          // Get the target state (toggle to opposite of current state)
+          const clickedMeta = chart.getDatasetMeta(clickedIndex);
+          if (!clickedMeta) {return;}
+          const targetState = !clickedMeta.hidden; // Toggle to opposite state
+
+          chart.data.datasets.forEach((dataset, index) => {
+            if (dataset.label === user) {
+              // Toggle all datasets for this user
+              const meta = chart.getDatasetMeta(index);
+              if (meta) {
+                meta.hidden = targetState;
+              }
+            }
+          });
+
+          chart.update();
+        },
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
