@@ -158,7 +158,7 @@ export default function AdminDashboard() {
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
   const [agentPerformance, setAgentPerformance] = useState<AgentPerformanceTrendsResponse | null>(storedFilters?.agentPerformance || null);
   const [statusChangeTrends, setStatusChangeTrends] = useState<StatusChangeTrendsResponse | null>(storedFilters?.statusChangeTrends || null);
-  const [statusChangeDays, setStatusChangeDays] = useState<number>(storedFilters?.statusChangeDays || 30);
+  const [statusChangeDays, setStatusChangeDays] = useState<number>(storedFilters?.statusChangeDays || 7);
 
   // Individual loading states for each chart/data set
   const [overviewLoading, setOverviewLoading] = useState<boolean>(!hasCachedData);

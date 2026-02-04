@@ -80,7 +80,7 @@ interface StatusChangeTrendsChartProps {
 export default function StatusChangeTrendsChart({
   data,
   title,
-  days = 30,
+  days = 7,
   className = "",
   loading = false,
   error = null,
