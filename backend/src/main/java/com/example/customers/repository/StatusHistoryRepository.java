@@ -71,8 +71,8 @@ public interface StatusHistoryRepository extends JpaRepository<StatusHistory, UU
   /**
    * Get daily status change trends using latest status per customer per day.
    *
-   * <p>For customers with multiple status changes on the same day, only the latest
-   * status transition is counted.
+   * <p>For customers with multiple status changes on the same day, only the latest status
+   * transition is counted.
    *
    * @param startDate start date for the query
    * @param endDate end date for the query

@@ -280,8 +280,8 @@ public class Sales {
   }
 
   /**
-   * Increment the token version. Call this method when user logs in to invalidate
-   * previous JWT tokens.
+   * Increment the token version. Call this method when user logs in to invalidate previous JWT
+   * tokens.
    */
   public void incrementTokenVersion() {
     this.tokenVersion = (this.tokenVersion == null ? 0L : this.tokenVersion) + 1;

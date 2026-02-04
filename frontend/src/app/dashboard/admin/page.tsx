@@ -106,6 +106,7 @@ export default function AdminDashboard() {
     trendsViewOption: string; // 'newCertifications' or 'totalCustomers'
     certificateTypes: string[]; // Array of selected certificate types
     selectedAgents?: string[]; // Array of selected agents
+    statusChangeDays?: number; // Number of days for status change trends
     // Store data along with filters
     overview?: DashboardOverview | null;
     statusDistribution?: StatusDistribution | null;
@@ -159,6 +160,7 @@ export default function AdminDashboard() {
   const [certificateTrends, setCertificateTrends] = useState<CertificateTypeTrendsResponse | null>(storedFilters?.certificateTrends || null);
   const [agentPerformance, setAgentPerformance] = useState<AgentPerformanceTrendsResponse | null>(storedFilters?.agentPerformance || null);
   const [statusChangeTrends, setStatusChangeTrends] = useState<StatusChangeTrendsResponse | null>(null);
+  const [statusChangeDays, setStatusChangeDays] = useState<number>(storedFilters?.statusChangeDays || 30);
 
   // Individual loading states for each chart/data set
   const [overviewLoading, setOverviewLoading] = useState<boolean>(!hasCachedData);
@@ -384,6 +386,7 @@ export default function AdminDashboard() {
       trendsViewOption,
       certificateTypes,
       selectedAgents,
+      statusChangeDays,
       overview,
       statusDistribution,
       trends,
@@ -393,7 +396,7 @@ export default function AdminDashboard() {
       lastFetchTime: Date.now(),
     };
     saveFiltersToStorage(filters);
-  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, selectedAgents, overview, statusDistribution, trends, certificateTrends, agentPerformance, leaderboard, saveFiltersToStorage]);
+  }, [selectedYear, selectedMonth, trendsViewOption, certificateTypes, selectedAgents, statusChangeDays, overview, statusDistribution, trends, certificateTrends, agentPerformance, leaderboard, saveFiltersToStorage]);
 
   // Fetch leaderboard when month/year changes (only leaderboard, not all dashboard data)
   useEffect(() => {
@@ -408,7 +411,7 @@ export default function AdminDashboard() {
       const fetchStatusChangeTrends = async () => {
         try {
           setStatusChangeTrendsLoading(true);
-          const response = await fetch(`${API_BASE_URL}/analytics/customers/status-change-trends?days=30`, {
+          const response = await fetch(`${API_BASE_URL}/analytics/customers/status-change-trends?days=${statusChangeDays}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
@@ -430,7 +433,7 @@ export default function AdminDashboard() {
 
       fetchStatusChangeTrends();
     }
-  }, [token]);
+  }, [token, statusChangeDays]);
 
   // Auto-select all certificate types that have data when data is first loaded
   useEffect(() => {
@@ -581,9 +584,10 @@ export default function AdminDashboard() {
           <StatusChangeTrendsChart
             data={statusChangeTrends || undefined}
             title={t('dashboard.charts.statusChangeTrends')}
-            days={30}
+            days={statusChangeDays}
             loading={statusChangeTrendsLoading}
             error={error}
+            onDaysChange={setStatusChangeDays}
           />
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

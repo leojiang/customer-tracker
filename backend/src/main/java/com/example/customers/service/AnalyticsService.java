@@ -236,8 +236,8 @@ public class AnalyticsService {
     // Build response data structure
     List<Map<String, Object>> dataPoints = new ArrayList<>();
     for (LocalDate date = startDate.toLocalDate();
-         !date.isAfter(endDate.toLocalDate());
-         date = date.plusDays(1)) {
+        !date.isAfter(endDate.toLocalDate());
+        date = date.plusDays(1)) {
       Map<String, Object> dataPoint = new HashMap<>();
       dataPoint.put("date", date.toString());
 

@@ -92,7 +92,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setHeader("X-Session-Conflict", "true");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"error.sessionConflict\", \"message\": \"Session invalidated due to login from another device\"}");
+            response
+                .getWriter()
+                .write(
+                    "{\"error\": \"error.sessionConflict\", \"message\": \"Session invalidated due to login from another device\"}");
             return;
           }
         }

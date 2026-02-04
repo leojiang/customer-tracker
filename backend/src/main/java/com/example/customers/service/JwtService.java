@@ -33,19 +33,21 @@ public class JwtService {
   }
 
   public Long extractTokenVersion(String token) {
-    return extractClaim(token, claims -> {
-      Object versionObj = claims.get("tokenVersion");
-      if (versionObj == null) {
-        return 0L; // Default version for old tokens
-      }
-      if (versionObj instanceof Integer) {
-        return ((Integer) versionObj).longValue();
-      }
-      if (versionObj instanceof Long) {
-        return (Long) versionObj;
-      }
-      return 0L;
-    });
+    return extractClaim(
+        token,
+        claims -> {
+          Object versionObj = claims.get("tokenVersion");
+          if (versionObj == null) {
+            return 0L; // Default version for old tokens
+          }
+          if (versionObj instanceof Integer) {
+            return ((Integer) versionObj).longValue();
+          }
+          if (versionObj instanceof Long) {
+            return (Long) versionObj;
+          }
+          return 0L;
+        });
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

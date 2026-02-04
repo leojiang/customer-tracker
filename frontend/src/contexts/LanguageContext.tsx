@@ -36,7 +36,7 @@ const translations = {
     'status.aborted': 'Aborted',
     'status.submitted': 'Submitted',
     'status.certified': 'Certified',
-    'status.certifiedElsewhere': 'Certified Elsewhere/Review',
+    'status.certifiedElsewhere': 'Renewed Elsewhere',
 
     // Approval Status
     'approvalStatus.pending': 'Pending',
@@ -511,6 +511,7 @@ const translations = {
     'dashboard.charts.errorLoading': 'Error loading chart',
     'dashboard.charts.refresh': 'Refresh Reports',
     'dashboard.charts.total': 'total',
+    'dashboard.charts.totalLabel': 'Total',
     'dashboard.charts.totalCustomers': 'Total Customers',
     'dashboard.charts.customers': 'customers',
     'dashboard.charts.ofTotal': 'of total',
@@ -1131,6 +1132,7 @@ const translations = {
     'dashboard.charts.errorLoading': '图表加载出错',
     'dashboard.charts.refresh': '刷新报表',
     'dashboard.charts.total': '总计',
+    'dashboard.charts.totalLabel': '总计',
     'dashboard.charts.totalCustomers': '总成交量',
     'dashboard.charts.customers': '客户',
     'dashboard.charts.ofTotal': '占总数',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,6 +15,32 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { useLanguage } from '@/contexts/LanguageContext';
 import 'chartjs-adapter-date-fns';
+
+// Status type constants mapped to translation keys and colors
+const STATUS_TYPES = {
+  NOTIFIED: {
+    translationKey: 'status.notified',
+    backgroundColor: 'rgba(59, 130, 246, 0.8)', // blue-500
+    borderColor: 'rgb(59, 130, 246)', // blue-500
+  },
+  SUBMITTED: {
+    translationKey: 'status.submitted',
+    backgroundColor: 'rgba(34, 197, 94, 0.8)', // green-500
+    borderColor: 'rgb(34, 197, 94)', // green-500
+  },
+  ABORTED: {
+    translationKey: 'status.aborted',
+    backgroundColor: 'rgba(239, 68, 68, 0.8)', // red-500
+    borderColor: 'rgb(239, 68, 68)', // red-500
+  },
+  CERTIFIED_ELSEWHERE: {
+    translationKey: 'status.certifiedElsewhere',
+    backgroundColor: 'rgba(168, 85, 247, 0.8)', // purple-500
+    borderColor: 'rgb(168, 85, 247)', // purple-500
+  },
+} as const;
+
+type StatusType = keyof typeof STATUS_TYPES;
 
 // Register Chart.js components
 ChartJS.register(
@@ -48,6 +74,7 @@ interface StatusChangeTrendsChartProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
+  onDaysChange?: (days: number) => void;
 }
 
 export default function StatusChangeTrendsChart({
@@ -57,57 +84,27 @@ export default function StatusChangeTrendsChart({
   className = "",
   loading = false,
   error = null,
+  onDaysChange,
 }: StatusChangeTrendsChartProps) {
   const { t, language } = useLanguage();
   const chartRef = useRef<ChartJS<'bar'>>(null);
 
   const chartTitle = title || t('dashboard.charts.statusChangeTrends');
 
-  // Prepare chart data with 4 statuses
+  // Prepare chart data with 4 statuses - dynamically generated from STATUS_TYPES
+  const statusKeys = Object.keys(STATUS_TYPES) as StatusType[];
   const chartData = {
     labels: data?.dataPoints.map(point => new Date(point.date)) || [],
-    datasets: [
-      {
-        label: t('customerStatus.NOTIFIED'),
-        data: data?.dataPoints.map(point => point.NOTIFIED) || [],
-        backgroundColor: 'rgba(59, 130, 246, 0.8)', // blue-500
-        borderColor: 'rgb(59, 130, 246)', // blue-500
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.8,
-        stack: 'statusChanges',
-      },
-      {
-        label: t('customerStatus.SUBMITTED'),
-        data: data?.dataPoints.map(point => point.SUBMITTED) || [],
-        backgroundColor: 'rgba(34, 197, 94, 0.8)', // green-500
-        borderColor: 'rgb(34, 197, 94)', // green-500
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.8,
-        stack: 'statusChanges',
-      },
-      {
-        label: t('customerStatus.ABORTED'),
-        data: data?.dataPoints.map(point => point.ABORTED) || [],
-        backgroundColor: 'rgba(239, 68, 68, 0.8)', // red-500
-        borderColor: 'rgb(239, 68, 68)', // red-500
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.8,
-        stack: 'statusChanges',
-      },
-      {
-        label: t('customerStatus.CERTIFIED_ELSEWHERE'),
-        data: data?.dataPoints.map(point => point.CERTIFIED_ELSEWHERE) || [],
-        backgroundColor: 'rgba(168, 85, 247, 0.8)', // purple-500
-        borderColor: 'rgb(168, 85, 247)', // purple-500
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.8,
-        stack: 'statusChanges',
-      },
-    ],
+    datasets: statusKeys.map((statusKey) => ({
+      label: t(STATUS_TYPES[statusKey].translationKey),
+      data: data?.dataPoints.map(point => point[statusKey]) || [],
+      backgroundColor: STATUS_TYPES[statusKey].backgroundColor,
+      borderColor: STATUS_TYPES[statusKey].borderColor,
+      borderWidth: 1,
+      borderRadius: 4,
+      barPercentage: 0.8,
+      stack: 'statusChanges',
+    })),
   };
 
   // Chart options
@@ -274,27 +271,54 @@ export default function StatusChangeTrendsChart({
       <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
         <h3 className="text-lg font-medium text-gray-900 mb-4">{chartTitle}</h3>
         <div className="flex items-center justify-center h-80 text-gray-500">
-          <p>No status change data available</p>
+          <p>{t('dashboard.charts.noData')}</p>
         </div>
       </div>
     );
   }
 
-  // Calculate summary statistics
-  const latestData = data.dataPoints[data.dataPoints.length - 1];
-  const totals = data.dataPoints.reduce((acc, point) => ({
-    NOTIFIED: acc.NOTIFIED + point.NOTIFIED,
-    SUBMITTED: acc.SUBMITTED + point.SUBMITTED,
-    ABORTED: acc.ABORTED + point.ABORTED,
-    CERTIFIED_ELSEWHERE: acc.CERTIFIED_ELSEWHERE + point.CERTIFIED_ELSEWHERE,
-  }), { NOTIFIED: 0, SUBMITTED: 0, ABORTED: 0, CERTIFIED_ELSEWHERE: 0 });
+  // Calculate summary statistics - dynamically from STATUS_TYPES
+  const latestData = data.dataPoints[data.dataPoints.length - 1]!;
+  const totals = data.dataPoints.reduce((acc, point) => {
+    statusKeys.forEach((key) => {
+      acc[key] = (acc[key] || 0) + (point[key] || 0);
+    });
+    return acc;
+  }, {} as Record<StatusType, number>);
+
+  // Get color classes for each status
+  const getColorClasses = (statusKey: StatusType) => {
+    const colorMap = {
+      NOTIFIED: 'blue',
+      SUBMITTED: 'green',
+      ABORTED: 'red',
+      CERTIFIED_ELSEWHERE: 'purple',
+    };
+    const color = colorMap[statusKey];
+    return {
+      text: `text-${color}-600`,
+      bg: `bg-${color}-500`,
+    };
+  };
 
   return (
     <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-        <div className="text-sm text-gray-500">
-          {t('dashboard.charts.last')} {days} {t('dashboard.charts.days')}
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-500">{t('dashboard.charts.last')}</span>
+          <select
+            value={days}
+            onChange={(e) => onDaysChange?.(parseInt(e.target.value))}
+            className="text-sm border border-gray-300 rounded px-2 py-1"
+          >
+            <option value={7}>7</option>
+            <option value={30}>30</option>
+            <option value={90}>90</option>
+            <option value={180}>180</option>
+            <option value={365}>365</option>
+          </select>
+          <span className="text-sm text-gray-500">{t('dashboard.charts.days')}</span>
         </div>
       </div>
 
@@ -308,34 +332,18 @@ export default function StatusChangeTrendsChart({
 
       {/* Summary stats */}
       <div className="mt-4 grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-        <div className="text-center">
-          <div className="text-lg font-semibold text-blue-600">
-            {latestData.NOTIFIED.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500">{t('customerStatus.NOTIFIED')}</div>
-          <div className="text-xs text-gray-400">Total: {totals.NOTIFIED}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-semibold text-green-600">
-            {latestData.SUBMITTED.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500">{t('customerStatus.SUBMITTED')}</div>
-          <div className="text-xs text-gray-400">Total: {totals.SUBMITTED}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-semibold text-red-600">
-            {latestData.ABORTED.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500">{t('customerStatus.ABORTED')}</div>
-          <div className="text-xs text-gray-400">Total: {totals.ABORTED}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-semibold text-purple-600">
-            {latestData.CERTIFIED_ELSEWHERE.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500">{t('customerStatus.CERTIFIED_ELSEWHERE')}</div>
-          <div className="text-xs text-gray-400">Total: {totals.CERTIFIED_ELSEWHERE}</div>
-        </div>
+        {statusKeys.map((statusKey) => {
+          const colorClasses = getColorClasses(statusKey);
+          return (
+            <div key={statusKey} className="text-center">
+              <div className={`text-lg font-semibold ${colorClasses.text}`}>
+                {latestData[statusKey].toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-500">{t(STATUS_TYPES[statusKey].translationKey)}</div>
+              <div className="text-xs text-gray-400">{t('dashboard.charts.totalLabel')}: {totals[statusKey].toLocaleString()}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
