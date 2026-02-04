@@ -177,8 +177,8 @@ export default function StatusChangeTrendsChart({
               return {
                 text: user,
                 fillStyle: 'white',
-                strokeStyle: 'rgb(107, 114, 128)', // gray-500
-                lineWidth: 2,
+                strokeStyle: 'rgb(209, 213, 219)', // gray-300 (light gray)
+                lineWidth: 1,
                 hidden: false,
                 index: datasetIndex,
                 datasetIndex: datasetIndex,
