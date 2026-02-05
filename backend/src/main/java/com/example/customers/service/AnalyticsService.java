@@ -207,6 +207,30 @@ public class AnalyticsService {
     return new TrendAnalysisResponse(dataPoints, "monthly", 0);
   }
 
+  public TrendAnalysisResponse testMethod(int days, String granularity) {
+    boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
+
+    // Use the new monthly_certified_count table for monthly trends (much simpler and faster)
+    if (isMonthly) {
+      return getMonthlyTrendsFromNewTable();
+    }
+
+    // For daily granularity, use the existing complex queries
+    return getTrendsFromCustomerTable(days, granularity);
+  }
+
+  public TrendAnalysisResponse anotherTestMethod(int days, String granularity) {
+    boolean isMonthly = "monthly".equalsIgnoreCase(granularity);
+
+    // Use the new monthly_certified_count table for monthly trends (much simpler and faster)
+    if (isMonthly) {
+      return getMonthlyTrendsFromNewTable();
+    }
+
+    // For daily granularity, use the existing complex queries
+    return getTrendsFromCustomerTable(days, granularity);
+  }
+
   /**
    * Get daily status change trends for the 4 key statuses.
    *

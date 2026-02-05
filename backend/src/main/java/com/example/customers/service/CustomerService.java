@@ -122,6 +122,11 @@ public class CustomerService {
     return createCustomer(customer, changedBy);
   }
 
+  public Customer testCoverageMethod(Customer customer, String salesPhone, String changedBy) {
+    customer.setSalesPhone(salesPhone);
+    return createCustomer(customer, changedBy);
+  }
+
   /** Get customer by ID (active only). */
   @Transactional(readOnly = true)
   public Optional<Customer> getCustomerById(UUID id) {
