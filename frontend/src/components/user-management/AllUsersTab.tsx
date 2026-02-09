@@ -7,6 +7,7 @@ import { useUserManagementRefresh } from '@/contexts/UserManagementRefreshContex
 import { CheckCircle, XCircle, UserCheck, Users, Search, ChevronLeft, ChevronRight, Key } from 'lucide-react';
 import ApprovalModal from '@/components/ui/ApprovalModal';
 import PasswordResetSuccessModal from '@/components/ui/PasswordResetSuccessModal';
+import PasswordResetConfirmModal from '@/components/ui/PasswordResetConfirmModal';
 import { userApprovalApi } from '@/lib/api';
 import { UserApprovalDto, getTranslatedRoleName } from '@/types/auth';
 
@@ -47,6 +48,14 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   }>({
     isOpen: false,
     temporaryPassword: '',
+    userPhone: ''
+  });
+
+  const [passwordResetConfirm, setPasswordResetConfirm] = useState<{
+    isOpen: boolean;
+    userPhone: string;
+  }>({
+    isOpen: false,
     userPhone: ''
   });
 
@@ -155,6 +164,15 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   };
 
   const handlePasswordReset = async (userPhone: string) => {
+    // Show confirmation modal first
+    setPasswordResetConfirm({
+      isOpen: true,
+      userPhone
+    });
+  };
+
+  const confirmPasswordReset = async () => {
+    const { userPhone } = passwordResetConfirm;
     setActionLoading(userPhone);
 
     try {
@@ -164,6 +182,7 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
         temporaryPassword: response.temporaryPassword,
         userPhone: response.userPhone
       });
+      setPasswordResetConfirm({ isOpen: false, userPhone: '' });
       // Don't refresh the list - user should stay in the list
     } catch (error) {
       console.error('Failed to reset password:', error);
@@ -171,6 +190,13 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const closePasswordResetConfirm = () => {
+    setPasswordResetConfirm({
+      isOpen: false,
+      userPhone: ''
+    });
   };
 
   const closeModal = () => {
@@ -530,6 +556,15 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
         onClose={() => setPasswordResetSuccess({ isOpen: false, temporaryPassword: '', userPhone: '' })}
         temporaryPassword={passwordResetSuccess.temporaryPassword}
         userPhone={passwordResetSuccess.userPhone}
+      />
+
+      {/* Password Reset Confirmation Modal */}
+      <PasswordResetConfirmModal
+        isOpen={passwordResetConfirm.isOpen}
+        onClose={closePasswordResetConfirm}
+        onConfirm={confirmPasswordReset}
+        userPhone={passwordResetConfirm.userPhone}
+        loading={actionLoading === passwordResetConfirm.userPhone}
       />
     </div>
   );
