@@ -38,10 +38,12 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
     isOpen: boolean;
     type: 'approve' | 'reject' | 'reset' | 'enable' | 'disable';
     userPhone: string;
+    currentRole?: string;
   }>({
     isOpen: false,
     type: 'approve',
-    userPhone: ''
+    userPhone: '',
+    currentRole: undefined
   });
 
   const fetchData = useCallback(async (status: ApprovalStatus, page: number, size: number) => {
@@ -131,11 +133,12 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
     return rangeWithDots;
   };
 
-  const openModal = (type: 'approve' | 'reject' | 'reset' | 'enable' | 'disable', userPhone: string) => {
+  const openModal = (type: 'approve' | 'reject' | 'reset' | 'enable' | 'disable', userPhone: string, currentRole?: string) => {
     setModalState({
       isOpen: true,
       type,
-      userPhone
+      userPhone,
+      currentRole
     });
   };
 
@@ -147,14 +150,14 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
     });
   };
 
-  const handleModalConfirm = async (reason?: string) => {
+  const handleModalConfirm = async (reason?: string, salesRole?: string) => {
     const { type, userPhone } = modalState;
     setActionLoading(userPhone);
 
     try {
       switch (type) {
         case 'approve':
-          await userApprovalApi.approveUser(userPhone, reason);
+          await userApprovalApi.approveUser(userPhone, reason, salesRole);
           break;
         case 'reject':
           await userApprovalApi.rejectUser(userPhone, reason || 'No reason provided');
@@ -399,7 +402,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
                             <>
                               <button
                                 type="button"
-                                onClick={() => openModal('approve', user.phone)}
+                                onClick={() => openModal('approve', user.phone, user.role)}
                                 disabled={actionLoading === user.phone}
                                 className="text-green-600 hover:text-green-900 disabled:opacity-50"
                                 title={t('approvals.approveUser')}
@@ -417,32 +420,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
                               </button>
                             </>
                           )}
-                          {user.approvalStatus === ApprovalStatus.APPROVED && (
-                            <>
-                              {user.isEnabled ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openModal('disable', user.phone)}
-                                  disabled={actionLoading === user.phone}
-                                  className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                                  title={t('userManagement.disableUser')}
-                                >
-                                  <XCircle size={18} />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => openModal('enable', user.phone)}
-                                  disabled={actionLoading === user.phone}
-                                  className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                                  title={t('userManagement.enableUser')}
-                                >
-                                  <CheckCircle size={18} />
-                                </button>
-                              )}
-                            </>
-                          )}
-                          {user.approvalStatus !== ApprovalStatus.PENDING && (
+                          {user.approvalStatus === ApprovalStatus.REJECTED && (
                             <button
                               type="button"
                               onClick={() => openModal('reset', user.phone)}
@@ -579,6 +557,7 @@ export default function UserApprovalsTab({ isActive }: UserApprovalsTabProps) {
         type={modalState.type}
         userPhone={modalState.userPhone}
         loading={actionLoading === modalState.userPhone}
+        currentRole={modalState.currentRole}
       />
     </div>
   );

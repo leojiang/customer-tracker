@@ -84,11 +84,12 @@ public class UserApprovalService {
    * @param userPhone phone of the user to approve
    * @param adminPhone phone of the admin performing the approval
    * @param reason reason for approval
+   * @param requestedRole optional role to assign during approval
    * @return the approved user
    * @throws EntityNotFoundException if user not found
    * @throws IllegalStateException if user is already approved
    */
-  public Sales approveUser(String userPhone, String adminPhone, String reason) {
+  public Sales approveUser(String userPhone, String adminPhone, String reason, com.example.customers.model.SalesRole requestedRole) {
     Sales user =
         salesRepository
             .findByPhone(userPhone)
@@ -96,6 +97,21 @@ public class UserApprovalService {
 
     if (user.isApproved()) {
       throw new IllegalStateException("User is already approved");
+    }
+
+    // Validate and apply role change if requested
+    com.example.customers.model.SalesRole originalRole = null;
+    if (requestedRole != null) {
+      originalRole = user.getRole();
+
+      // Cannot change from other roles to ADMIN role (security restriction)
+      if (requestedRole == com.example.customers.model.SalesRole.ADMIN && originalRole != com.example.customers.model.SalesRole.ADMIN) {
+        throw new IllegalStateException("Cannot change user role to ADMIN");
+      }
+
+      // Apply role change
+      user.setRole(requestedRole);
+      log.info("User {} role changed from {} to {} by admin {}", userPhone, originalRole, requestedRole, adminPhone);
     }
 
     user.setApprovalStatus(ApprovalStatus.APPROVED);
@@ -106,9 +122,14 @@ public class UserApprovalService {
 
     Sales savedUser = salesRepository.save(user);
 
-    // Record approval history
+    // Record approval history with role change info
+    String historyReason = reason;
+    if (requestedRole != null && !requestedRole.equals(originalRole)) {
+      historyReason = reason + " [Role: " + requestedRole + "]";
+    }
+
     UserApprovalHistory history =
-        new UserApprovalHistory(userPhone, ApprovalAction.APPROVED, adminPhone, reason);
+        new UserApprovalHistory(userPhone, ApprovalAction.APPROVED, adminPhone, historyReason);
     historyRepository.save(history);
 
     log.info("User {} approved by admin {}", userPhone, adminPhone);
@@ -191,7 +212,7 @@ public class UserApprovalService {
     int approvedCount = 0;
     for (String phone : userPhones) {
       try {
-        approveUser(phone, adminPhone, reason);
+        approveUser(phone, adminPhone, reason, null);
         approvedCount++;
       } catch (Exception e) {
         log.warn("Failed to approve user {}: {}", phone, e.getMessage());
@@ -412,6 +433,11 @@ public class UserApprovalService {
       throw new IllegalStateException("User is already disabled");
     }
 
+    // Prevent users from disabling themselves
+    if (userPhone.equals(adminPhone)) {
+      throw new IllegalStateException("Cannot disable your own account");
+    }
+
     user.disable(adminPhone, reason);
     Sales savedUser = salesRepository.save(user);
 
@@ -459,8 +485,13 @@ public class UserApprovalService {
     int disabledCount = 0;
     for (String phone : userPhones) {
       try {
-        disableUser(phone, adminPhone, reason);
-        disabledCount++;
+        // Skip if trying to disable self in bulk operation
+        if (!phone.equals(adminPhone)) {
+          disableUser(phone, adminPhone, reason);
+          disabledCount++;
+        } else {
+          log.warn("Skipping self-disable in bulk operation for user {}", adminPhone);
+        }
       } catch (Exception e) {
         log.warn("Failed to disable user {}: {}", phone, e.getMessage());
       }

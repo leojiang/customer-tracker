@@ -596,6 +596,8 @@ const translations = {
     'approvals.days': 'days',
     'approvals.rejectionReason': 'Reason',
     'approvals.reasonRequired': '* Reason is required',
+    'approvals.roleChangeHint': 'Optional: Change the user role if needed',
+    'approvals.selectRole': 'Select role...',
 
     // User Management
     'userManagement.accountStatus': 'Account Status',
@@ -613,6 +615,7 @@ const translations = {
     'userManagement.disableButton': 'Disable Account',
     'userManagement.disableReason': 'Disable reason *',
     'userManagement.disablePlaceholder': 'e.g., Temporary suspension, policy violation...',
+    'userManagement.cannotDisableSelf': 'Cannot disable your own account',
     'userManagement.resetPassword': 'Reset Password',
     'userManagement.passwordResetSuccess': 'Password Reset Successful',
     'userManagement.passwordResetSuccessMessage': 'Password has been reset for',
@@ -1217,6 +1220,8 @@ const translations = {
     'approvals.days': '天',
     'approvals.rejectionReason': '原因',
     'approvals.reasonRequired': '* 原因是必填的',
+    'approvals.roleChangeHint': '可选：如需要可修改用户角色',
+    'approvals.selectRole': '选择角色...',
 
     // User Management
     'userManagement.accountStatus': '账户状态',
@@ -1234,6 +1239,7 @@ const translations = {
     'userManagement.disableButton': '禁用账户',
     'userManagement.disableReason': '禁用原因 *',
     'userManagement.disablePlaceholder': '例如：临时暂停，违反政策...',
+    'userManagement.cannotDisableSelf': '不能禁用自己的账户',
     'userManagement.resetPassword': '重置密码',
     'userManagement.passwordResetSuccess': '密码重置成功',
     'userManagement.passwordResetSuccessMessage': '密码已重置',

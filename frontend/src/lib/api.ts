@@ -276,10 +276,10 @@ export const userApprovalApi = {
     return fetchApi<ApprovalPageResponse>(`/admin/user-approvals/approved-users?${params}`);
   },
 
-  async approveUser(phone: string, reason?: string): Promise<UserApprovalDto> {
+  async approveUser(phone: string, reason?: string, salesRole?: string): Promise<UserApprovalDto> {
     return fetchApi<UserApprovalDto>(`/admin/user-approvals/${phone}/approve`, {
       method: 'POST',
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ reason, salesRole }),
     });
   },
 

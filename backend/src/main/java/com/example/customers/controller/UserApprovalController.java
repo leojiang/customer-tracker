@@ -187,7 +187,15 @@ public class UserApprovalController {
           ApprovalActionRequest request) {
 
     String adminPhone = getCurrentUserPhone();
-    Sales approvedUser = approvalService.approveUser(phone, adminPhone, request.getReason());
+    SalesRole requestedRole = null;
+    if (request.getSalesRole() != null && !request.getSalesRole().trim().isEmpty()) {
+      try {
+        requestedRole = SalesRole.valueOf(request.getSalesRole().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().build();
+      }
+    }
+    Sales approvedUser = approvalService.approveUser(phone, adminPhone, request.getReason(), requestedRole);
 
     return ResponseEntity.ok(toApprovalDto(approvedUser));
   }
@@ -415,6 +423,7 @@ public class UserApprovalController {
   /** Request DTO for approval actions. */
   public static class ApprovalActionRequest {
     private String reason;
+    private String salesRole; // Optional: Allow admin to modify sales role during approval
 
     public String getReason() {
       return reason;
@@ -422,6 +431,14 @@ public class UserApprovalController {
 
     public void setReason(String reason) {
       this.reason = reason;
+    }
+
+    public String getSalesRole() {
+      return salesRole;
+    }
+
+    public void setSalesRole(String salesRole) {
+      this.salesRole = salesRole;
     }
   }
 

@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (reason?: string) => void;
+  onConfirm: (reason?: string, salesRole?: string) => void;
   type: 'approve' | 'reject' | 'reset' | 'enable' | 'disable';
   userPhone: string;
   loading?: boolean;
+  currentRole?: string; // Add current role prop
 }
 
 export default function ApprovalModal({
@@ -19,10 +20,19 @@ export default function ApprovalModal({
   onConfirm,
   type,
   userPhone,
-  loading = false
+  loading = false,
+  currentRole
 }: ApprovalModalProps) {
   const { t } = useLanguage();
   const [reason, setReason] = useState('');
+  const [selectedRole, setSelectedRole] = useState(currentRole || '');
+
+  // Update selectedRole when currentRole changes and modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedRole(currentRole || '');
+    }
+  }, [isOpen, currentRole]);
 
   if (!isOpen) {
     return null;
@@ -99,11 +109,16 @@ export default function ApprovalModal({
     if ((type === 'reject' || type === 'disable') && !reason.trim()) {
       return; // Rejection and disable require a reason
     }
-    onConfirm(reason.trim() || undefined);
+    // Only pass salesRole if it's different from currentRole and type is approve
+    const salesRoleParam = (type === 'approve' && selectedRole && selectedRole !== currentRole)
+      ? selectedRole
+      : undefined;
+    onConfirm(reason.trim() || undefined, salesRoleParam);
   };
 
   const handleClose = () => {
     setReason('');
+    setSelectedRole(currentRole || '');
     onClose();
   };
 
@@ -128,8 +143,29 @@ export default function ApprovalModal({
         {/* Content */}
         <div className="p-6">
           <p className="text-gray-600 mb-4">{config.description}</p>
-          
+
           <div className="space-y-4">
+            {/* Role selector - only show for approve type */}
+            {type === 'approve' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('register.role')}
+                </label>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  disabled={loading}
+                >
+                  <option value="">{t('approvals.selectRole')}</option>
+                  <option value="ADMIN">{t('role.admin')}</option>
+                  <option value="OFFICER">{t('role.officer')}</option>
+                  <option value="CUSTOMER_AGENT">{t('role.customerAgent')}</option>
+                </select>
+                <p className="text-sm text-gray-500 mt-1">{t('approvals.roleChangeHint')}</p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {config.reasonLabel}

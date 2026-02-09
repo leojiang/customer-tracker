@@ -92,7 +92,7 @@ class UserApprovalServiceTest {
         .thenReturn(new UserApprovalHistory());
 
     // When
-    Sales result = userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason);
+    Sales result = userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason, null);
 
     // Then
     assertNotNull(result);
@@ -124,7 +124,7 @@ class UserApprovalServiceTest {
     EntityNotFoundException exception =
         assertThrows(
             EntityNotFoundException.class,
-            () -> userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason));
+            () -> userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason, null));
 
     assertEquals("User not found: " + testUserPhone, exception.getMessage());
 
@@ -144,7 +144,7 @@ class UserApprovalServiceTest {
     IllegalStateException exception =
         assertThrows(
             IllegalStateException.class,
-            () -> userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason));
+            () -> userApprovalService.approveUser(testUserPhone, testAdminPhone, testReason, null));
 
     assertEquals("User is already approved", exception.getMessage());
 
@@ -449,7 +449,7 @@ class UserApprovalServiceTest {
         .thenReturn(new UserApprovalHistory());
 
     // When
-    Sales result = userApprovalService.approveUser(testUserPhone, testAdminPhone, null);
+    Sales result = userApprovalService.approveUser(testUserPhone, testAdminPhone, null, null);
 
     // Then
     assertNotNull(result);

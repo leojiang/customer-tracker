@@ -15,7 +15,7 @@ interface AllUsersTabProps {
 }
 
 export default function AllUsersTab({ isActive }: AllUsersTabProps) {
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
   const { t } = useLanguage();
   const { registerAllUsersRefresh } = useUserManagementRefresh();
   const [users, setUsers] = useState<UserApprovalDto[]>([]);
@@ -141,6 +141,12 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
   };
 
   const openModal = (type: 'enable' | 'disable', userPhone: string) => {
+    // Prevent users from disabling themselves
+    if (type === 'disable' && currentUser?.phone === userPhone) {
+      alert(t('userManagement.cannotDisableSelf'));
+      return;
+    }
+
     setModalState({
       isOpen: true,
       type,
@@ -372,9 +378,9 @@ export default function AllUsersTab({ isActive }: AllUsersTabProps) {
                             <button
                               type="button"
                               onClick={() => openModal('disable', user.phone)}
-                              disabled={actionLoading === user.phone}
-                              className="text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                              title={t('userManagement.disableUser')}
+                              disabled={actionLoading === user.phone || user.phone === currentUser?.phone}
+                              className={`text-orange-600 hover:text-orange-900 disabled:opacity-50 ${user.phone === currentUser?.phone ? 'hidden' : ''}`}
+                              title={user.phone === currentUser?.phone ? t('userManagement.cannotDisableSelf') : t('userManagement.disableUser')}
                             >
                               <XCircle size={18} />
                             </button>
