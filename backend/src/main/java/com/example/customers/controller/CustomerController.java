@@ -1,10 +1,15 @@
 package com.example.customers.controller;
 
+import com.example.customers.dto.common.ErrorResponse;
+import com.example.customers.dto.common.ValidationResponse;
+import com.example.customers.dto.customer.CustomerCreateRequest;
+import com.example.customers.dto.customer.CustomerPageResponse;
+import com.example.customers.dto.customer.CustomerUpdateRequest;
+import com.example.customers.dto.customer.StatusTransitionRequest;
 import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
 import com.example.customers.model.CustomerType;
-import com.example.customers.model.EducationLevel;
 import com.example.customers.model.Sales;
 import com.example.customers.model.SalesRole;
 import com.example.customers.model.StatusHistory;
@@ -18,7 +23,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -240,7 +244,7 @@ public class CustomerController {
   @PreAuthorize("hasAnyAuthority('ADMIN', 'CUSTOMER_AGENT')")
   public ResponseEntity<Customer> createCustomer(
       @Parameter(description = "Customer information", required = true) @Valid @RequestBody
-          CreateCustomerRequest request) {
+          CustomerCreateRequest request) {
     try {
       Customer customer = new Customer();
       customer.setName(request.getName());
@@ -296,7 +300,7 @@ public class CustomerController {
   @PatchMapping("/{id}")
   @PreAuthorize("hasAnyAuthority('ADMIN', 'CUSTOMER_AGENT')")
   public ResponseEntity<Customer> updateCustomer(
-      @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody CustomerUpdateRequest request) {
     try {
       // Check if customer exists and user has access
       Optional<Customer> existingCustomer = customerService.getCustomerById(id);
@@ -496,7 +500,6 @@ public class CustomerController {
   public ResponseEntity<Set<CustomerStatus>> getValidTransitions(
       @Parameter(description = "Customer ID", required = true) @PathVariable UUID id) {
     try {
-      // Check if customer exists and user has access
       Optional<Customer> customer = customerService.getCustomerById(id);
       if (customer.isEmpty() || !hasAccessToCustomer(customer.get())) {
         return ResponseEntity.notFound().build();
@@ -523,7 +526,6 @@ public class CustomerController {
       @Parameter(description = "Target status", required = true) @PathVariable
           CustomerStatus status) {
     try {
-      // Check if customer exists and user has access
       Optional<Customer> customer = customerService.getCustomerById(id);
       if (customer.isEmpty() || !hasAccessToCustomer(customer.get())) {
         return ResponseEntity.notFound().build();
@@ -536,7 +538,6 @@ public class CustomerController {
     }
   }
 
-  // Exception handler for validation errors
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
     return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -545,349 +546,6 @@ public class CustomerController {
   @ExceptionHandler(EntityNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException e) {
     return ResponseEntity.notFound().build();
-  }
-
-  // Request/Response DTOs
-  /** Request DTO for creating a new customer. */
-  public static class CreateCustomerRequest {
-    @NotBlank(message = "Name is required")
-    private String name;
-
-    @NotBlank(message = "Phone number is required")
-    private String phone;
-
-    private String certificateIssuer;
-    private String businessRequirements;
-    private CertificateType certificateType;
-    private Integer age;
-    private EducationLevel education;
-    private String gender;
-    private String address;
-
-    private String idCard;
-
-    private CustomerStatus currentStatus;
-    private String certifiedAt;
-    private String customerAgent;
-
-    // Getters and setters
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getPhone() {
-      return phone;
-    }
-
-    public void setPhone(String phone) {
-      this.phone = phone;
-    }
-
-    public String getCertificateIssuer() {
-      return certificateIssuer;
-    }
-
-    public void setCertificateIssuer(String certificateIssuer) {
-      this.certificateIssuer = certificateIssuer;
-    }
-
-    public String getBusinessRequirements() {
-      return businessRequirements;
-    }
-
-    public void setBusinessRequirements(String businessRequirements) {
-      this.businessRequirements = businessRequirements;
-    }
-
-    public CertificateType getCertificateType() {
-      return certificateType;
-    }
-
-    public void setCertificateType(CertificateType certificateType) {
-      this.certificateType = certificateType;
-    }
-
-    public Integer getAge() {
-      return age;
-    }
-
-    public void setAge(Integer age) {
-      this.age = age;
-    }
-
-    public EducationLevel getEducation() {
-      return education;
-    }
-
-    public void setEducation(EducationLevel education) {
-      this.education = education;
-    }
-
-    public String getGender() {
-      return gender;
-    }
-
-    public void setGender(String gender) {
-      this.gender = gender;
-    }
-
-    public String getAddress() {
-      return address;
-    }
-
-    public void setAddress(String address) {
-      this.address = address;
-    }
-
-    public String getIdCard() {
-      return idCard;
-    }
-
-    public void setIdCard(String idCard) {
-      this.idCard = idCard;
-    }
-
-    public CustomerStatus getCurrentStatus() {
-      return currentStatus;
-    }
-
-    public void setCurrentStatus(CustomerStatus currentStatus) {
-      this.currentStatus = currentStatus;
-    }
-
-    public String getCertifiedAt() {
-      return certifiedAt;
-    }
-
-    public void setCertifiedAt(String certifiedAt) {
-      this.certifiedAt = certifiedAt;
-    }
-
-    public String getCustomerAgent() {
-      return customerAgent;
-    }
-
-    public void setCustomerAgent(String customerAgent) {
-      this.customerAgent = customerAgent;
-    }
-  }
-
-  /** Request DTO for updating customer information. */
-  public static class UpdateCustomerRequest {
-    @NotBlank(message = "Name is required")
-    private String name;
-
-    @NotBlank(message = "Phone number is required")
-    private String phone;
-
-    private String certificateIssuer;
-    private String businessRequirements;
-    private CertificateType certificateType;
-    private Integer age;
-    private EducationLevel education;
-    private String gender;
-    private String address;
-
-    private String idCard;
-
-    private String certifiedAt;
-    private String customerAgent;
-
-    // Getters and setters
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getPhone() {
-      return phone;
-    }
-
-    public void setPhone(String phone) {
-      this.phone = phone;
-    }
-
-    public String getCertificateIssuer() {
-      return certificateIssuer;
-    }
-
-    public void setCertificateIssuer(String certificateIssuer) {
-      this.certificateIssuer = certificateIssuer;
-    }
-
-    public String getBusinessRequirements() {
-      return businessRequirements;
-    }
-
-    public void setBusinessRequirements(String businessRequirements) {
-      this.businessRequirements = businessRequirements;
-    }
-
-    public CertificateType getCertificateType() {
-      return certificateType;
-    }
-
-    public void setCertificateType(CertificateType certificateType) {
-      this.certificateType = certificateType;
-    }
-
-    public Integer getAge() {
-      return age;
-    }
-
-    public void setAge(Integer age) {
-      this.age = age;
-    }
-
-    public EducationLevel getEducation() {
-      return education;
-    }
-
-    public void setEducation(EducationLevel education) {
-      this.education = education;
-    }
-
-    public String getGender() {
-      return gender;
-    }
-
-    public void setGender(String gender) {
-      this.gender = gender;
-    }
-
-    public String getAddress() {
-      return address;
-    }
-
-    public void setAddress(String address) {
-      this.address = address;
-    }
-
-    public String getIdCard() {
-      return idCard;
-    }
-
-    public void setIdCard(String idCard) {
-      this.idCard = idCard;
-    }
-
-    public String getCertifiedAt() {
-      return certifiedAt;
-    }
-
-    public void setCertifiedAt(String certifiedAt) {
-      this.certifiedAt = certifiedAt;
-    }
-
-    public String getCustomerAgent() {
-      return customerAgent;
-    }
-
-    public void setCustomerAgent(String customerAgent) {
-      this.customerAgent = customerAgent;
-    }
-  }
-
-  /** Request DTO for customer status transitions. */
-  public static class StatusTransitionRequest {
-    private CustomerStatus toStatus;
-    private String reason;
-
-    public CustomerStatus getToStatus() {
-      return toStatus;
-    }
-
-    public void setToStatus(CustomerStatus toStatus) {
-      this.toStatus = toStatus;
-    }
-
-    public String getReason() {
-      return reason;
-    }
-
-    public void setReason(String reason) {
-      this.reason = reason;
-    }
-  }
-
-  /** Response DTO for paginated customer lists. */
-  public static class CustomerPageResponse {
-    private List<Customer> items;
-    private long total;
-    private int page;
-    private int limit;
-    private int totalPages;
-
-    /**
-     * Constructor for CustomerPageResponse.
-     *
-     * @param items list of customers
-     * @param total total number of customers
-     * @param page current page number
-     * @param limit items per page
-     * @param totalPages total number of pages
-     */
-    public CustomerPageResponse(
-        List<Customer> items, long total, int page, int limit, int totalPages) {
-      this.items = items;
-      this.total = total;
-      this.page = page;
-      this.limit = limit;
-      this.totalPages = totalPages;
-    }
-
-    public List<Customer> getItems() {
-      return items;
-    }
-
-    public long getTotal() {
-      return total;
-    }
-
-    public int getPage() {
-      return page;
-    }
-
-    public int getLimit() {
-      return limit;
-    }
-
-    public int getTotalPages() {
-      return totalPages;
-    }
-  }
-
-  /** Response DTO for error messages. */
-  public static class ErrorResponse {
-    private String message;
-
-    public ErrorResponse(String message) {
-      this.message = message;
-    }
-
-    public String getMessage() {
-      return message;
-    }
-  }
-
-  /** Response DTO for validation results. */
-  public static class ValidationResponse {
-    private boolean valid;
-
-    public ValidationResponse(boolean valid) {
-      this.valid = valid;
-    }
-
-    public boolean isValid() {
-      return valid;
-    }
   }
 
   // Helper methods for authorization

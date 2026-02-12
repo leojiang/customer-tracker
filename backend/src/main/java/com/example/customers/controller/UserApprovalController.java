@@ -195,7 +195,8 @@ public class UserApprovalController {
         return ResponseEntity.badRequest().build();
       }
     }
-    Sales approvedUser = approvalService.approveUser(phone, adminPhone, request.getReason(), requestedRole);
+    Sales approvedUser =
+        approvalService.approveUser(phone, adminPhone, request.getReason(), requestedRole);
 
     return ResponseEntity.ok(toApprovalDto(approvedUser));
   }

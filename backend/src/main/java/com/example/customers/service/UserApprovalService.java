@@ -89,7 +89,11 @@ public class UserApprovalService {
    * @throws EntityNotFoundException if user not found
    * @throws IllegalStateException if user is already approved
    */
-  public Sales approveUser(String userPhone, String adminPhone, String reason, com.example.customers.model.SalesRole requestedRole) {
+  public Sales approveUser(
+      String userPhone,
+      String adminPhone,
+      String reason,
+      com.example.customers.model.SalesRole requestedRole) {
     Sales user =
         salesRepository
             .findByPhone(userPhone)
@@ -105,13 +109,19 @@ public class UserApprovalService {
       originalRole = user.getRole();
 
       // Cannot change from other roles to ADMIN role (security restriction)
-      if (requestedRole == com.example.customers.model.SalesRole.ADMIN && originalRole != com.example.customers.model.SalesRole.ADMIN) {
+      if (requestedRole == com.example.customers.model.SalesRole.ADMIN
+          && originalRole != com.example.customers.model.SalesRole.ADMIN) {
         throw new IllegalStateException("Cannot change user role to ADMIN");
       }
 
       // Apply role change
       user.setRole(requestedRole);
-      log.info("User {} role changed from {} to {} by admin {}", userPhone, originalRole, requestedRole, adminPhone);
+      log.info(
+          "User {} role changed from {} to {} by admin {}",
+          userPhone,
+          originalRole,
+          requestedRole,
+          adminPhone);
     }
 
     user.setApprovalStatus(ApprovalStatus.APPROVED);
