@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -124,81 +125,12 @@ public class CustomerController {
           @RequestParam(defaultValue = "5")
           int limit) {
 
-    // Validate pagination parameters
-    if (page < 1) {
-      page = 1;
-    }
-    if (limit < 1) {
-      limit = 20;
-    }
-    if (limit > 100) {
-      limit = 100; // Max limit as per plan
-    }
-
-    // Always sort by certificate time ASC, then by creation time DESC for consistent ordering
-    Pageable pageable =
-        PageRequest.of(
-            page - 1,
-            limit,
-            Sort.by("certifiedAt")
-                .ascending()
-                .and(Sort.by("createdAt").descending())
-                .and(Sort.by("id").ascending()));
-
-    // Get current user's sales phone for filtering (non-admin users can only see their own
-    // customers)
+    Pageable pageable = buildPageable(page, limit);
     String filterBySalesPhone = getCurrentUserSalesPhone();
-
-    // Convert certificate type strings to enum list
-    List<CertificateType> certificateTypeEnumList = null;
-    if (certificateType != null && !certificateType.isEmpty()) {
-      certificateTypeEnumList = new java.util.ArrayList<>();
-      for (String certType : certificateType) {
-        if (certType != null && !certType.trim().isEmpty()) {
-          try {
-            certificateTypeEnumList.add(CertificateType.valueOf(certType.toUpperCase()));
-          } catch (IllegalArgumentException e) {
-            // Invalid certificate type, ignore
-          }
-        }
-      }
-    }
-
-    // Convert customer type string to enum
-    CustomerType customerTypeEnum = null;
-    if (customerType != null && !customerType.trim().isEmpty()) {
-      try {
-        customerTypeEnum = CustomerType.valueOf(customerType.toUpperCase());
-      } catch (IllegalArgumentException e) {
-        // Invalid customer type, ignore
-      }
-    }
-
-    // Convert certificate issuer strings to list (filter out null/empty values)
-    List<String> certificateIssuerList = null;
-    if (certificateIssuer != null && !certificateIssuer.isEmpty()) {
-      certificateIssuerList = new java.util.ArrayList<>();
-      for (String issuer : certificateIssuer) {
-        if (issuer != null && !issuer.trim().isEmpty()) {
-          certificateIssuerList.add(issuer.trim());
-        }
-      }
-    }
-
-    // Convert status strings to enum list
-    List<CustomerStatus> customerStatuses = null;
-    if (status != null && !status.isEmpty()) {
-      customerStatuses = new java.util.ArrayList<>();
-      for (String statusStr : status) {
-        if (statusStr != null && !statusStr.trim().isEmpty()) {
-          try {
-            customerStatuses.add(CustomerStatus.valueOf(statusStr.toUpperCase()));
-          } catch (IllegalArgumentException e) {
-            // Invalid status, ignore
-          }
-        }
-      }
-    }
+    List<CertificateType> certificateTypeEnumList = parseCertificateTypes(certificateType);
+    CustomerType customerTypeEnum = parseCustomerType(customerType);
+    List<String> certificateIssuerList = parseCertificateIssuers(certificateIssuer);
+    List<CustomerStatus> customerStatuses = parseCustomerStatuses(status);
 
     Page<Customer> customers =
         customerService.searchCustomers(
@@ -215,15 +147,7 @@ public class CustomerController {
             certifiedEndDate,
             pageable);
 
-    CustomerPageResponse response =
-        new CustomerPageResponse(
-            customers.getContent(),
-            customers.getTotalElements(),
-            page,
-            limit,
-            customers.getTotalPages());
-
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
   }
 
   @Operation(
@@ -246,27 +170,7 @@ public class CustomerController {
       @Parameter(description = "Customer information", required = true) @Valid @RequestBody
           CustomerCreateRequest request) {
     try {
-      Customer customer = new Customer();
-      customer.setName(request.getName());
-      customer.setPhone(request.getPhone());
-      customer.setCertificateIssuer(request.getCertificateIssuer());
-      customer.setBusinessRequirements(request.getBusinessRequirements());
-      customer.setCertificateType(request.getCertificateType());
-      customer.setAge(request.getAge());
-      customer.setEducation(request.getEducation());
-      customer.setGender(request.getGender());
-      customer.setAddress(request.getAddress());
-      customer.setIdCard(request.getIdCard());
-      customer.setCustomerAgent(request.getCustomerAgent());
-
-      // Set certifiedAt directly as string (format: YYYY-MM-DD)
-      customer.setCertifiedAt(request.getCertifiedAt());
-
-      if (request.getCurrentStatus() != null) {
-        customer.setCurrentStatus(request.getCurrentStatus());
-      }
-
-      // Get current user's phone to associate with the customer
+      Customer customer = mapToCustomer(request);
       String currentUserPhone = getCurrentUserPhone();
       String currentUserName = getCurrentUserName();
       Customer savedCustomer =
@@ -302,28 +206,12 @@ public class CustomerController {
   public ResponseEntity<Customer> updateCustomer(
       @PathVariable UUID id, @Valid @RequestBody CustomerUpdateRequest request) {
     try {
-      // Check if customer exists and user has access
       Optional<Customer> existingCustomer = customerService.getCustomerById(id);
       if (existingCustomer.isEmpty() || !hasAccessToCustomer(existingCustomer.get())) {
         return ResponseEntity.notFound().build();
       }
 
-      Customer customer = new Customer();
-      customer.setName(request.getName());
-      customer.setPhone(request.getPhone());
-      customer.setCertificateIssuer(request.getCertificateIssuer());
-      customer.setBusinessRequirements(request.getBusinessRequirements());
-      customer.setCertificateType(request.getCertificateType());
-      customer.setAge(request.getAge());
-      customer.setEducation(request.getEducation());
-      customer.setGender(request.getGender());
-      customer.setAddress(request.getAddress());
-      customer.setIdCard(request.getIdCard());
-      customer.setCustomerAgent(request.getCustomerAgent());
-
-      // Set certifiedAt directly as string (format: YYYY-MM-DD)
-      customer.setCertifiedAt(request.getCertifiedAt());
-
+      Customer customer = mapToCustomer(request);
       Customer updatedCustomer = customerService.updateCustomer(id, customer);
       return ResponseEntity.ok(updatedCustomer);
 
@@ -423,19 +311,17 @@ public class CustomerController {
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "20") int limit) {
     try {
-      // Check if customer exists and user has access
       Optional<Customer> customer = customerService.getCustomerById(id);
       if (customer.isEmpty() || !hasAccessToCustomer(customer.get())) {
         return ResponseEntity.notFound().build();
       }
 
-      if (limit <= 0) {
-        // Return all history if no pagination requested
+      Pageable pageable = buildHistoryPageable(page, limit);
+
+      if (pageable == null) {
         List<StatusHistory> history = customerService.getCustomerStatusHistory(id);
         return ResponseEntity.ok(history);
       } else {
-        // Return paginated history
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), Math.min(limit, 100));
         Page<StatusHistory> history = customerService.getCustomerStatusHistory(id, pageable);
         return ResponseEntity.ok(history.getContent());
       }
@@ -460,28 +346,10 @@ public class CustomerController {
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "20") int limit) {
 
-    if (page < 1) {
-      page = 1;
-    }
-    if (limit < 1) {
-      limit = 20;
-    }
-    if (limit > 100) {
-      limit = 100;
-    }
-
-    Pageable pageable = PageRequest.of(page - 1, limit);
+    Pageable pageable = buildPageable(page, limit);
     Page<Customer> customers = customerService.getRecentlyUpdatedCustomers(days, pageable);
 
-    CustomerPageResponse response =
-        new CustomerPageResponse(
-            customers.getContent(),
-            customers.getTotalElements(),
-            page,
-            limit,
-            customers.getTotalPages());
-
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
   }
 
   @Operation(
@@ -546,6 +414,141 @@ public class CustomerController {
   @ExceptionHandler(EntityNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException e) {
     return ResponseEntity.notFound().build();
+  }
+
+  // Helper methods for request parameter processing
+
+  private Pageable buildPageable(int page, int limit) {
+    int validatedPage = Math.max(1, page);
+    int validatedLimit = Math.max(1, Math.min(100, limit));
+
+    return PageRequest.of(
+        validatedPage - 1,
+        validatedLimit,
+        Sort.by("certifiedAt")
+            .ascending()
+            .and(Sort.by("createdAt").descending())
+            .and(Sort.by("id").ascending()));
+  }
+
+  private List<CertificateType> parseCertificateTypes(List<String> certificateType) {
+    if (certificateType == null || certificateType.isEmpty()) {
+      return null;
+    }
+
+    List<CertificateType> result = new ArrayList<>();
+    for (String certType : certificateType) {
+      if (certType != null && !certType.trim().isEmpty()) {
+        try {
+          result.add(CertificateType.valueOf(certType.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+          // Invalid certificate type, ignore
+        }
+      }
+    }
+    return result.isEmpty() ? null : result;
+  }
+
+  private CustomerType parseCustomerType(String customerType) {
+    if (customerType == null || customerType.trim().isEmpty()) {
+      return null;
+    }
+
+    try {
+      return CustomerType.valueOf(customerType.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private List<String> parseCertificateIssuers(List<String> certificateIssuer) {
+    if (certificateIssuer == null || certificateIssuer.isEmpty()) {
+      return null;
+    }
+
+    List<String> result = new ArrayList<>();
+    for (String issuer : certificateIssuer) {
+      if (issuer != null && !issuer.trim().isEmpty()) {
+        result.add(issuer.trim());
+      }
+    }
+    return result.isEmpty() ? null : result;
+  }
+
+  private List<CustomerStatus> parseCustomerStatuses(List<String> status) {
+    if (status == null || status.isEmpty()) {
+      return null;
+    }
+
+    List<CustomerStatus> result = new ArrayList<>();
+    for (String statusStr : status) {
+      if (statusStr != null && !statusStr.trim().isEmpty()) {
+        try {
+          result.add(CustomerStatus.valueOf(statusStr.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+          // Invalid status, ignore
+        }
+      }
+    }
+    return result.isEmpty() ? null : result;
+  }
+
+  private CustomerPageResponse buildPageResponse(Page<Customer> customers, int page, int limit) {
+    return new CustomerPageResponse(
+        customers.getContent(),
+        customers.getTotalElements(),
+        page,
+        limit,
+        customers.getTotalPages());
+  }
+
+  private Pageable buildHistoryPageable(int page, int limit) {
+    if (limit <= 0) {
+      return null; // No pagination
+    }
+    int validatedPage = Math.max(0, page - 1);
+    int validatedLimit = Math.min(limit, 100);
+    return PageRequest.of(validatedPage, validatedLimit);
+  }
+
+  private Customer mapToCustomer(CustomerCreateRequest request) {
+    Customer customer = new Customer();
+    customer.setName(request.getName());
+    customer.setPhone(request.getPhone());
+    customer.setCertificateIssuer(request.getCertificateIssuer());
+    customer.setBusinessRequirements(request.getBusinessRequirements());
+    customer.setCertificateType(request.getCertificateType());
+    customer.setAge(request.getAge());
+    customer.setEducation(request.getEducation());
+    customer.setGender(request.getGender());
+    customer.setAddress(request.getAddress());
+    customer.setIdCard(request.getIdCard());
+    customer.setCustomerAgent(request.getCustomerAgent());
+    customer.setCertifiedAt(request.getCertifiedAt());
+
+    if (request.getCurrentStatus() != null) {
+      customer.setCurrentStatus(request.getCurrentStatus());
+    }
+
+    return customer;
+  }
+
+  private Customer mapToCustomer(CustomerUpdateRequest request) {
+    Customer customer = new Customer();
+    customer.setName(request.getName());
+    customer.setPhone(request.getPhone());
+    customer.setCertificateIssuer(request.getCertificateIssuer());
+    customer.setBusinessRequirements(request.getBusinessRequirements());
+    customer.setCertificateType(request.getCertificateType());
+    customer.setAge(request.getAge());
+    customer.setEducation(request.getEducation());
+    customer.setGender(request.getGender());
+    customer.setAddress(request.getAddress());
+    customer.setIdCard(request.getIdCard());
+    customer.setCustomerAgent(request.getCustomerAgent());
+    customer.setCertifiedAt(request.getCertifiedAt());
+
+    return customer;
   }
 
   // Helper methods for authorization

@@ -10,6 +10,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -41,6 +43,9 @@ import org.hibernate.annotations.Where;
     })
 @SQLDelete(sql = "UPDATE customers SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
+@NamedEntityGraph(
+    name = "Customer.withStatusHistory",
+    attributeNodes = {@NamedAttributeNode("statusHistory")})
 public class Customer {
 
   @Id

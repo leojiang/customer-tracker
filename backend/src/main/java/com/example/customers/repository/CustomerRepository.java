@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -72,6 +73,7 @@ public interface CustomerRepository
   long countByCurrentStatusIncludingDeleted(@Param("status") CustomerStatus status);
 
   /** Find customers updated within last N days. */
+  @EntityGraph(value = "Customer.withStatusHistory")
   @Query("SELECT c FROM Customer c WHERE c.updatedAt >= :since ORDER BY c.updatedAt DESC")
   Page<Customer> findRecentlyUpdated(@Param("since") ZonedDateTime since, Pageable pageable);
 
