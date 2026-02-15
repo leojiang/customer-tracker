@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,10 @@ public class TrendAnalysisService {
     List<MonthlyCertifiedCount> monthlyCounts =
         monthlyCertifiedCountRepository.findAllByOrderByMonthAsc();
 
+    // OPTIMIZATION: Get unsettled count once outside the loop (cached)
+    // This avoids N+1 queries - was calling getUnsettledCustomers() inside loop
+    long totalUnsettledCustomers = getUnsettledCustomers(0);
+
     List<TrendDataPoint> dataPoints = new ArrayList<>();
     long runningTotal = 0;
 
@@ -63,8 +68,9 @@ public class TrendAnalysisService {
       String[] parts = monthStr.split("-");
       LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
-      long unsettledAtDate = getUnsettledCustomers(runningTotal);
-      BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
+      // Use the pre-fetched unsettled count instead of querying in loop
+      BigDecimal conversionRateAtDate =
+          calculateConversionRate(runningTotal, totalUnsettledCustomers);
 
       dataPoints.add(
           new TrendDataPoint(
@@ -95,6 +101,9 @@ public class TrendAnalysisService {
       results = customerRepository.getCustomerTrendsByDate(startDateStr, endDateStr);
     }
 
+    // OPTIMIZATION: Get unsettled count once outside the loop (cached)
+    long totalUnsettledCustomers = getUnsettledCustomers(0);
+
     List<TrendDataPoint> dataPoints = new ArrayList<>();
     long runningTotal = customerRepository.countCustomersCreatedBefore(startDate);
 
@@ -111,8 +120,9 @@ public class TrendAnalysisService {
         date = LocalDate.parse(periodStr);
       }
 
-      long unsettledAtDate = getUnsettledCustomers(runningTotal);
-      BigDecimal conversionRateAtDate = calculateConversionRate(runningTotal, unsettledAtDate);
+      // Use the pre-fetched unsettled count instead of querying in loop
+      BigDecimal conversionRateAtDate =
+          calculateConversionRate(runningTotal, totalUnsettledCustomers);
 
       dataPoints.add(
           new TrendDataPoint(date, newCustomers, runningTotal, conversionRateAtDate, 0, 0));
@@ -121,6 +131,11 @@ public class TrendAnalysisService {
     return new TrendAnalysisResponse(dataPoints, granularity, days);
   }
 
+  /**
+   * Get count of unsettled customers with caching. This is an expensive query so we cache the
+   * result for 5 minutes.
+   */
+  @Cacheable(value = "unsettledCustomerCount", key = "'total'")
   private long getUnsettledCustomers(long totalCustomers) {
     return customerRepository.countNotCertifiedCustomers();
   }

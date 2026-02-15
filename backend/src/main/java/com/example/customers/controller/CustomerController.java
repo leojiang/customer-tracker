@@ -125,7 +125,11 @@ public class CustomerController {
           @RequestParam(defaultValue = "5")
           int limit) {
 
-    Pageable pageable = buildPageable(page, limit);
+    // Validate pagination parameters
+    int validatedPage = Math.max(1, page);
+    int validatedLimit = Math.max(1, Math.min(100, limit));
+
+    Pageable pageable = buildPageable(validatedPage, validatedLimit);
     String filterBySalesPhone = getCurrentUserSalesPhone();
     List<CertificateType> certificateTypeEnumList = parseCertificateTypes(certificateType);
     CustomerType customerTypeEnum = parseCustomerType(customerType);
@@ -147,7 +151,7 @@ public class CustomerController {
             certifiedEndDate,
             pageable);
 
-    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
+    return ResponseEntity.ok(buildPageResponse(customers, validatedPage, validatedLimit));
   }
 
   @Operation(
@@ -346,10 +350,14 @@ public class CustomerController {
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "20") int limit) {
 
-    Pageable pageable = buildPageable(page, limit);
+    // Validate pagination parameters
+    int validatedPage = Math.max(1, page);
+    int validatedLimit = Math.max(1, Math.min(100, limit));
+
+    Pageable pageable = buildPageable(validatedPage, validatedLimit);
     Page<Customer> customers = customerService.getRecentlyUpdatedCustomers(days, pageable);
 
-    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
+    return ResponseEntity.ok(buildPageResponse(customers, validatedPage, validatedLimit));
   }
 
   @Operation(
@@ -419,12 +427,9 @@ public class CustomerController {
   // Helper methods for request parameter processing
 
   private Pageable buildPageable(int page, int limit) {
-    int validatedPage = Math.max(1, page);
-    int validatedLimit = Math.max(1, Math.min(100, limit));
-
     return PageRequest.of(
-        validatedPage - 1,
-        validatedLimit,
+        page - 1,
+        limit,
         Sort.by("certifiedAt")
             .ascending()
             .and(Sort.by("createdAt").descending())

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,11 @@ public class CertificateTypeTrendsService {
         monthlyCertifiedCountByCertificateTypeRepository
             .findAllByOrderByMonthAscCertificateTypeAsc();
 
+    // OPTIMIZATION: Get unsettled count ONCE outside all loops (cached)
+    // This avoids N×M queries where N=certificate types, M=months
+    // Example: 10 types × 12 months = 120 queries → now just 1 query (cached)
+    long totalUnsettledCustomers = getUnsettledCustomers(0);
+
     Map<String, List<TrendDataPoint>> trendsByType = new HashMap<>();
 
     Map<String, List<MonthlyCertifiedCountByCertificateType>> groupedByType = new HashMap<>();
@@ -66,8 +72,8 @@ public class CertificateTypeTrendsService {
         String[] parts = monthStr.split("-");
         LocalDate date = LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
 
-        long unsettled = getUnsettledCustomers(runningTotal);
-        BigDecimal conversionRate = calculateConversionRate(runningTotal, unsettled);
+        // Use the pre-fetched unsettled count instead of querying in nested loop
+        BigDecimal conversionRate = calculateConversionRate(runningTotal, totalUnsettledCustomers);
 
         dataPoints.add(
             new TrendDataPoint(date, newCertifications, runningTotal, conversionRate, 0, 0));
@@ -79,6 +85,11 @@ public class CertificateTypeTrendsService {
     return new CertificateTypeTrendsResponse(trendsByType, 0);
   }
 
+  /**
+   * Get count of unsettled customers with caching. Shared cache across all analytics services to
+   * avoid duplicate queries.
+   */
+  @Cacheable(value = "unsettledCustomerCount", key = "'total'")
   private long getUnsettledCustomers(long totalCustomers) {
     return customerRepository.countNotCertifiedCustomers();
   }
