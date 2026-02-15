@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: customers-debug
+  datasource:
+    url: jdbc:mysql://localhost:3306/customers
+    username: root
+    password: ${DB_PASSWORD:123456}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true  # Enabled for performance analysis
+        jdbc:
+          batch_size: 25
+        format_sql: true
+        use_sql_comments: true
+        show_sql: true
+
+server:
+  port: 8080
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      environment: debug
+
+# Debug environment logging - maximum verbosity for troubleshooting
+logging:
+  level:
+    root: INFO
+    com.example.customers: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    # Database logging - verbose for debugging
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.stat: DEBUG
+    org.hibernate.type: TRACE
+    org.hibernate.hql.internal.ast.AST: DEBUG
+    # Connection pool logging
+    com.zaxxer.hikari: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) [%X{correlationId}] [%X{userId}] %cyan(%logger{36}) - %msg%n"
+
+# Enable detailed error messages
+springdoc:
+  show-actuator: true
+
+# Performance monitoring settings
+logging.performance:
+  enabled: true
+  database-threshold: 500ms
+  service-threshold: 1000ms
+  controller-threshold: 2000ms

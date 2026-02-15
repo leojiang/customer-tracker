@@ -1,11 +1,13 @@
 spring:
   application:
     name: customers
+  profiles:
+    active: ${SPRING_PROFILE:prod}
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/customers
     username: root
-    password: 123456
+    password: ${DB_PASSWORD:123456}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -31,8 +33,16 @@ springdoc:
     tagsSorter: alpha
   show-actuator: false
 
+# Default logging configuration (will be overridden by profile-specific configs)
 logging:
   level:
     root: INFO
-    # Log HTTP requests
-    com.example.customers: DEBUG
+    com.example.customers: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n"
+  # Performance logging configuration (can be overridden per environment)
+  performance:
+    enabled: true  # Set to false to disable all performance logging
+    database-threshold: 1000  # milliseconds
+    service-threshold: 2000  # milliseconds
+    controller-threshold: 3000  # milliseconds

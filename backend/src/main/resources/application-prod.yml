@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: customers-prod
+  datasource:
+    url: jdbc:mysql://localhost:3306/customers
+    username: root
+    password: ${DB_PASSWORD:123456}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# Actuator endpoints for monitoring - restricted in production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      environment: prod
+      application: customers
+
+# Production environment logging configuration - JSON structured logging
+logging:
+  level:
+    root: WARN
+    com.example.customers: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n"
+  # Performance logging - enabled but with conservative thresholds
+  performance:
+    enabled: true
+    database-threshold: 2000  # 2 seconds - more lenient for production
+    service-threshold: 5000  # 5 seconds
+    controller-threshold: 10000  # 10 seconds
+
+# Disable Swagger/OpenAPI in production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+  show-actuator: false

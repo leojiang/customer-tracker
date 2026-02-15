@@ -6,6 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.customers.config.TestSecurityConfig;
+import com.example.customers.dto.customer.CustomerCreateRequest;
+import com.example.customers.dto.customer.CustomerUpdateRequest;
+import com.example.customers.dto.customer.StatusTransitionRequest;
 import com.example.customers.model.CertificateType;
 import com.example.customers.model.Customer;
 import com.example.customers.model.CustomerStatus;
@@ -222,13 +225,13 @@ class CustomerControllerTest {
   @DisplayName("Should create customer successfully")
   void shouldCreateCustomerSuccessfully() throws Exception {
     // Given
-    CustomerController.CreateCustomerRequest request =
-        new CustomerController.CreateCustomerRequest();
+    CustomerCreateRequest request = new CustomerCreateRequest();
     request.setName("Jane Smith");
     request.setPhone("9876543210");
     request.setCertificateIssuer("New Certificate Issuer");
     request.setBusinessRequirements("Need inventory system");
     request.setCurrentStatus(CustomerStatus.NEW);
+    request.setIdCard("123456789012345678"); // Required field
 
     when(customerService.createCustomer(any(Customer.class), anyString(), anyString()))
         .thenReturn(testCustomer);
@@ -250,10 +253,10 @@ class CustomerControllerTest {
   @DisplayName("Should return 400 when creating customer with duplicate phone")
   void shouldReturn400WhenCreatingCustomerWithDuplicatePhone() throws Exception {
     // Given
-    CustomerController.CreateCustomerRequest request =
-        new CustomerController.CreateCustomerRequest();
+    CustomerCreateRequest request = new CustomerCreateRequest();
     request.setName("Jane Smith");
     request.setPhone("1234567890");
+    request.setIdCard("987654321098765432"); // Required field
 
     when(customerService.createCustomer(any(Customer.class), anyString(), anyString()))
         .thenThrow(new IllegalArgumentException("Customer with phone 1234567890 already exists"));
@@ -273,11 +276,11 @@ class CustomerControllerTest {
   @DisplayName("Should update customer successfully")
   void shouldUpdateCustomerSuccessfully() throws Exception {
     // Given
-    CustomerController.UpdateCustomerRequest request =
-        new CustomerController.UpdateCustomerRequest();
+    CustomerUpdateRequest request = new CustomerUpdateRequest();
     request.setName("Updated Name");
     request.setPhone("1111111111");
     request.setCertificateIssuer("Updated Certificate Issuer");
+    request.setIdCard("111111111111111111"); // Required field
 
     Customer updatedCustomer = new Customer();
     updatedCustomer.setId(testCustomerId);
@@ -306,10 +309,10 @@ class CustomerControllerTest {
   @DisplayName("Should return 404 when updating non-existent customer")
   void shouldReturn404WhenUpdatingNonExistentCustomer() throws Exception {
     // Given
-    CustomerController.UpdateCustomerRequest request =
-        new CustomerController.UpdateCustomerRequest();
+    CustomerUpdateRequest request = new CustomerUpdateRequest();
     request.setName("Updated Name");
-    request.setPhone("1234567890"); // Add valid phone number to pass validation
+    request.setPhone("1234567890");
+    request.setIdCard("222222222222222222"); // Required field
 
     when(customerService.getCustomerById(testCustomerId))
         .thenReturn(Optional.empty()); // This will trigger the 404
@@ -382,8 +385,7 @@ class CustomerControllerTest {
   @DisplayName("Should transition status successfully")
   void shouldTransitionStatusSuccessfully() throws Exception {
     // Given
-    CustomerController.StatusTransitionRequest request =
-        new CustomerController.StatusTransitionRequest();
+    StatusTransitionRequest request = new StatusTransitionRequest();
     request.setToStatus(CustomerStatus.NOTIFIED);
     request.setReason("Customer responded positively");
 
@@ -415,8 +417,7 @@ class CustomerControllerTest {
   @DisplayName("Should return 400 for invalid status transition")
   void shouldReturn400ForInvalidStatusTransition() throws Exception {
     // Given
-    CustomerController.StatusTransitionRequest request =
-        new CustomerController.StatusTransitionRequest();
+    StatusTransitionRequest request = new StatusTransitionRequest();
     request.setToStatus(CustomerStatus.CERTIFIED);
     request.setReason("Invalid transition");
 

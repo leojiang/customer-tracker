@@ -125,6 +125,9 @@ public class CustomerController {
           @RequestParam(defaultValue = "5")
           int limit) {
 
+    int validatedPage = Math.max(1, page);
+    int validatedLimit = Math.max(1, Math.min(100, limit));
+
     Pageable pageable = buildPageable(page, limit);
     String filterBySalesPhone = getCurrentUserSalesPhone();
     List<CertificateType> certificateTypeEnumList = parseCertificateTypes(certificateType);
@@ -147,7 +150,7 @@ public class CustomerController {
             certifiedEndDate,
             pageable);
 
-    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
+    return ResponseEntity.ok(buildPageResponse(customers, validatedPage, validatedLimit));
   }
 
   @Operation(
@@ -346,10 +349,13 @@ public class CustomerController {
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "20") int limit) {
 
+    int validatedPage = Math.max(1, page);
+    int validatedLimit = Math.max(1, Math.min(100, limit));
+
     Pageable pageable = buildPageable(page, limit);
     Page<Customer> customers = customerService.getRecentlyUpdatedCustomers(days, pageable);
 
-    return ResponseEntity.ok(buildPageResponse(customers, page, limit));
+    return ResponseEntity.ok(buildPageResponse(customers, validatedPage, validatedLimit));
   }
 
   @Operation(

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: customers-test
+  datasource:
+    url: jdbc:mysql://localhost:3306/customers_test
+    username: root
+    password: ${DB_PASSWORD:test123}
+
+server:
+  port: 8081
+
+# Test environment logging configuration
+logging:
+  level:
+    root: INFO
+    com.example.customers: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    # Database logging - minimal for performance
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36}) - %msg%n"

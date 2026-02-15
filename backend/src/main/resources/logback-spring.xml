@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Import Spring Boot default configuration -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Variable for log file path -->
+    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="logs/customers.log"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="logs"/>
+
+    <!-- Variable for active profile -->
+    <springProperty scope="context" name="SPRING_PROFILE" source="spring.profiles.active" defaultValue="dev"/>
+
+    <!-- Console Appender with color coding for development -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) [%X{correlationId}] [%X{userId}] %cyan(%logger{36}) - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for all environments -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/customers.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/customers-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- JSON Console Appender for production - Structured logging -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc>
+            <includeStructuredArguments>true</includeStructuredArguments>
+            <includeTags>true</includeTags>
+            <includeCallerData>false</includeCallerData>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+            <jsonGeneratorDecorator class="net.logstash.logback.decorate.NullJsonGeneratorDecorator"/>
+        </encoder>
+    </appender>
+
+    <!-- JSON File Appender for production -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/customers-json.log</file>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc>
+            <includeStructuredArguments>true</includeStructuredArguments>
+            <includeTags>true</includeTags>
+            <includeCallerData>false</includeCallerData>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/customers-json-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Error File Appender - Separate file for errors -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/customers-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n%ex{full}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/customers-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>60</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Audit Log Appender - Separate file for audit events -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/customers-audit.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/customers-audit-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>365</maxHistory> <!-- Keep audit logs for 1 year -->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Audit Logger - Separate logger for audit events -->
+    <logger name="AUDIT_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Development Profile Configuration -->
+    <if condition='"${SPRING_PROFILE}".contains("dev")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="FILE"/>
+                <appender-ref ref="ERROR_FILE"/>
+            </root>
+        </then>
+    </if>
+
+    <!-- Test Profile Configuration -->
+    <if condition='"${SPRING_PROFILE}".contains("test")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="FILE"/>
+            </root>
+        </then>
+    </if>
+
+    <!-- Staging Profile Configuration -->
+    <if condition='"${SPRING_PROFILE}".contains("staging")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="FILE"/>
+                <appender-ref ref="ERROR_FILE"/>
+            </root>
+        </then>
+    </if>
+
+    <!-- Production Profile Configuration - JSON structured logging -->
+    <if condition='"${SPRING_PROFILE}".contains("prod")'>
+        <then>
+            <root level="WARN">
+                <appender-ref ref="JSON_CONSOLE"/>
+                <appender-ref ref="JSON_FILE"/>
+                <appender-ref ref="ERROR_FILE"/>
+            </root>
+        </then>
+    </if>
+
+    <!-- Default fallback configuration -->
+    <if condition='!("${SPRING_PROFILE}".contains("dev") || "${SPRING_PROFILE}".contains("test") || "${SPRING_PROFILE}".contains("staging") || "${SPRING_PROFILE}".contains("prod"))'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="FILE"/>
+                <appender-ref ref="ERROR_FILE"/>
+            </root>
+        </then>
+    </if>
+
+    <!-- Application-specific log levels -->
+    <logger name="com.example.customers" level="${LOG_LEVEL_APPLICATION:-INFO}"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+
+</configuration>
